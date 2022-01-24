@@ -1,12 +1,12 @@
 # Setting up your local develop environment
-When you want to contribute to the littil backend you need some tools in order to run the backend locally. 
-The backend is written in JAVA, based on [Quarkus](https://www.quarkus.io). For data persistence we use a [Mysql database](https://www.mysql.com). 
+When you want to contribute to the LITTIL API you need some tools in order to run the API locally. 
+The API is written in JAVA, based on [Quarkus](https://www.quarkus.io). For data persistence we use a [Mysql database](https://www.mysql.com). 
 
 Don't worry about installing these extra dependencies, when running in `dev` mode those will be automatically installed 
 in a docker container for you. 
 
 ## Prerequisites
-Before you are able to run the backend of Littil you need to make sure you have the following software installed on 
+Before you are able to run the API of LITTIL you need to make sure you have the following software installed on 
 your machine.
 - Java 11
 - Maven
@@ -59,7 +59,7 @@ To run maven on unix use `$ ./mvnw <parameters>` on a windows machine your can u
 
 ### Quarkus CLI
 Quarkus ships an CLI tool for better developing experience. This tool is not mandatory in order to work locally on the 
-Littil-backend project. But in case you would like to use it you should follow the instructions below:
+LITTIL API project. But in case you would like to use it you should follow the instructions below:
 
 #### Unix
 `SDKman` ships the quarkus cli tool aswell. The easiest way to install this tool is by using `SDKman`. Run the following 
@@ -93,7 +93,7 @@ jbang app install --fresh --force quarkus@quarkusio
 _For more information, please read: [Quarkus cli-tooling](https://quarkus.io/guides/cli-tooling)_
 
 ### Docker
-Quarkus uses Docker to spin up containers of middleware which the Littil-backend depends on. For example the mysql 
+Quarkus uses Docker to spin up containers of middleware which the LITTIL API depends on. For example the mysql 
 database for persisting data. In order to run these containers `Docker` must be install on your machine. 
 
 #### MacOS & Windows
@@ -104,8 +104,8 @@ installation files on [docker downlaod page](https://www.docker.com/get-started)
 Please see the following documentation on how to get Docker installed on your preferred Linux distribution: 
 [Official Docker Documentation](https://docs.docker.com/engine/install/#server)
 
-## Run the Littil-backend locally
-Now, with all dependencies installed you can start the backend for local development. You use either Maven via:
+## Run the LITTIL API locally
+Now, with all dependencies installed you can start the API for local development. You use either Maven via:
 
 ```shell
 $ ./mvnw quarkus:dev
@@ -116,13 +116,13 @@ Or via the quarkus-cli tool
 $ ./quarkus dev
 ```
 
-_If you run into issues regarding the fact the docker deamon can not be found. Please see: [Docker daemon not running](Docker-daemon-not-running)_ 
+_If you run into issues regarding the fact the docker daemon can not be found. Please see: [Docker daemon not running](Docker-daemon-not-running)_ 
                                                                                                                                        
 To verify that the environment is running, open your web-browser en go to [the health-check](http://localhost:8080/q/health). 
 If the response includes a `status:UP` you are good to go!
 
 ## Common used commands
-The following commands are useful when contributing to the littil-backend. You should run these within the project directory.
+The following commands are useful when contributing to the LITTIL API. You should run these within the project directory.
 - `$ ./quakus dev` / `$ ./mvnw quarkus:dev` for starting your development environment.
 - `$ ./quakus build [--native] --[no-]tests` / `$ ./mvnw quarkus:build [-D[no-]tests] [-Dnative]` to build an artifact.
 the native and (no-)test parameters are optional.

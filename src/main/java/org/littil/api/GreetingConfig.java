@@ -1,4 +1,4 @@
-package org.littil.backend;
+package org.littil.api;
 
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithName;

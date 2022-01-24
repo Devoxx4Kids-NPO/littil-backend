@@ -1,4 +1,4 @@
-package org.littil.backend;
+package org.littil.api;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

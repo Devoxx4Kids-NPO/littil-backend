@@ -1,4 +1,4 @@
-package org.littil.backend;
+package org.littil.api;
 
 import io.quarkus.test.junit.NativeImageTest;
 
