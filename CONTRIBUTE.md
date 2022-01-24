@@ -1,7 +1,7 @@
 # Contributing to Littil
 From the Devoxx4kids foundation, we want to make more children enthusiastic about the programming profession and reach and support them through schools.
 
-For this we are building a platform called LITTIL, with which engineers who like to give workshops can get in touch with schools and vice versa.
+For this we are building a platform called LITTIL, which enables engineers who like to give workshops to get in touch with schools and vice versa.
 
 ## Getting started
 First, thank you for considering contributing to LITTIL. You can contribute in multiple ways:

@@ -11,20 +11,20 @@ your machine.
 - Java 11
 - Maven
 - Docker
-- quarkus cli
+- Quarkus cli
 
-### SDKman
-SDKman is an util which you can use on all unix based systems. This includes all Linux distributions but also MacOS. 
-SDKman makes it really easy to not only install Java on your machine but most utilities which are commonly used within 
-the Java eco-environment. You can use the following guide to install SDKman on your machine:
+### SDKMAN!
+`SDKMAN!` is an util which you can use on all unix based systems. This includes all Linux distributions, but also MacOS. 
+`SDKMAN!` makes it really easy to not only install Java on your machine but most utilities which are commonly used within 
+the Java eco-environment. You can use the following guide to install `SDKMAN!` on your machine:
 
-You can install SDK by running the following command on your machine:
+You can install `SDKMAN!` by running the following command on your machine:
 
 ```shell
 $ curl -s "https://get.sdkman.io" | bash
 ```
 
-To use `SDKman` you can either run the command below or restart your terminal.
+To use `SDKMAN!` you can either run the command below or restart your terminal.
 ```shell
 $ source "$HOME/.sdkman/bin/sdkman-init.sh"
 ```
@@ -45,7 +45,7 @@ Then install the latest java 11 version, i.e:
 ```shell
 $ sdk install java 11.0.14-zulu    
 ```                            
-For more information regarding `SDKman` please visit their website at: [https://sdkman.io/](https://sdkman.io/)
+For more information regarding `SDKMAN!` please visit their website at: [https://sdkman.io/](https://sdkman.io/)
 
 _if you which to install java directly you can also download it directly from the
 [Oracle website.](https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html)_
@@ -55,15 +55,15 @@ _Please contribute_
          
 ### Maven
 This projects ships a Maven wrapper. With this wrapper it's not necessary to install maven locally on your machine. 
-To run maven on unix use `$ ./mvnw <parameters>` on a windows machine your can use ` $ ./mvnw.cmd <parameters>`.
+To run maven on unix use `$ ./mvnw <parameters>` on a Windows machine your can use ` $ ./mvnw.cmd <parameters>`.
 
 ### Quarkus CLI
 Quarkus ships an CLI tool for better developing experience. This tool is not mandatory in order to work locally on the 
 LITTIL API project. But in case you would like to use it you should follow the instructions below:
 
 #### Unix
-`SDKman` ships the quarkus cli tool aswell. The easiest way to install this tool is by using `SDKman`. Run the following 
-command in your terminal to see which verions are available
+`SDKMAN!` ships the quarkus cli tool as well. The easiest way to install this tool is by using `SDKMAN!`. Run the following 
+command in your terminal to see which versions are available
 
 ```shell
 $ sdk list quarkus
@@ -74,7 +74,7 @@ Then install the desired version, in example:
 $ sdk install quarkus 2.6.3.Final
 ```
 
-To verify the installation is succesful, run: 
+To verify the installation is successful, run: 
 ```shell
 $ quarkus --version
 ```
@@ -85,7 +85,7 @@ The recommended way to install on Windows is via `JBang` using the powershell. Y
 iex "& { $(iwr https://ps.jbang.dev) } app install --fresh --force quarkus@quarkusio"
 ```
 
-If you already have `JBang`installed on your windows machine you can run:
+If you already have `JBang` installed on your windows machine you can run:
 ```powershell
 jbang app install --fresh --force quarkus@quarkusio
 ```
@@ -94,11 +94,11 @@ _For more information, please read: [Quarkus cli-tooling](https://quarkus.io/gui
 
 ### Docker
 Quarkus uses Docker to spin up containers of middleware which the LITTIL API depends on. For example the mysql 
-database for persisting data. In order to run these containers `Docker` must be install on your machine. 
+database for persisting data. In order to run these containers `Docker` must be installed on your machine. 
 
 #### MacOS & Windows
 The easiest way to install docker on your Windows or MacOS machine is by installing docker-desktop. You can find the
-installation files on [docker downlaod page](https://www.docker.com/get-started). 
+installation files on [docker download page](https://www.docker.com/get-started). 
 
 #### Linux
 Please see the following documentation on how to get Docker installed on your preferred Linux distribution: 
@@ -134,7 +134,7 @@ For more commands you can run `$ ./quarkus --help` / `$ ./mvnw quarkus:help`
 
 ### Docker daemon not running
 If you are developing on a Linux Ubuntu (distro) you might run into issues with Docker for example when running tests. 
-The tests will fail and you will see logging about the docker daemon. This is due to the fact docker-daemon requires root
+The tests will fail, and you will see logging about the docker daemon. This is due to the fact docker-daemon requires root
 permissions.
 
 ```
