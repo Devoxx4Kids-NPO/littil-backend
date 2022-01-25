@@ -1,0 +1,8 @@
+greeting:
+  message: "hello"
+
+quarkus:
+  datasource:
+    db-kind: mysql
+    devservices:
+      enabled: true
