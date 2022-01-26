@@ -19,5 +19,5 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
-.mvn
+.mvn/wrapper/maven-wrapper.jar
 target
