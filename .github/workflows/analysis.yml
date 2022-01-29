@@ -14,6 +14,7 @@ on:
 jobs:
   security:
     runs-on: ubuntu-latest
+    environment: Snyk
     steps:
       - uses: actions/checkout@v2
       - name: Run Snyk to check for vulnerabilities
@@ -38,6 +39,7 @@ jobs:
   # [2] https://github.com/nektos/act
   analysis:
     runs-on: ubuntu-latest
+    environment: Sonarcloud
     steps:
       - uses: actions/checkout@v2
         with:
