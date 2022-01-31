@@ -22,7 +22,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - run: mvn -v
-      - run: mvn -B verify
+      - run: mvn -B package
+      - uses: actions/upload-artifact@v2
+        with:
+           path: target/*.jar
   security:
     runs-on: ubuntu-latest
     steps:
