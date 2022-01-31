@@ -14,6 +14,13 @@
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
     <quarkus.platform.version>2.6.3.Final</quarkus.platform.version>
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+    <!-- 
+    The two following properties are displayed on your project
+    at https://sonarcloud.io
+     -->
+    <sonar.organization>Devoxx4Kids-NPO</sonar.organization>
+    <sonar.projectKey>littil-backend</sonar.projectKey>
   </properties>
   <dependencyManagement>
     <dependencies>
