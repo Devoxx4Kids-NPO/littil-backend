@@ -19,7 +19,7 @@
     The two following properties are displayed on your project
     at https://sonarcloud.io
      -->
-    <sonar.organization>Devoxx4Kids-NPO</sonar.organization>
+    <sonar.organization>devoxx4kids</sonar.organization>
     <sonar.projectKey>littil-backend</sonar.projectKey>
   </properties>
   <dependencyManagement>
