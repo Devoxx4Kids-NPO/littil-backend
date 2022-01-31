@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: maven
       - run: mvn -v
       - run: mvn -B verify
@@ -45,7 +45,7 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           java-version: '11'
-          distribution: 'adopt'
+          distribution: 'temurin'
           cache: maven
       - uses: actions/cache@v1
         with:
