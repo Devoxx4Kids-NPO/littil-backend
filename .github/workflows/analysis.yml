@@ -36,11 +36,6 @@ jobs:
       - uses: github/codeql-action/upload-sarif@v1
         with:
           sarif_file: snyk.sarif
-  # According to Sonar documentation[1] active branches are detected automatically when running with a GitHub Action.
-  # Though to make configuration work running locally with act[2] as well, extracting the name explicitly is necessary.
-  #
-  # [1] https://docs.sonarqube.org/latest/branches/overview/#header-2
-  # [2] https://github.com/nektos/act
   analysis:
     runs-on: ubuntu-latest
     steps:
@@ -52,8 +47,14 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
           cache: maven
-      - name: Build and analyze
+      - uses: actions/cache@v1
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pcoverage
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          # Needed to get some information about the pull request, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # SonarCloud access token should be generated from https://sonarcloud.io/account/security/
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
