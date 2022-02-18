@@ -1,14 +1,7 @@
 package org.littil.api.school;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+public class SchoolDto {
 
-@Entity
-public class School {
-
-    @Id
-    @GeneratedValue
     private Long id;
     private String name;
     private String address;
@@ -16,7 +9,8 @@ public class School {
     private String contactPersonName;
     private String contactPersonEmail;
 
-    public School(final String name, final String address, final String postalCode, final String contactPersonName, final String contactPersonEmail) {
+    public SchoolDto(final Long id, final String name, final String address, final String postalCode, final String contactPersonName, final String contactPersonEmail) {
+        this.id = id;
         this.name = name;
         this.address = address;
         this.postalCode = postalCode;
@@ -24,12 +18,12 @@ public class School {
         this.contactPersonEmail = contactPersonEmail;
     }
 
-    public School() {
-
-    }
-
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
