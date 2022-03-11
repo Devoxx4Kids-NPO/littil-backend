@@ -20,6 +20,10 @@ public class SchoolService {
         return mapper.schoolToSchoolDto(repository.findByName(name));
     }
 
+    public SchoolDto getSchoolById(final Long id) {
+        return mapper.schoolToSchoolDto(repository.findById(id));
+    }
+
     public Set<SchoolDto> saveSchool(final SchoolDto schoolDto) {
         // todo: for example validations
 
