@@ -3,3 +3,9 @@
 GET http://localhost:8080/schools
 Content-Type: application/json
 
+### create school
+POST http://localhost:8080/schools
+Content-Type: application/json
+
+{ "name" : "Willem-Alexanderschool", "address" : "Dwarsstraat 13", "postalCode" : "5432 AZ", "contactPersonName" : "John Doe", "contactPersonEmail"  : "john.doe@willemalexanderschool.nl"}
+
