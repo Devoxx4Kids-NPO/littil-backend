@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
-@Path("/teacher")
+@Path("/api/v1/teacher")
 public class TeacherResource {
 
     private Set<Teacher> teachers = Collections.newSetFromMap(Collections.synchronizedMap(new LinkedHashMap<>()));
