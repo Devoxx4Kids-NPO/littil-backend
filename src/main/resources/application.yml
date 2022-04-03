@@ -1,8 +1,5 @@
-greeting:
-  message: "hello"
-
 quarkus:
   datasource:
-    db-kind: h2
+    db-kind: mysql
     devservices:
       enabled: true

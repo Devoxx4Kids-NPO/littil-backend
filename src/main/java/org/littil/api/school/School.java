@@ -4,6 +4,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
 @Entity
 public class School {
 
@@ -15,61 +20,4 @@ public class School {
     private String postalCode;
     private String contactPersonName;
     private String contactPersonEmail;
-
-    public School(final String name, final String address, final String postalCode, final String contactPersonName, final String contactPersonEmail) {
-        this.name = name;
-        this.address = address;
-        this.postalCode = postalCode;
-        this.contactPersonName = contactPersonName;
-        this.contactPersonEmail = contactPersonEmail;
-    }
-
-    public School() {
-
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPostalCode() {
-        return postalCode;
-    }
-
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
-
-    public String getContactPersonName() {
-        return contactPersonName;
-    }
-
-    public void setContactPersonName(String contactPersonName) {
-        this.contactPersonName = contactPersonName;
-    }
-
-    public String getContactPersonEmail() {
-        return contactPersonEmail;
-    }
-
-    public void setContactPersonEmail(String contactPersonEmail) {
-        this.contactPersonEmail = contactPersonEmail;
-    }
-
 }

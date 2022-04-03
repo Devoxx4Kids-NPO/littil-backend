@@ -1,39 +1,43 @@
 package org.littil.api.teacher;
 
-import org.littil.api.school.School;
-
+import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import java.util.Collections;
-import java.util.LinkedHashMap;
+import javax.ws.rs.PathParam;
 import java.util.Set;
 
 @Path("/api/v1/teacher")
 public class TeacherResource {
 
-    private Set<Teacher> teachers = Collections.newSetFromMap(Collections.synchronizedMap(new LinkedHashMap<>()));
-
-    TeacherResource () {
-        teachers.add(new Teacher("Phil", "Lead", "phil@gmail.com", "2345AB"));
-        teachers.add(new Teacher("Darrell", "Guitar", "darrell@gmail.com", "3456AB"));
+    @Inject
+    private TeacherService teacherService;
+    
+    @GET
+    public Set<TeacherDto> list() {
+        return teacherService.getAll();
     }
 
     @GET
-    public Set<Teacher> list() {
-        return teachers;
+    @Path("{id}")
+    public TeacherDto get(@PathParam("id") final Long id) {
+        return teacherService.getTeacherById(id);
     }
-
+    
+    @GET
+    @Path("name/{name}")
+    public TeacherDto get(@PathParam("name")final String name) {
+        return teacherService.getTeacherByName(name);
+    }
+    
     @POST
-    public Set<Teacher> add(Teacher teacher) {
-        teachers.add(teacher);
-        return teachers;
+    public Set<TeacherDto> add(final TeacherDto teacherDto) {
+        return teacherService.saveTeacher(teacherDto);
     }
 
     @DELETE
-    public Set<Teacher> delete(Teacher teacher) {
-        teachers.removeIf(existingTeacher -> existingTeacher.getEmail().contentEquals(teacher.getEmail()));
-        return teachers;
+    public Set<TeacherDto> delete(final TeacherDto teacherDto) {
+        return teacherService.deleteTeacher(teacherDto);
     }
 }
