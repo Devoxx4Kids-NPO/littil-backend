@@ -8,7 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import java.util.Set;
 
-@Path("/school")
+@Path("/api/v1/school")
 public class SchoolResource {
 
     @Inject
