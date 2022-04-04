@@ -24,8 +24,9 @@ jobs:
       - run: mvn -v
       - run: mvn -B package -P coverage
       - uses: scacap/action-surefire-report@v1
+      - uses: madrapps/jacoco-report@v1.1
         with:
-          paths: ${{ github.workspace }}/ttarget/site/jacoco/jacoco.xml
+          path: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v2
         with:
