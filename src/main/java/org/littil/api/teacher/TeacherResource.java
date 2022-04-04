@@ -1,7 +1,5 @@
 package org.littil.api.teacher;
 
-import org.littil.api.school.School;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -16,8 +14,8 @@ public class TeacherResource {
     private Set<Teacher> teachers = Collections.newSetFromMap(Collections.synchronizedMap(new LinkedHashMap<>()));
 
     TeacherResource () {
-        teachers.add(new Teacher("Phil", "Lead", "phil@gmail.com", "2345AB"));
-        teachers.add(new Teacher("Darrell", "Guitar", "darrell@gmail.com", "3456AB"));
+        teachers.add(new Teacher(null,"Phil", "Lead", "phil@gmail.com", "2345AB","nl",null));
+        teachers.add(new Teacher(null,"Darrell", "Guitar", "darrell@gmail.com", "3456AB","nl",null));
     }
 
     @GET
