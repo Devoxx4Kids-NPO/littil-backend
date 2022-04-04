@@ -1,5 +1,5 @@
 quarkus:
   datasource:
-    db-kind: mysql
+    db-kind: h2
     devservices:
       enabled: true
