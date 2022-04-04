@@ -1,7 +1,6 @@
 package org.littil.api.school;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -10,11 +9,13 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class SchoolService {
 
-    @Inject
-    SchoolRepository repository;
-    
-    @Inject
-    SchoolMapper mapper; 
+    private final SchoolRepository repository;
+    private final SchoolMapper mapper;
+
+    public SchoolService(SchoolRepository repository, SchoolMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
+    }
 
     public SchoolDto getSchoolByName(final String name) {
         return mapper.schoolToSchoolDto(repository.findByName(name));

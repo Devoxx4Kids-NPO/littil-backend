@@ -1,7 +1,6 @@
 package org.littil.api.teacher;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,12 +8,14 @@ import java.util.stream.Collectors;
 @Transactional
 @ApplicationScoped
 public class TeacherService {
-    
-    @Inject
-    TeacherRepository repository;
-    
-    @Inject
-    TeacherMapper mapper; 
+
+    private final TeacherRepository repository;
+    private final TeacherMapper mapper;
+
+    public TeacherService(TeacherRepository repository, TeacherMapper mapper) {
+        this.repository = repository;
+        this.mapper = mapper;
+    }
 
     public TeacherDto getTeacherByName(final String name) {
         return mapper.teacherToTeacherDto(repository.findByName(name));
