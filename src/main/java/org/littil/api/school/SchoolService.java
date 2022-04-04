@@ -12,7 +12,8 @@ public class SchoolService {
 
     @Inject
     SchoolRepository repository;
-    
+
+    @Inject
     SchoolMapper mapper; 
 
     public SchoolDto getSchoolByName(final String name) {
