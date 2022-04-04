@@ -23,6 +23,7 @@ jobs:
           cache: maven
       - run: mvn -v
       - run: mvn -B package
+      - uses: scacap/action-surefire-report@v1
       - uses: actions/upload-artifact@v2
         with:
            path: target/*.jar
