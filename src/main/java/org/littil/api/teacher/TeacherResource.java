@@ -1,5 +1,7 @@
 package org.littil.api.teacher;
 
+import lombok.RequiredArgsConstructor;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -8,13 +10,10 @@ import javax.ws.rs.PathParam;
 import java.util.Set;
 
 @Path("/api/v1/teacher")
+@RequiredArgsConstructor
 public class TeacherResource {
 
     private final TeacherService teacherService;
-
-    public TeacherResource(TeacherService teacherService) {
-        this.teacherService = teacherService;
-    }
 
     @GET
     public Set<TeacherDto> list() {

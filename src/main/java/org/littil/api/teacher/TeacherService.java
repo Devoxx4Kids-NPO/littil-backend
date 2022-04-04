@@ -1,5 +1,7 @@
 package org.littil.api.teacher;
 
+import lombok.RequiredArgsConstructor;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 import java.util.Set;
@@ -7,15 +9,11 @@ import java.util.stream.Collectors;
 
 @Transactional
 @ApplicationScoped
+@RequiredArgsConstructor
 public class TeacherService {
 
     private final TeacherRepository repository;
     private final TeacherMapper mapper;
-
-    public TeacherService(TeacherRepository repository, TeacherMapper mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
-    }
 
     public TeacherDto getTeacherByName(final String name) {
         return mapper.teacherToTeacherDto(repository.findByName(name));
