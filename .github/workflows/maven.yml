@@ -28,6 +28,8 @@ jobs:
         with:
           path: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 1
+          min-coverage-changed-files: 0
       - uses: actions/upload-artifact@v2
         with:
            path: target/*.jar
