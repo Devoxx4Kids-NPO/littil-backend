@@ -6,3 +6,6 @@ quarkus:
     db-kind: mariadb
     devservices:
       enabled: true
+  hibernate-orm:
+    database:
+      generation: update
