@@ -3,6 +3,9 @@ greeting:
 
 quarkus:
   datasource:
-    db-kind: h2
+    db-kind: mariadb
     devservices:
       enabled: true
+  hibernate-orm:
+    database:
+      generation: update
