@@ -1,6 +1,7 @@
 package org.littil.api.school;
 
-import javax.inject.Inject;
+import lombok.RequiredArgsConstructor;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -9,11 +10,11 @@ import javax.ws.rs.PathParam;
 import java.util.Set;
 
 @Path("/api/v1/school")
+@RequiredArgsConstructor
 public class SchoolResource {
 
-    @Inject
-    private SchoolService schoolService;
-    
+    private final SchoolService schoolService;
+
     @GET
     public Set<SchoolDto> list() {
         return schoolService.getAll();
