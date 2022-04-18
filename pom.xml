@@ -21,7 +21,7 @@
      -->
     <sonar.organization>tubbynl</sonar.organization>
     <sonar.projectKey>littil-backend</sonar.projectKey>
-    <lombok.version>1.18.22</lombok.version>
+    <lombok.version>1.18.24</lombok.version>
     <mapstruct.version>1.4.2.Final</mapstruct.version>
   </properties>
   <dependencyManagement>
