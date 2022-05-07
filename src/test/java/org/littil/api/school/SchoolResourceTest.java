@@ -86,6 +86,7 @@ class SchoolResourceTest {
 		    	.body("size()", is(1));    
    }
 
+	
 	@Test
 	@Order(5)
 	void whenDeleteExistingSchool_thenResponseIsEmtpy() {
