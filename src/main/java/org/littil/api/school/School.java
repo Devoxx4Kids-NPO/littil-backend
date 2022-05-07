@@ -1,5 +1,6 @@
 package org.littil.api.school;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -19,5 +20,6 @@ public class School {
     private String address;
     private String postalCode;
     private String contactPersonName;
+    @Column(unique=true)
     private String contactPersonEmail;
 }

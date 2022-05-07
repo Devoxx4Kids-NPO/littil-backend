@@ -7,6 +7,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+
 import java.util.Set;
 
 @Path("/api/v1/school")
@@ -28,7 +29,7 @@ public class SchoolResource {
     
     @GET
     @Path("name/{name}")
-    public SchoolDto get(@PathParam("name")final String name) {
+    public Set<SchoolDto> get(@PathParam("name")final String name) {
         return schoolService.getSchoolByName(name);
     }
     
@@ -37,8 +38,10 @@ public class SchoolResource {
         return schoolService.saveSchool(schoolDto);
     }
 
-    @DELETE
-    public Set<SchoolDto> delete(final SchoolDto schoolDto) {
-        return schoolService.deleteSchool(schoolDto);
+   @DELETE
+    @Path("{id}")
+    public Set<SchoolDto> deleteById(@PathParam("id")final Long id) {
+        return schoolService.deleteTeacherById(id);
     }
+
 }

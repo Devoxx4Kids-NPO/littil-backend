@@ -27,9 +27,9 @@ public class TeacherResource {
     }
     
     @GET
-    @Path("name/{name}")
-    public TeacherDto get(@PathParam("name")final String name) {
-        return teacherService.getTeacherByName(name);
+    @Path("surname/{surname}")
+    public Set<TeacherDto> get(@PathParam("surname")final String surname) {
+        return teacherService.getTeacherByName(surname);
     }
     
     @POST
@@ -38,7 +38,9 @@ public class TeacherResource {
     }
 
     @DELETE
-    public Set<TeacherDto> delete(final TeacherDto teacherDto) {
-        return teacherService.deleteTeacher(teacherDto);
+    @Path("{id}")
+    public Set<TeacherDto> deleteById(@PathParam("id")final Long id) {
+        return teacherService.deleteTeacherById(id);
     }
+
 }

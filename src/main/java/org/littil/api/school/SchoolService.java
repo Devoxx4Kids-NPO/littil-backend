@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
+
+import org.littil.api.exception.NotFoundException;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,8 +18,11 @@ public class SchoolService {
     private final SchoolRepository repository;
     private final SchoolMapper mapper;
 
-    public SchoolDto getSchoolByName(final String name) {
-        return mapper.schoolToSchoolDto(repository.findByName(name));
+    public Set<SchoolDto> getSchoolByName(final String name) {
+        return repository.findByName(name) //
+        		.stream() //
+        		.map(mapper::schoolToSchoolDto) //
+        		.collect(Collectors.toSet());
     }
 
     public SchoolDto getSchoolById(final Long id) {
@@ -34,10 +40,11 @@ public class SchoolService {
         return repository.streamAll().map(mapper::schoolToSchoolDto).collect(Collectors.toSet());
     }
 
-    public Set<SchoolDto> deleteSchool(SchoolDto schoolDto) {
-        // todo: for example check if exists
-
-        repository.delete(mapper.schoolDtoToSchool(schoolDto));
+ 	public Set<SchoolDto> deleteTeacherById(Long id) {
+		if (repository.findById(id) == null) {
+	    	throw new NotFoundException("School not found");
+	    }
+        repository.deleteById(id);
         return getAll();
-    }
+	}
 }

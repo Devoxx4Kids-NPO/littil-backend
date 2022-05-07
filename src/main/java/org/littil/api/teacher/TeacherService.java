@@ -4,6 +4,10 @@ import lombok.RequiredArgsConstructor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
+
+import org.littil.api.exception.AlreadyExistsException;
+import org.littil.api.exception.NotFoundException;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,8 +19,11 @@ public class TeacherService {
     private final TeacherRepository repository;
     private final TeacherMapper mapper;
 
-    public TeacherDto getTeacherByName(final String name) {
-        return mapper.teacherToTeacherDto(repository.findByName(name));
+    public Set<TeacherDto> getTeacherByName(final String surname) {
+        return repository.findBySurname(surname) //
+        		.stream() //
+        		.map(mapper::teacherToTeacherDto) //
+        		.collect(Collectors.toSet());
     }
 
     public TeacherDto getTeacherById(final Long id) {
@@ -25,7 +32,9 @@ public class TeacherService {
 
     public Set<TeacherDto> saveTeacher(final TeacherDto teacherDto) {
         // todo: for example validations
-
+    	if (repository.findByEmail(teacherDto.getEmail()).isPresent()) {
+    		throw new AlreadyExistsException("Teacher already exists");
+    	}
         repository.persist(mapper.teacherDtoToTeacher(teacherDto));
         return getAll();
     }
@@ -34,10 +43,11 @@ public class TeacherService {
         return repository.streamAll().map(mapper::teacherToTeacherDto).collect(Collectors.toSet());
     }
 
-    public Set<TeacherDto> deleteTeacher(TeacherDto teacherDto) {
-        // todo: for example check if exists
-
-        repository.delete(mapper.teacherDtoToTeacher(teacherDto));
-        return getAll();
+    public Set<TeacherDto> deleteTeacherById(long id) {
+    	if (repository.findById(id) == null) {
+	    	throw new NotFoundException("Teacher not found");
+	    }
+  	   repository.deleteById(id);
+       return getAll();
     }
 }

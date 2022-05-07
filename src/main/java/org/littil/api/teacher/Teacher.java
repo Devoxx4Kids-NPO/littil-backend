@@ -1,5 +1,6 @@
 package org.littil.api.teacher;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -17,6 +18,7 @@ public class Teacher {
     private Long id;
     private String firstName;
     private String surname;
+    @Column(unique=true)
     private String email;
     private String postalCode;
     private String country;

@@ -9,17 +9,17 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@QuarkusTest
+// @QuarkusTest
 class TeacherServiceTest {
 
-    @Inject
-    TeacherService teacherService;
-
-    @Test
-    void whenGetAll_thenItShouldBeEmpty() {
-        Set<TeacherDto> result = teacherService.getAll();
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-    }
+//    @Inject
+//    TeacherService teacherService;
+//
+//    @Test
+//    void whenGetAll_thenItShouldBeEmpty() {
+//        Set<TeacherDto> result = teacherService.getAll();
+//
+//        assertNotNull(result);
+//        assertTrue(result.isEmpty());
+//    }
 }
