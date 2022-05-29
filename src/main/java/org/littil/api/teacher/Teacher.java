@@ -1,14 +1,12 @@
 package org.littil.api.teacher;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import java.time.DayOfWeek;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -25,6 +23,7 @@ public class Teacher {
     private String postalCode;
     private String country;
     private String preferences;
-    //0 stands for Monday, 1 for Tuesday etc..
-    private int[] availability;
+
+    @ElementCollection
+    private Set<DayOfWeek> availability = new HashSet<>();
 }
