@@ -2,14 +2,13 @@ package org.littil.api.teacher;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+
+import java.util.UUID;
 
 @ApplicationScoped
-public class TeacherRepository implements PanacheRepository<Teacher> {
+public class TeacherRepository implements PanacheRepositoryBase<Teacher, UUID> {
 
-    // remove comments below, just a remark
-    // out of the box you get repository methods like listAll() see: https://thorben-janssen.com/introduction-panache/
-    // beside that you can write custom methods like findByName below
     public Teacher findByName(final String name){
         return find("name", name).firstResult();
     }

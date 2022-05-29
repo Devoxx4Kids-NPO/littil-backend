@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
 
-import java.util.Set;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,7 +17,7 @@ class TeacherServiceTest {
 
     @Test
     void whenGetAll_thenItShouldBeEmpty() {
-        Set<TeacherDto> result = teacherService.getAll();
+        List<Teacher> result = teacherService.findAll();
 
         assertNotNull(result);
         assertTrue(result.isEmpty());

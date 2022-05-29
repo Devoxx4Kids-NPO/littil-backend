@@ -1,43 +1,55 @@
 package org.littil.api.teacher;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.littil.api.teacher.api.TeacherMapper;
+import org.littil.api.teacher.api.TeacherUpsertResource;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import javax.ws.rs.NotFoundException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-@Transactional
 @ApplicationScoped
 @RequiredArgsConstructor
+@Slf4j
 public class TeacherService {
 
     private final TeacherRepository repository;
     private final TeacherMapper mapper;
 
-    public TeacherDto getTeacherByName(final String name) {
-        return mapper.teacherToTeacherDto(repository.findByName(name));
+    public Optional<Teacher> getTeacherByName(final String name) {
+        return Optional.ofNullable(repository.findByName(name));
     }
 
-    public TeacherDto getTeacherById(final Long id) {
-        return mapper.teacherToTeacherDto(repository.findById(id));
+    public Optional<Teacher> getTeacherById(final UUID id) {
+        return repository.findByIdOptional(id);
     }
 
-    public Set<TeacherDto> saveTeacher(final TeacherDto teacherDto) {
-        // todo: for example validations
+    @Transactional
+    // todo: for example validations
+    public Teacher saveTeacher(final TeacherUpsertResource resource) {
+        Teacher teacher = mapper.teacherResourceToTeacher(resource);
+        repository.persist(teacher);
 
-        repository.persist(mapper.teacherDtoToTeacher(teacherDto));
-        return getAll();
+        if( repository.isPersistent(teacher)) {
+            Optional<Teacher> optionalEmp = repository.findByIdOptional(teacher.getId());
+            return optionalEmp.orElseThrow(NotFoundException::new);
+        } else {
+            throw new PersistenceException();
+        }
     }
 
-    public Set<TeacherDto> getAll() {
-        return repository.streamAll().map(mapper::teacherToTeacherDto).collect(Collectors.toSet());
+    public List<Teacher> findAll() {
+        return repository.listAll();
     }
 
-    public Set<TeacherDto> deleteTeacher(TeacherDto teacherDto) {
-        // todo: for example check if exists
-
-        repository.delete(mapper.teacherDtoToTeacher(teacherDto));
-        return getAll();
+    @Transactional
+    public void deleteTeacher(UUID id) {
+        Optional<Teacher> teacher = repository.findByIdOptional(id);
+        teacher.ifPresentOrElse(repository::delete, () -> { throw new NotFoundException(); });
     }
 }

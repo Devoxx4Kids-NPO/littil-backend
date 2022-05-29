@@ -1,4 +1,6 @@
 quarkus:
+  live-reload:
+    instrumentation: true
   datasource:
     db-kind: mariadb
     devservices:
