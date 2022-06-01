@@ -6,9 +6,14 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.littil.api.school.School;
 import org.littil.api.school.SchoolService;
-import org.littil.api.util.JsonHelper;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -16,7 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Path("/v1/school")
+@Path("/api/v1/school")
 @RequiredArgsConstructor
 public class SchoolController {
 
@@ -46,7 +51,7 @@ public class SchoolController {
         Optional<SchoolResource> resource = school.map(mapper::schoolToSchoolResource);
 
         return resource.map(r -> Response.ok(resource).build())
-                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).entity(JsonHelper.toJson("School not found.")).build());
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @GET
@@ -60,7 +65,7 @@ public class SchoolController {
         Optional<SchoolResource> resource = school.map(mapper::schoolToSchoolResource);
 
         return resource.map(r -> Response.ok(resource).build())
-                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).entity(JsonHelper.toJson("School not found.")).build());
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST

@@ -5,7 +5,6 @@ import org.eclipse.microprofile.openapi.annotations.info.Contact;
 import org.eclipse.microprofile.openapi.annotations.info.Info;
 import org.eclipse.microprofile.openapi.annotations.info.License;
 
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 @OpenAPIDefinition(
@@ -20,6 +19,5 @@ import javax.ws.rs.core.Application;
                         name = "Apache 2.0",
                         url = "https://www.apache.org/licenses/LICENSE-2.0.html"))
 )
-@ApplicationPath("/api")
 public class LittilBackendAPI extends Application {
 }
