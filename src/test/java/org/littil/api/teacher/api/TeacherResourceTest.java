@@ -73,7 +73,7 @@ public class TeacherResourceTest {
                 .statusCode(201)
                 .extract().as(Teacher.class);
 
-        Teacher got = given().log().all()
+        Teacher got = given()
                 .when()
                 .get("/name/{name}", validSurname)
                 .then()
