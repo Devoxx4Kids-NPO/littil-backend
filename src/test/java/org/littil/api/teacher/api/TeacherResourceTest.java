@@ -31,10 +31,10 @@ public class TeacherResourceTest {
 
     @Test
     public void givenGetTeacherById_thenShouldReturnSuccessfully() {
-        Teacher customer = createTeacher();
+        Teacher teacher = createTeacher();
         Teacher saved = given()
                 .contentType(ContentType.JSON)
-                .body(customer)
+                .body(teacher)
                 .post()
                 .then()
                 .statusCode(201)
@@ -94,10 +94,10 @@ public class TeacherResourceTest {
 
     @Test
     public void givenCreateNewTeacher_thenShouldBeCreatedSuccessfully() {
-        Teacher customer = createTeacher();
+        Teacher teacher = createTeacher();
         Teacher saved = given()
                 .contentType(ContentType.JSON)
-                .body(customer)
+                .body(teacher)
                 .post()
                 .then()
                 .statusCode(201)
@@ -164,10 +164,10 @@ public class TeacherResourceTest {
 
     @Test
     public void givenDeleteTeacherById_thenShouldDeleteSuccessfully() {
-        Teacher customer = createTeacher();
+        Teacher teacher = createTeacher();
         Teacher saved = given()
                 .contentType(ContentType.JSON)
-                .body(customer)
+                .body(teacher)
                 .post()
                 .then()
                 .statusCode(201)

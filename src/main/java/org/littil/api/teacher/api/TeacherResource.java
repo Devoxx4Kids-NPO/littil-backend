@@ -7,6 +7,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.littil.api.exception.ErrorResponse;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.teacher.service.Teacher;
 import org.littil.api.teacher.service.TeacherService;
@@ -113,6 +114,14 @@ public class TeacherResource {
             )
     )
     @APIResponse(
+            responseCode = "400",
+            description = "Validation errors occurred.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+            )
+    )
+    @APIResponse(
             responseCode = "500",
             description = "Persistence error occurred. Failed to persist teacher.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
@@ -138,7 +147,10 @@ public class TeacherResource {
     @APIResponse(
             responseCode = "400",
             description = "Invalid teacher",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+            )
     )
     @APIResponse(
             responseCode = "500",

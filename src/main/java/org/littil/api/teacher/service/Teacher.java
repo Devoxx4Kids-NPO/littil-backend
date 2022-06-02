@@ -21,7 +21,7 @@ public class Teacher {
     @Email(message = "{Teacher.email.invalid}")
     private String email;
 
-    @NotNull(message = "{Teacher.surname.required}")
+    @NotNull(message = "{Teacher.postalCode.required}")
     private String postalCode;
 
     @NotNull(message = "{Teacher.locale.required}")

@@ -47,8 +47,3 @@ quarkus:
   quarkus:
     banner:
       enabled: false
-    micrometer:
-      binder:
-        http-server:
-          ignore-patterns:
-            - '/q.*'

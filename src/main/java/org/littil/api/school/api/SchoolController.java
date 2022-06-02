@@ -19,7 +19,6 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Path("/api/v1/school")
 @RequiredArgsConstructor
@@ -35,7 +34,7 @@ public class SchoolController {
     public Response list() {
         List<SchoolResource> schools = schoolService.findAll().stream()
                 .map(mapper::schoolToSchoolResource)
-                .collect(Collectors.toList());
+                .toList();
 
         return Response.ok(schools).build();
     }

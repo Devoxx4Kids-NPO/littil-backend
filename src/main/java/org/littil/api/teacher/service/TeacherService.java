@@ -34,7 +34,7 @@ public class TeacherService {
     }
 
     public List<Teacher> findAll() {
-        return mapper.toDomainList(repository.listAll());
+        return repository.listAll().stream().map(mapper::toDomain).toList();
     }
 
     @Transactional
