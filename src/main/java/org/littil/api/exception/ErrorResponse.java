@@ -1,14 +1,16 @@
 package org.littil.api.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @EqualsAndHashCode
+@NoArgsConstructor
 public class ErrorResponse {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -29,29 +31,19 @@ public class ErrorResponse {
         this.errors = errors;
     }
 
-    public ErrorResponse() {
-    }
-
     @Getter
     @EqualsAndHashCode
-    @ToString
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ErrorMessage {
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
         private String path;
         private String message;
 
-        public ErrorMessage(String path, String message) {
-            this.path = path;
-            this.message = message;
-        }
-
         public ErrorMessage(String message) {
             this.path = null;
             this.message = message;
-        }
-
-        public ErrorMessage() {
         }
     }
 

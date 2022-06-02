@@ -1,4 +1,4 @@
-package org.littil.api.teacher.api;
+package org.littil.api.school.api;
 
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
@@ -6,10 +6,8 @@ import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.api.exception.ErrorResponse;
-import org.littil.api.teacher.service.Teacher;
+import org.littil.api.school.service.School;
 
-import java.time.DayOfWeek;
-import java.util.EnumSet;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
@@ -17,11 +15,11 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-@TestHTTPEndpoint(TeacherResource.class)
-class TeacherResourceTest {
+@TestHTTPEndpoint(SchoolResource.class)
+class SchoolResourceTest {
 
     @Test
-    void givenFindAll_thenShouldReturnMultipleTeachers() {
+    void givenFindAll_thenShouldReturnMultipleSchools() {
         given()
                 .when()
                 .get()
@@ -30,28 +28,28 @@ class TeacherResourceTest {
     }
 
     @Test
-    void givenGetTeacherById_thenShouldReturnSuccessfully() {
-        Teacher teacher = createTeacher();
-        Teacher saved = given()
+    void givenGetSchoolById_thenShouldReturnSuccessfully() {
+        School school = createSchool();
+        School saved = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .post()
                 .then()
                 .statusCode(201)
-                .extract().as(Teacher.class);
+                .extract().as(School.class);
 
-        Teacher got = given()
+        School got = given()
                 .when()
                 .get("/{id}", saved.getId())
                 .then()
                 .statusCode(200)
-                .extract().as(Teacher.class);
+                .extract().as(School.class);
 
         assertThat(saved).isEqualTo(got);
     }
 
     @Test
-    void givenGetTeacherByUnknownId_thenShouldReturnNotFound() {
+    void givenGetSchoolByUnknownId_thenShouldReturnNotFound() {
         given()
                 .when()
                 .get("/{id}", UUID.randomUUID())
@@ -60,31 +58,31 @@ class TeacherResourceTest {
     }
 
     @Test
-    void givenGetTeacherByName_thenShouldReturnSuccessfully() {
-        String validSurname = RandomStringUtils.randomAlphabetic(10);
-        Teacher teacher = createTeacher();
-        teacher.setSurname(validSurname);
+    void givenGetSchoolByName_thenShouldReturnSuccessfully() {
+        String validName = RandomStringUtils.randomAlphabetic(10);
+        School school = createSchool();
+        school.setName(validName);
 
-        Teacher saved = given()
+        School saved = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .post()
                 .then()
                 .statusCode(201)
-                .extract().as(Teacher.class);
+                .extract().as(School.class);
 
-        Teacher got = given()
+        School got = given()
                 .when()
-                .get("/name/{name}", validSurname)
+                .get("/name/{name}", validName)
                 .then()
                 .statusCode(200)
-                .extract().as(Teacher.class);
+                .extract().as(School.class);
 
         assertThat(saved).isEqualTo(got);
     }
 
     @Test
-    void givenGetTeacherByUnknownName_thenShouldReturnNotFound() {
+    void givenGetSchoolByUnknownName_thenShouldReturnNotFound() {
         given()
                 .when()
                 .get("/{name}", RandomStringUtils.randomAlphabetic(10))
@@ -93,27 +91,27 @@ class TeacherResourceTest {
     }
 
     @Test
-    void givenCreateNewTeacher_thenShouldBeCreatedSuccessfully() {
-        Teacher teacher = createTeacher();
-        Teacher saved = given()
+    void givenCreateNewSchool_thenShouldBeCreatedSuccessfully() {
+        School school = createSchool();
+        School saved = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .post()
                 .then()
                 .statusCode(201)
-                .extract().as(Teacher.class);
+                .extract().as(School.class);
 
         assertThat(saved.getId()).isNotNull();
     }
 
     @Test
-    void givenCreateNewTeacherWithoutRequiredName_thenShouldReturnWithAnErrorResponse() {
-        Teacher teacher = createTeacher();
-        teacher.setFirstName(null);
+    void givenCreateNewSchoolWithoutRequiredName_thenShouldReturnWithAnErrorResponse() {
+        School school = createSchool();
+        school.setName(null);
 
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .post()
                 .then()
                 .statusCode(400)
@@ -123,19 +121,19 @@ class TeacherResourceTest {
         assertThat(errorResponse.getErrors())
                 .isNotNull()
                 .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("create.teacher.firstName", getErrorMessage("Teacher.firstName.required")));
+                .contains(new ErrorResponse.ErrorMessage("create.school.name", getErrorMessage("School.name.required")));
     }
 
     @Test
-    void givenCreateNewTeacherWithoutRequiredNamesAndInvalidEmail_thenShouldReturnWithAnErrorResponse() {
-        Teacher teacher = createTeacher();
-        teacher.setEmail(RandomStringUtils.randomAlphabetic(10));
-        teacher.setSurname(null);
-        teacher.setFirstName(null);
+    void givenCreateNewSchoolWithoutRequiredNameAndAddressAndInvalidContactPersonEmail_thenShouldReturnWithAnErrorResponse() {
+        School school = createSchool();
+        school.setContactPersonEmail(RandomStringUtils.randomAlphabetic(10));
+        school.setName(null);
+        school.setAddress(null);
 
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .post()
                 .then()
                 .statusCode(400)
@@ -147,14 +145,14 @@ class TeacherResourceTest {
                 .isNotNull()
                 .hasSize(3)
                 .contains(
-                        new ErrorResponse.ErrorMessage("create.teacher.firstName", getErrorMessage("Teacher.firstName.required")),
-                        new ErrorResponse.ErrorMessage("create.teacher.surname", getErrorMessage("Teacher.surname.required")),
-                        new ErrorResponse.ErrorMessage("create.teacher.email", getErrorMessage("Teacher.email.invalid"))
+                        new ErrorResponse.ErrorMessage("create.school.name", getErrorMessage("School.name.required")),
+                        new ErrorResponse.ErrorMessage("create.school.address", getErrorMessage("School.address.required")),
+                        new ErrorResponse.ErrorMessage("create.school.contactPersonEmail", getErrorMessage("School.contactPersonEmail.invalid"))
                 );
     }
 
     @Test
-    void givenDeleteNonExistingTeacherById_thenShouldReturnNotFound() {
+    void givenDeleteNonExistingSchoolById_thenShouldReturnNotFound() {
         given()
                 .contentType(ContentType.JSON)
                 .delete("/{id}", UUID.randomUUID())
@@ -163,15 +161,15 @@ class TeacherResourceTest {
     }
 
     @Test
-    void givenDeleteTeacherById_thenShouldDeleteSuccessfully() {
-        Teacher teacher = createTeacher();
-        Teacher saved = given()
+    void givenDeleteSchoolById_thenShouldDeleteSuccessfully() {
+        School school = createSchool();
+        School saved = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .post()
                 .then()
                 .statusCode(201)
-                .extract().as(Teacher.class);
+                .extract().as(School.class);
 
         given()
                 .contentType(ContentType.JSON)
@@ -187,44 +185,44 @@ class TeacherResourceTest {
     }
 
     @Test
-    void givenUpdatingFirstNameOfTeacherById_thenShouldUpdateSuccessfully() {
-        Teacher teacher = createTeacher();
+    void givenUpdatingNameOfSchoolById_thenShouldUpdateSuccessfully() {
+        School school = createSchool();
         String newName = RandomStringUtils.randomAlphabetic(10);
 
-        Teacher saved = given()
+        School saved = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .post()
                 .then()
                 .statusCode(201)
-                .extract().as(Teacher.class);
+                .extract().as(School.class);
 
-        saved.setFirstName(newName);
+        saved.setName(newName);
 
-        Teacher updated = given()
+        School updated = given()
                 .contentType(ContentType.JSON)
                 .body(saved)
                 .put("/{id}", saved.getId())
                 .then()
                 .statusCode(200)
-                .extract().as(Teacher.class);
+                .extract().as(School.class);
 
-        assertThat(updated.getFirstName()).isEqualTo(newName);
+        assertThat(updated.getName()).isEqualTo(newName);
         assertThat(updated).isEqualTo(saved);
     }
 
     @Test
-    void givenUpdatingIdOfTeacherById_thenShouldReturnWithErrorResponse() {
-        Teacher teacher = createTeacher();
-        UUID teacherId = UUID.randomUUID();
-        UUID newTeacherId = UUID.randomUUID();
+    void givenUpdatingIdOfSchoolById_thenShouldReturnWithErrorResponse() {
+        School school = createSchool();
+        UUID schoolId = UUID.randomUUID();
+        UUID newSchoolId = UUID.randomUUID();
 
-        teacher.setId(newTeacherId);
+        school.setId(newSchoolId);
 
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
-                .put("/{id}", teacherId)
+                .body(school)
+                .put("/{id}", schoolId)
                 .then()
                 .statusCode(500)
                 .extract().as(ErrorResponse.class);
@@ -232,30 +230,30 @@ class TeacherResourceTest {
         assertThat(errorResponse.getErrors())
                 .isNotNull()
                 .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match Teacher.id"));
+                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match School.id"));
     }
 
     @Test
-    void givenUpdatingUnknownTeacherById_thenShouldReturnWithErrorResponse() {
-        Teacher teacher = createTeacher();
-        teacher.setId(UUID.randomUUID());
+    void givenUpdatingUnknownSchoolById_thenShouldReturnWithErrorResponse() {
+        School school = createSchool();
+        school.setId(UUID.randomUUID());
 
         given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
-                .put("/{id}", teacher.getId())
+                .body(school)
+                .put("/{id}", school.getId())
                 .then()
                 .statusCode(404);
     }
 
     @Test
     void givenUpdatingByIdWherePayloadIdDeviatesFromPathId_thenShouldReturnWithErrorResponse() {
-        Teacher teacher = createTeacher();
-        teacher.setId(UUID.randomUUID());
+        School school = createSchool();
+        school.setId(UUID.randomUUID());
 
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .put("/{id}", UUID.randomUUID())
                 .then()
                 .statusCode(500)
@@ -264,16 +262,16 @@ class TeacherResourceTest {
         assertThat(errorResponse.getErrors())
                 .isNotNull()
                 .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match Teacher.id"));
+                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match School.id"));
     }
 
     @Test
-    void givenTeacherByIdWithoutIdInPayload_thenShouldReturnWithErrorResponse() {
-        Teacher teacher = createTeacher();
+    void givenSchoolByIdWithoutIdInPayload_thenShouldReturnWithErrorResponse() {
+        School school = createSchool();
 
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
-                .body(teacher)
+                .body(school)
                 .put("/{id}", UUID.randomUUID())
                 .then()
                 .statusCode(500)
@@ -282,19 +280,18 @@ class TeacherResourceTest {
         assertThat(errorResponse.getErrors())
                 .isNotNull()
                 .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match Teacher.id"));
+                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match School.id"));
     }
 
-    private Teacher createTeacher() {
-        Teacher teacher = new Teacher();
-        teacher.setFirstName(RandomStringUtils.randomAlphabetic(10));
-        teacher.setSurname(RandomStringUtils.randomAlphabetic(10));
-        teacher.setEmail(RandomStringUtils.randomAlphabetic(10).concat("@littil.org"));
-        teacher.setPostalCode(RandomStringUtils.randomAlphabetic(10));
-        teacher.setLocale(RandomStringUtils.randomAlphabetic(2));
-        teacher.setAvailability(EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
+    private School createSchool() {
+        School school = new School();
+        school.setName(RandomStringUtils.randomAlphabetic(10));
+        school.setAddress(RandomStringUtils.randomAlphabetic(10));
+        school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
+        school.setContactPersonName(RandomStringUtils.randomAlphabetic(10));
+        school.setContactPersonEmail(RandomStringUtils.randomAlphabetic(10) + "@littil.org");
 
-        return teacher;
+        return school;
     }
 
     private String getErrorMessage(String key) {

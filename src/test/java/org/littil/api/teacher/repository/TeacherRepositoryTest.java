@@ -10,9 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class TeacherRepositoryTest {
@@ -35,7 +33,7 @@ class TeacherRepositoryTest {
     }
 
     @Test
-    public void givenFindNonExistingTeacherByName_thenShouldReturnEmptyOptional() {
+    void givenFindNonExistingTeacherByName_thenShouldReturnEmptyOptional() {
         final String searchSurname = RandomStringUtils.randomAlphabetic(10);
 
         PanacheQuery<TeacherEntity> query = mock(PanacheQuery.class);

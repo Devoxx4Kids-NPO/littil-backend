@@ -18,15 +18,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class TeacherServiceTest {
@@ -43,7 +37,7 @@ class TeacherServiceTest {
     @Test
     void givenGetTeacherByName_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
-        final String surname = "Doe";
+        final String surname = RandomStringUtils.randomAlphabetic(10);
         final TeacherEntity expectedTeacher = TeacherEntity.builder()
                 .id(teacherId)
                 .surname(surname)
@@ -67,7 +61,7 @@ class TeacherServiceTest {
 
     @Test
     void givenGetTeacherByUnknownName_thenShouldReturnEmptyOptional() {
-        final String unknownName = "unknown_name";
+        final String unknownName = RandomStringUtils.randomAlphabetic(10);
 
         doReturn(Optional.empty()).when(repository).findByName(unknownName);
 
@@ -119,7 +113,6 @@ class TeacherServiceTest {
         final List<Teacher> expectedTeachers = expectedTeacherEntities.stream().map(mapper::toDomain).toList();
 
         doReturn(expectedTeacherEntities).when(repository).listAll();
-        doReturn(expectedTeachers).when(mapper).toDomainList(expectedTeacherEntities);
 
         List<Teacher> teachers = service.findAll();
 

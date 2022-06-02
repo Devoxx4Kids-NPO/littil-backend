@@ -21,7 +21,7 @@ class ThrowableMapperTest {
     TeacherService teacherservice;
 
     @Test
-    public void throwUnexpectedRuntimeException() {
+    void throwUnexpectedRuntimeException() {
         Mockito.when(teacherservice.findAll()).thenThrow(new RuntimeException("Completely Unexpected"));
         ErrorResponse errorResponse = given()
                 .when()
@@ -35,5 +35,4 @@ class ThrowableMapperTest {
                 .hasSize(1)
                 .contains(new ErrorResponse.ErrorMessage(ResourceBundle.getBundle("ValidationMessages").getString("System.error")));
     }
-
 }

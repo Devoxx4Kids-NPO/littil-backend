@@ -6,8 +6,4 @@ public class ServiceException extends RuntimeException {
         super(message);
     }
 
-    public ServiceException(String format, Object... objects) {
-        super(String.format(format, objects));
-    }
-
 }
