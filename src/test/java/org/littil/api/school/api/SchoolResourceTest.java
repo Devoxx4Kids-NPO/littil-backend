@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.school.service.School;
 
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
@@ -71,14 +72,15 @@ class SchoolResourceTest {
                 .statusCode(201)
                 .extract().as(School.class);
 
-        School got = given()
+        List<School> got = given()
                 .when()
                 .get("/name/{name}", validName)
                 .then()
                 .statusCode(200)
-                .extract().as(School.class);
+                .extract()
+                .jsonPath().getList(".", School.class);
 
-        assertThat(saved).isEqualTo(got);
+        assertThat(saved).isIn(got);
     }
 
     @Test

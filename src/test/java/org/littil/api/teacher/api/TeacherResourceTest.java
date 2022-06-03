@@ -10,6 +10,7 @@ import org.littil.api.teacher.service.Teacher;
 
 import java.time.DayOfWeek;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
@@ -73,14 +74,15 @@ class TeacherResourceTest {
                 .statusCode(201)
                 .extract().as(Teacher.class);
 
-        Teacher got = given()
+        List<Teacher> got = given()
                 .when()
                 .get("/name/{name}", validSurname)
                 .then()
                 .statusCode(200)
-                .extract().as(Teacher.class);
+                .extract()
+                .jsonPath().getList(".", Teacher.class);
 
-        assertThat(saved).isEqualTo(got);
+        assertThat(saved).isIn(got);
     }
 
     @Test

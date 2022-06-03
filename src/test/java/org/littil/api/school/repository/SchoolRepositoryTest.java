@@ -6,11 +6,14 @@ import io.quarkus.test.junit.mockito.InjectSpy;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 class SchoolRepositoryTest {
@@ -21,13 +24,13 @@ class SchoolRepositoryTest {
     @Test
     void givenFindExistingSchoolByName_thenShouldReturnSuccessfully() {
         String name = RandomStringUtils.randomAlphabetic(10);
-        Optional<SchoolEntity> school = Optional.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null, null));
+        List<SchoolEntity> school = List.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null, null));
 
         PanacheQuery<SchoolEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("school_name", name);
-        when(query.firstResultOptional()).thenReturn(school);
+        when(query.list()).thenReturn(school);
 
-        Optional<SchoolEntity> foundSchool = repository.findByName(name);
+        List<SchoolEntity> foundSchool = repository.findByName(name);
 
         assertThat(school).isEqualTo(foundSchool);
     }
@@ -38,9 +41,9 @@ class SchoolRepositoryTest {
 
         PanacheQuery<SchoolEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("surname", searchSurname);
-        when(query.firstResultOptional()).thenReturn(Optional.empty());
+        when(query.list()).thenReturn(Collections.emptyList());
 
-        Optional<SchoolEntity> foundSchool = repository.findByName(searchSurname);
+        List<SchoolEntity> foundSchool = repository.findByName(searchSurname);
 
         assertThat(foundSchool).isEmpty();
     }

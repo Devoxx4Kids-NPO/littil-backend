@@ -18,9 +18,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 class TeacherServiceTest {
@@ -46,12 +52,12 @@ class TeacherServiceTest {
         mappedTeacher.setId(teacherId);
         mappedTeacher.setSurname(surname);
 
-        doReturn(Optional.of(expectedTeacher)).when(repository).findByName(surname);
+        doReturn(List.of(expectedTeacher)).when(repository).findByName(surname);
         doReturn(mappedTeacher).when(mapper).toDomain(expectedTeacher);
 
-        Optional<Teacher> teacher = service.getTeacherByName(surname);
+        List<Teacher> teacher = service.getTeacherByName(surname);
 
-        assertEquals(Optional.of(mappedTeacher), teacher);
+        assertEquals(List.of(mappedTeacher), teacher);
     }
 
     @Test
@@ -60,14 +66,13 @@ class TeacherServiceTest {
     }
 
     @Test
-    void givenGetTeacherByUnknownName_thenShouldReturnEmptyOptional() {
+    void givenGetTeacherByUnknownName_thenShouldReturnEmptyList() {
         final String unknownName = RandomStringUtils.randomAlphabetic(10);
 
-        doReturn(Optional.empty()).when(repository).findByName(unknownName);
+        doReturn(Collections.emptyList()).when(repository).findByName(unknownName);
 
-        final Optional<Teacher> teacher = service.getTeacherByName(unknownName);
+        final List<Teacher> teacher = service.getTeacherByName(unknownName);
 
-        assertInstanceOf(Optional.class, teacher);
         assertTrue(teacher.isEmpty());
         verifyNoMoreInteractions(mapper);
     }

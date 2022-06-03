@@ -15,7 +15,14 @@ import org.littil.api.school.service.SchoolService;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -75,25 +82,19 @@ public class SchoolResource {
 
     @GET
     @Path("/name/{name}")
-    @Operation(summary = "Fetch a specific school via name")
+    @Operation(summary = "Fetch schools via name")
     @APIResponse(
             responseCode = "200",
-            description = "School with name found.",
+            description = "Schools with name found.",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = School.class)
+                    schema = @Schema(type = SchemaType.ARRAY, implementation = School.class)
             )
     )
-    @APIResponse(
-            responseCode = "404",
-            description = "School with specific name was not found.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
-    )
     public Response getByName(@Parameter(name = "name", required = true) @PathParam("name") final String name) {
-        Optional<School> school = schoolService.getSchoolByName(name);
+        List<School> schools = schoolService.getSchoolByName(name);
 
-        return school.map(r -> Response.ok(r).build())
-                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
+        return Response.ok(schools).build();
     }
 
     @POST

@@ -82,25 +82,19 @@ public class TeacherResource {
 
     @GET
     @Path("/name/{name}")
-    @Operation(summary = "Fetch a specific teacher via name")
+    @Operation(summary = "Fetch teachers via name")
     @APIResponse(
             responseCode = "200",
-            description = "Teacher with name found.",
+            description = "Teachers with name found.",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = Teacher.class)
+                    schema = @Schema(type = SchemaType.ARRAY, implementation = Teacher.class)
             )
     )
-    @APIResponse(
-            responseCode = "404",
-            description = "Teacher with specific name was not found.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
-    )
     public Response getByName(@Parameter(name = "name", required = true) @PathParam("name") final String name) {
-        Optional<Teacher> teacher = teacherService.getTeacherByName(name);
+        List<Teacher> teachers = teacherService.getTeacherByName(name);
 
-        return teacher.map(r -> Response.ok(r).build())
-                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
+        return Response.ok(teachers).build();
     }
 
     @POST

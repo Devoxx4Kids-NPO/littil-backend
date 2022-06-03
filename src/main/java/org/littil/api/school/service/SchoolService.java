@@ -25,8 +25,8 @@ public class SchoolService {
     private final SchoolRepository repository;
     private final SchoolMapper mapper;
 
-    public Optional<School> getSchoolByName(@NonNull final String name) {
-        return repository.findByName(name).map(mapper::toDomain);
+    public List<School> getSchoolByName(@NonNull final String name) {
+        return repository.findByName(name).stream().map(mapper::toDomain).toList();
     }
 
     public Optional<School> getSchoolById(@NonNull final UUID id) {

@@ -18,9 +18,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 class SchoolServiceTest {
@@ -46,12 +52,12 @@ class SchoolServiceTest {
         mappedSchool.setId(schoolId);
         mappedSchool.setName(surname);
 
-        doReturn(Optional.of(expectedSchool)).when(repository).findByName(surname);
+        doReturn(List.of(expectedSchool)).when(repository).findByName(surname);
         doReturn(mappedSchool).when(mapper).toDomain(expectedSchool);
 
-        Optional<School> school = service.getSchoolByName(surname);
+        List<School> school = service.getSchoolByName(surname);
 
-        assertEquals(Optional.of(mappedSchool), school);
+        assertEquals(List.of(mappedSchool), school);
     }
 
     @Test
@@ -63,11 +69,11 @@ class SchoolServiceTest {
     void givenGetSchoolByUnknownName_thenShouldReturnEmptyOptional() {
         final String unknownName = RandomStringUtils.randomAlphabetic(10);
 
-        doReturn(Optional.empty()).when(repository).findByName(unknownName);
+        doReturn(Collections.emptyList()).when(repository).findByName(unknownName);
 
-        final Optional<School> school = service.getSchoolByName(unknownName);
+        final List<School> school = service.getSchoolByName(unknownName);
 
-        assertInstanceOf(Optional.class, school);
+        assertInstanceOf(List.class, school);
         assertTrue(school.isEmpty());
         verifyNoMoreInteractions(mapper);
     }
