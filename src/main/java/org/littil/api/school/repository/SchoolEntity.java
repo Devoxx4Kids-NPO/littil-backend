@@ -5,7 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import java.util.UUID;
@@ -40,6 +44,7 @@ public class SchoolEntity {
     private String contactPersonName;
 
     @Email(message = "{School.contactPersonEmail.invalid}")
+    @NotEmpty(message = "{School.contactPersonEmail.required}")
     @Column(name = "contact_person_email")
     private String contactPersonEmail;
 }
