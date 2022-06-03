@@ -1,0 +1,49 @@
+quarkus:
+  datasource:
+    db-kind: mariadb
+  hibernate-orm:
+    database:
+      generation: none
+  log:
+    level: INFO
+
+"%dev":
+  quarkus:
+    datasource:
+      devservices:
+        enabled: true
+        image-name: "mariadb:10.6"
+    log:
+      category:
+        "org.littil":
+          level: DEBUG
+    hibernate-orm:
+      log:
+        sql: true
+    flyway:
+      migrate-at-start: true
+      locations: db/migration,db/testdata
+
+"%test":
+  quarkus:
+    datasource:
+      devservices:
+        enabled: true
+        image-name: "mariadb:10.6"
+    log:
+      category:
+        "org.littil":
+          level: INFO
+    hibernate-orm:
+      database:
+        generation: none
+      log:
+        sql: false
+    flyway:
+      migrate-at-start: true
+      locations: db/migration,db/testdata
+
+"%prod":
+  quarkus:
+    banner:
+      enabled: false
