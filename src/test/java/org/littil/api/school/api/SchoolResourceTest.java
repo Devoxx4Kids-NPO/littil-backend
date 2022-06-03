@@ -127,6 +127,26 @@ class SchoolResourceTest {
     }
 
     @Test
+    void givenCreateNewSchoolWithRequiredNameBlank_thenShouldReturnWithAnErrorResponse() {
+        School school = createSchool();
+        school.setName("");
+
+        ErrorResponse errorResponse = given()
+                .contentType(ContentType.JSON)
+                .body(school)
+                .post()
+                .then()
+                .statusCode(400)
+                .extract().as(ErrorResponse.class);
+
+        assertThat(errorResponse.getErrorId()).isNull();
+        assertThat(errorResponse.getErrors())
+                .isNotNull()
+                .hasSize(1)
+                .contains(new ErrorResponse.ErrorMessage("create.school.name", getErrorMessage("School.name.required")));
+    }
+
+    @Test
     void givenCreateNewSchoolWithoutRequiredNameAndAddressAndInvalidContactPersonEmail_thenShouldReturnWithAnErrorResponse() {
         School school = createSchool();
         school.setContactPersonEmail(RandomStringUtils.randomAlphabetic(10));
