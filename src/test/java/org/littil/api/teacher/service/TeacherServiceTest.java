@@ -142,12 +142,14 @@ class TeacherServiceTest {
         final UUID teacherId = UUID.randomUUID();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final String emailAddress = RandomStringUtils.randomAlphabetic(10).concat("@littil.org");
         final String locale = RandomStringUtils.randomAlphabetic(2);
         final String postalCode = RandomStringUtils.randomAlphabetic(6);
 
         final Teacher teacher = new Teacher();
         teacher.setSurname(surname);
         teacher.setFirstName(firstName);
+        teacher.setEmail(emailAddress);
         teacher.setLocale(locale);
         teacher.setPostalCode(postalCode);
 
@@ -155,6 +157,7 @@ class TeacherServiceTest {
                 .id(teacherId)
                 .surname(surname)
                 .firstName(firstName)
+                .email(emailAddress)
                 .locale(locale)
                 .postalCode(postalCode)
                 .build();
@@ -163,6 +166,7 @@ class TeacherServiceTest {
         expectedTeacher.setId(entity.getId());
         expectedTeacher.setSurname(entity.getSurname());
         expectedTeacher.setFirstName(entity.getFirstName());
+        expectedTeacher.setEmail(entity.getEmail());
         expectedTeacher.setLocale(entity.getLocale());
         expectedTeacher.setPostalCode(entity.getPostalCode());
 
@@ -220,6 +224,7 @@ class TeacherServiceTest {
         final String newSurname = RandomStringUtils.randomAlphabetic(10);
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final String emailAddress = RandomStringUtils.randomAlphabetic(10).concat("@littil.org");
         final String locale = RandomStringUtils.randomAlphabetic(2);
         final String postalCode = RandomStringUtils.randomAlphabetic(6);
 
@@ -227,6 +232,7 @@ class TeacherServiceTest {
         teacher.setId(teacherId);
         teacher.setSurname(newSurname);
         teacher.setFirstName(firstName);
+        teacher.setEmail(emailAddress);
         teacher.setLocale(locale);
         teacher.setPostalCode(postalCode);
 
@@ -234,6 +240,7 @@ class TeacherServiceTest {
                 .id(teacherId)
                 .surname(surname)
                 .firstName(firstName)
+                .email(emailAddress)
                 .locale(locale)
                 .postalCode(postalCode)
                 .build();
@@ -242,6 +249,7 @@ class TeacherServiceTest {
         updatedTeacher.setId(entity.getId());
         updatedTeacher.setSurname(newSurname);
         updatedTeacher.setFirstName(entity.getFirstName());
+        updatedTeacher.setEmail(emailAddress);
         updatedTeacher.setLocale(entity.getLocale());
         updatedTeacher.setPostalCode(entity.getPostalCode());
 
@@ -264,6 +272,7 @@ class TeacherServiceTest {
         Teacher teacher = new Teacher();
         teacher.setFirstName(RandomStringUtils.randomAlphabetic(10));
         teacher.setSurname(RandomStringUtils.randomAlphabetic(10));
+        teacher.setEmail(RandomStringUtils.randomAlphabetic(10).concat("@littil.org"));
         teacher.setPostalCode(RandomStringUtils.randomAlphabetic(6));
         teacher.setLocale(RandomStringUtils.randomAlphabetic(2));
 
@@ -283,6 +292,7 @@ class TeacherServiceTest {
         teacher.setId(teacherId);
         teacher.setSurname(RandomStringUtils.randomAlphabetic(10));
         teacher.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        teacher.setEmail(RandomStringUtils.randomAlphabetic(10).concat("@littil.org"));
         teacher.setLocale(RandomStringUtils.randomAlphabetic(2));
         teacher.setPostalCode(RandomStringUtils.randomAlphabetic(6));
 

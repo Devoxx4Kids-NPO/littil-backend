@@ -13,7 +13,7 @@ public class School {
     @NotEmpty(message = "{School.name.required}")
     private String name;
 
-    @NotEmpty(message = "{School.name.required}")
+    @NotEmpty(message = "{School.address.required}")
     private String address;
 
     @NotEmpty(message = "{School.postalCode.required}")
