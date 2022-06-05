@@ -6,6 +6,8 @@ quarkus:
       generation: none
   log:
     level: INFO
+  smallrye-openapi:
+    store-schema-directory: "target/generated"
 
 "%dev":
   quarkus:
