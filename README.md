@@ -1,28 +1,17 @@
-# littil-backend
+# LITTIL initiative
 
-## Setup local environment
+The LITTIL project is an initiative to develop and maintain an Open-Source platform to connect schools with volunteer
+teachers for programming workshops. It was born to facilitate the central aim of the Devoxx4Kids foundation, which is to
+acquaint children with programming through fun workshops at their school.
+The platform provides a web-based portal for schools and volunteer teachers to register themselves and create a public
+profile. The platform then facilitates both parties to find possible matches.
 
-### Needed tools
-Their are several ways to setup the tools needed for development, you can download/install the tools manually or choose to use tools like [SDKMAN](https://sdkman.io/) or [HomeBrew](https://brew.sh/)
-Mandatory:
-* Java
-* Maven
-* GraalVM
+## LITTIL backend API
 
-### Setup 
-* Install Maven dependencies
-```
-./mvnw clean install
-```
+This repository contains the API backend for the LITTIL platform based on Quarkus.
 
-## Run locally
-* Start the application locally
-```
-./mvnw quarkus:dev 
-```
-* It will startup a server at [http://localhost:8080](http://localhost:8080)
+### Setup local environment
 
-## Handy resources 
-[Quarkus Maven Tooling](https://quarkus.io/guides/maven-tooling) \
-[SDKMAN](https://sdkman.io/) \
-[HomeBrew](https://brew.sh/) 
+Please
+read [the following guide](https://devoxx4kids-npo.github.io/littil-documentation/platform/local-development/set-up-backend-environment/)
+about how to set up your local development environment.
