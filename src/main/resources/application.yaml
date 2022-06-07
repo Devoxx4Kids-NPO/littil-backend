@@ -6,6 +6,14 @@ quarkus:
       generation: none
   log:
     level: INFO
+  oidc:
+    auth-server-url: ${AUTHSERVER:dev-g60bne29.eu.auth0.com}
+    client-id: ${CLIENTID:1MWGJlOHqjqNHiPZKEY5R4C7fsQySr9k}
+    credentials:
+      secret: ${AUTH0SECRET}
+    application-type: service
+    authentication:
+      scopes: openid,profile,email
   smallrye-openapi:
     store-schema-directory: "target/generated"
 
