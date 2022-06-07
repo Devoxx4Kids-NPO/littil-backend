@@ -1,0 +1,54 @@
+---
+name: code-and-dependencies-analysis
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: s4u/setup-maven-action@v1.4.0
+        with:
+          java-version: 17
+          java-distribution: temurin
+          maven-version: 3.6.3
+      - run: mvn verify --batch-mode
+      - uses: scacap/action-surefire-report@v1
+      - name: Publish code coverage to pull request
+        uses: madrapps/jacoco-report@v1.1
+        with:
+          path: ${{ github.workspace }}/target/jacoco-report/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 1
+          min-coverage-changed-files: 0
+      - name: Analyze build code
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/maven@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+        with:
+          command: test --severity-threshold=high --sarif-file-output=target/snyk-report/snyk.sarif
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          sarif_file: target/snyk-report/snyk.sarif
+          category: Snyk
