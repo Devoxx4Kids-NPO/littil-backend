@@ -5,7 +5,7 @@ quarkus:
     database:
       generation: none
   log:
-    level: INFO
+    level: DEBUG
   smallrye-openapi:
     store-schema-directory: "target/generated"
 
@@ -19,6 +19,9 @@ quarkus:
       category:
         "org.littil":
           level: DEBUG
+        "quarkus.oidc":
+          level: DEBUG
+    oidc:
     hibernate-orm:
       log:
         sql: true
