@@ -49,3 +49,8 @@ quarkus:
   quarkus:
     banner:
       enabled: false
+    datasource:
+      username: littil
+      password: littil
+      jdbc:
+        url: jdbc:mariadb://localhost:3306/littil
