@@ -1,0 +1,13 @@
+version: "3.1"
+
+services:
+  dbhost:
+    image: mariadb:10.6
+    restart: on-failure
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: littil
+      MYSQL_USER: littil
+      MYSQL_PASSWORD: littil
+      MYSQL_ROOT_PASSWORD: littil
