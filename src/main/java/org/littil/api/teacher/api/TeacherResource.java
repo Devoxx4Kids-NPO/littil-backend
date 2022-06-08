@@ -1,5 +1,6 @@
 package org.littil.api.teacher.api;
 
+import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -35,6 +36,7 @@ import java.util.UUID;
 @Path("/api/v1/teacher")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Authenticated
 @Tag(name = "Teacher", description = "CRUD Operations")
 public class TeacherResource {
 
