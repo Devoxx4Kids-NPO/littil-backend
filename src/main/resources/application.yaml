@@ -50,7 +50,7 @@ quarkus:
     banner:
       enabled: false
     datasource:
-      username: littil
-      password: littil
+      username: ${DATASOURCE_USERNAME:littil}
+      password: ${DATASOURCE_PASSWORD:littil}
       jdbc:
-        url: jdbc:mariadb://localhost:3306/littil
+        url: jdbc:mariadb://${DATASOURCE_HOST:localhost}:${DATASOURCE_PORT:3306}/${DATASOURCE_DATABASE:littil}
