@@ -15,22 +15,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
 import javax.ws.rs.core.Application;
 
 @OpenAPIDefinition(
-        components = @Components(
-                securitySchemes =
-                @SecurityScheme(
-                        securitySchemeName = "auth0",
-                        type = SecuritySchemeType.OAUTH2,
-                        flows = @OAuthFlows(
-                                implicit = @OAuthFlow(
-                                        authorizationUrl = "https://dev-g60bne29.eu.auth0.com/authorize",
-                                        scopes = {
-                                                @OAuthScope(name = "openid"),
-                                                @OAuthScope(name = "email"),
-                                                @OAuthScope(name = "profile")
-                                        }
-                                )
-                        )
-                )),
         info = @Info(
                 title = "Littil backend API",
                 version = "1.0.0",
@@ -43,6 +27,4 @@ import javax.ws.rs.core.Application;
                         url = "https://www.apache.org/licenses/LICENSE-2.0.html"))
 )
 public class LittilBackendAPI extends Application {
-
-
 }

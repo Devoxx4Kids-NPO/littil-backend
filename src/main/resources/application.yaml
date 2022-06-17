@@ -8,15 +8,19 @@ quarkus:
     level: INFO
   smallrye-openapi:
     store-schema-directory: "target/generated"
-  oidc: #application-type=service
+    oauth2-implicit-authorization-url: ${OIDC_TENANT}/authorize?audience=${OIDC_TENANT}/api/v2/ # we add audience as query param to make sure we get a token with payload
+    oidc-open-id-connect-url: ${OIDC_TENANT}/authorize
+    security-scheme-name: Auth0
+    security-scheme: oauth2-implicit
+    oauth-scopes: [openid, email, profile]
+    oauth-client-id: ${OIDC_CLIENT_ID}
+  oidc:
     client-id: ${OIDC_CLIENT_ID}
     auth-server-url: ${OIDC_TENANT}/auth
-    authorization-path: /authorize
     credentials:
       secret: ${OIDC_CLIENT_SECRET}
       jwt:
         audience: ${OIDC_TENANT}/api/v2/
-    token-path: /auth/token
     token:
       audience: ${OIDC_TENANT}/api/v2/
     introspection-path: .well-known/openid-configuration
