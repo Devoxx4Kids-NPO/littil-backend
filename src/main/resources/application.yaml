@@ -6,6 +6,8 @@ quarkus:
       generation: none
   log:
     level: INFO
+  swagger-ui:
+    oauth-client-id: ${OIDC_CLIENT_ID}
   smallrye-openapi:
     store-schema-directory: "target/generated"
     oauth2-implicit-authorization-url: ${OIDC_TENANT}/authorize?audience=${OIDC_TENANT}/api/v2/ # we add audience as query param to make sure we get a token with payload
@@ -13,7 +15,6 @@ quarkus:
     security-scheme-name: Auth0
     security-scheme: oauth2-implicit
     oauth-scopes: [openid, email, profile]
-    oauth-client-id: ${OIDC_CLIENT_ID}
   oidc:
     client-id: ${OIDC_CLIENT_ID}
     auth-server-url: ${OIDC_TENANT}/auth
