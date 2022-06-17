@@ -5,9 +5,22 @@ quarkus:
     database:
       generation: none
   log:
-    level: DEBUG
+    level: INFO
   smallrye-openapi:
     store-schema-directory: "target/generated"
+  oidc: #application-type=service
+    client-id: ${OIDC_CLIENT_ID}
+    auth-server-url: ${OIDC_TENANT}/auth
+    authorization-path: /authorize
+    credentials:
+      secret: ${OIDC_CLIENT_SECRET}
+      jwt:
+        audience: ${OIDC_TENANT}/api/v2/
+    token-path: /auth/token
+    token:
+      audience: ${OIDC_TENANT}/api/v2/
+    introspection-path: .well-known/openid-configuration
+    jwks-path: .well-known/jwks.json
 
 "%dev":
   quarkus:
