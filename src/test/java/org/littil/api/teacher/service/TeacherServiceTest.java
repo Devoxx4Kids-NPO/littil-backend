@@ -157,18 +157,12 @@ class TeacherServiceTest {
                 .id(teacherId)
                 .surname(surname)
                 .firstName(firstName)
-                .email(emailAddress)
-                .locale(locale)
-                .postalCode(postalCode)
                 .build();
 
         final Teacher expectedTeacher = new Teacher();
         expectedTeacher.setId(entity.getId());
         expectedTeacher.setSurname(entity.getSurname());
         expectedTeacher.setFirstName(entity.getFirstName());
-        expectedTeacher.setEmail(entity.getEmail());
-        expectedTeacher.setLocale(entity.getLocale());
-        expectedTeacher.setPostalCode(entity.getPostalCode());
 
         doReturn(entity).when(mapper).toEntity(teacher);
         doReturn(false).when(repository).isPersistent(entity);
@@ -188,15 +182,11 @@ class TeacherServiceTest {
         teacher.setId(teacherId);
         teacher.setSurname(surname);
         teacher.setFirstName(firstName);
-        teacher.setLocale(locale);
-        teacher.setPostalCode(postalCode);
 
         final TeacherEntity entity = TeacherEntity.builder()
                 .id(teacherId)
                 .surname(surname)
                 .firstName(firstName)
-                .locale(locale)
-                .postalCode(postalCode)
                 .build();
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
@@ -232,17 +222,11 @@ class TeacherServiceTest {
         teacher.setId(teacherId);
         teacher.setSurname(newSurname);
         teacher.setFirstName(firstName);
-        teacher.setEmail(emailAddress);
-        teacher.setLocale(locale);
-        teacher.setPostalCode(postalCode);
 
         final TeacherEntity entity = TeacherEntity.builder()
                 .id(teacherId)
                 .surname(surname)
                 .firstName(firstName)
-                .email(emailAddress)
-                .locale(locale)
-                .postalCode(postalCode)
                 .build();
 
         final Teacher updatedTeacher = new Teacher();
@@ -250,8 +234,6 @@ class TeacherServiceTest {
         updatedTeacher.setSurname(newSurname);
         updatedTeacher.setFirstName(entity.getFirstName());
         updatedTeacher.setEmail(emailAddress);
-        updatedTeacher.setLocale(entity.getLocale());
-        updatedTeacher.setPostalCode(entity.getPostalCode());
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
         doReturn(updatedTeacher).when(mapper).updateDomainFromEntity(entity, teacher);
