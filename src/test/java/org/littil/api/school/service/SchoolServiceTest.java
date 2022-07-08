@@ -158,16 +158,12 @@ class SchoolServiceTest {
                 .id(schoolId)
                 .name(name)
                 .contactPersonName(contactPersonName)
-                .contactPersonEmail(contactPersonEmail)
-                .postalCode(postalCode)
                 .build();
 
         final School expectedSchool = new School();
         expectedSchool.setId(entity.getId());
         expectedSchool.setName(entity.getName());
         expectedSchool.setContactPersonName(entity.getContactPersonName());
-        expectedSchool.setContactPersonEmail(entity.getContactPersonEmail());
-        expectedSchool.setPostalCode(entity.getPostalCode());
 
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(false).when(repository).isPersistent(entity);
@@ -196,8 +192,6 @@ class SchoolServiceTest {
                 .id(schoolId)
                 .name(name)
                 .contactPersonName(contactPersonName)
-                .contactPersonEmail(contactPersonEmail)
-                .postalCode(postalCode)
                 .build();
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
@@ -241,18 +235,12 @@ class SchoolServiceTest {
                 .id(schoolId)
                 .name(name)
                 .contactPersonName(contactPersonName)
-                .contactPersonEmail(contactPersonEmail)
-                .address(address)
-                .postalCode(postalCode)
                 .build();
 
         final School updatedSchool = new School();
         updatedSchool.setId(entity.getId());
         updatedSchool.setName(newName);
         updatedSchool.setContactPersonName(entity.getContactPersonName());
-        updatedSchool.setContactPersonEmail(entity.getContactPersonEmail());
-        updatedSchool.setAddress(entity.getAddress());
-        updatedSchool.setPostalCode(entity.getPostalCode());
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
         doReturn(updatedSchool).when(mapper).updateDomainFromEntity(entity, school);

@@ -24,7 +24,7 @@ class SchoolRepositoryTest {
     @Test
     void givenFindExistingSchoolByName_thenShouldReturnSuccessfully() {
         String name = RandomStringUtils.randomAlphabetic(10);
-        List<SchoolEntity> school = List.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null, null));
+        List<SchoolEntity> school = List.of(new SchoolEntity(UUID.randomUUID(), name, null, null));
 
         PanacheQuery<SchoolEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("school_name", name);

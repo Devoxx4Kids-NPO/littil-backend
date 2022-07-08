@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.littil.api.auditing.repository.AbstractAuditableEntity;
+import org.littil.api.location.repository.LocationEntity;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -15,8 +17,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import java.time.DayOfWeek;
 import java.util.HashSet;
@@ -29,7 +31,7 @@ import java.util.UUID;
 @Builder
 @Entity(name = "Teacher")
 @Table(name = "teacher")
-public class TeacherEntity {
+public class TeacherEntity extends AbstractAuditableEntity {
 
     @Id
     @GeneratedValue
@@ -44,21 +46,10 @@ public class TeacherEntity {
     @Column(name = "surname")
     private String surname;
 
-    @Email(message = "{Teacher.email.invalid}")
-    @NotEmpty(message = "{Teacher.email.required}")
-    @Column(name = "email")
-    private String email;
-
-    @NotEmpty(message = "{Teacher.postalCode.required}")
-    @Column(name = "postal_code")
-    private String postalCode;
-
-    @NotEmpty(message = "{Teacher.locale.required}")
-    @Column(name = "locale")
-    private String locale = "NL";
-
-    @Column(name = "preferences")
-    private String preferences;
+    @NotEmpty(message = "{Teacher.location.required}")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location", referencedColumnName = "location_id")
+    private LocationEntity location;
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "teacher_availability", joinColumns = @JoinColumn(name = "teacher"))
