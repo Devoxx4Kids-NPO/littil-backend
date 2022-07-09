@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.littil.api.userSetting.UserId;
+import org.littil.api.auth.User;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
@@ -30,9 +30,9 @@ public abstract class AbstractAuditableEntity {
 
     @AttributeOverride(name = "id", column = @Column(name = "created_by"))
     @Embedded
-    UserId createdBy;
+    User createdBy;
 
     @AttributeOverride(name = "id", column = @Column(name = "last_modified_by"))
     @Embedded
-    UserId lastModifiedBy;
+    User lastModifiedBy;
 }

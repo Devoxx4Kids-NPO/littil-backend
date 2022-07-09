@@ -1,4 +1,4 @@
-package org.littil.api.user;
+package org.littil.api.auth;
 
 public enum UserType {
     USER,

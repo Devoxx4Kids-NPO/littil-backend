@@ -1,7 +1,7 @@
 package org.littil.api.auditing.repository;
 
 import io.quarkus.security.identity.SecurityIdentity;
-import org.littil.api.userSetting.UserId;
+import org.littil.api.auth.User;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.persistence.PrePersist;
@@ -18,10 +18,10 @@ public class AuditableEntityListener {
         entity.setLastModifiedBy(currentUserId());
     }
 
-    private UserId currentUserId() {
+    private User currentUserId() {
         var identity = CDI.current().select(SecurityIdentity.class).get();
         if (identity != null) {
-            return new UserId(identity.getAttribute("user_id"));
+            return new User(identity.getAttribute("user_id"));
         }
         return null;
     }

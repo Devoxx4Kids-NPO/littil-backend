@@ -1,4 +1,4 @@
-package org.littil.api.user.api;
+package org.littil.api.auth.api;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -8,9 +8,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.school.service.School;
 import org.littil.api.teacher.service.Teacher;
-import org.littil.api.user.service.SchoolUser;
-import org.littil.api.user.service.TeacherUser;
-import org.littil.api.user.service.UserService;
+import org.littil.api.auth.service.SchoolUser;
+import org.littil.api.auth.service.TeacherUser;
+import org.littil.api.auth.service.UserService;
 
 import javax.inject.Inject;
 import javax.validation.Valid;

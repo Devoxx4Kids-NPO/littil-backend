@@ -1,4 +1,4 @@
-package org.littil.api.user.service;
+package org.littil.api.auth.service;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;

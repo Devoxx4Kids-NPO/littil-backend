@@ -1,4 +1,4 @@
-package org.littil.api.user.service;
+package org.littil.api.auth.service;
 
 import org.littil.api.school.service.School;
 import org.littil.api.teacher.service.Teacher;

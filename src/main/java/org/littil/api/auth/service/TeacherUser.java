@@ -1,4 +1,4 @@
-package org.littil.api.user.service;
+package org.littil.api.auth.service;
 
 public class TeacherUser extends User {
 
