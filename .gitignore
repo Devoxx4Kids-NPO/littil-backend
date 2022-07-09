@@ -22,3 +22,5 @@ fabric.properties
 .mvn/wrapper/maven-wrapper.jar
 target
 .env
+.project
+.classpath
