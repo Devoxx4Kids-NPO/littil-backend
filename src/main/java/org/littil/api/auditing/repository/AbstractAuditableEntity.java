@@ -5,7 +5,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.littil.api.auth.User;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
@@ -22,17 +21,17 @@ import java.time.LocalDateTime;
 public abstract class AbstractAuditableEntity {
     @CreationTimestamp
     @Column(name = "created_date")
-    LocalDateTime createdDate;
+    private LocalDateTime createdDate;
 
     @UpdateTimestamp
     @Column(name = "last_modified_date")
-    LocalDateTime lastModifiedDate;
+    private LocalDateTime lastModifiedDate;
 
     @AttributeOverride(name = "id", column = @Column(name = "created_by"))
     @Embedded
-    User createdBy;
+    private UserId createdBy;
 
     @AttributeOverride(name = "id", column = @Column(name = "last_modified_by"))
     @Embedded
-    User lastModifiedBy;
+    private UserId lastModifiedBy;
 }

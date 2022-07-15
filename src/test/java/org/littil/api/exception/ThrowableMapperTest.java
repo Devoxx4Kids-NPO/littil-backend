@@ -4,8 +4,8 @@ import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.junit.jupiter.api.Test;
-import org.littil.api.teacher.api.TeacherResource;
-import org.littil.api.teacher.service.TeacherService;
+import org.littil.api.guestTeacher.api.GuestTeacherResource;
+import org.littil.api.guestTeacher.service.GuestTeacherService;
 import org.mockito.Mockito;
 
 import java.util.ResourceBundle;
@@ -14,15 +14,15 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
-@TestHTTPEndpoint(TeacherResource.class)
+@TestHTTPEndpoint(GuestTeacherResource.class)
 class ThrowableMapperTest {
 
     @InjectMock
-    TeacherService teacherservice;
+    GuestTeacherService teacherService;
 
     @Test
     void throwUnexpectedRuntimeException() {
-        Mockito.when(teacherservice.findAll()).thenThrow(new RuntimeException("Completely Unexpected"));
+        Mockito.when(teacherService.findAll()).thenThrow(new RuntimeException("Completely Unexpected"));
         ErrorResponse errorResponse = given()
                 .when()
                 .get()

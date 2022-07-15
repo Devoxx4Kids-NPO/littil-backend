@@ -1,18 +1,19 @@
 package org.littil.api.auth;
 
-import io.quarkus.oidc.OidcTenantConfig;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.littil.api.auth.provider.Provider;
+import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.school.service.School;
-import org.littil.api.teacher.service.Teacher;
 
-import javax.persistence.Embeddable;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
-@Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
@@ -20,14 +21,13 @@ public class User {
     @NonNull
     String id;
 
-    @NonNull
+    @NotEmpty(message = "{User.firstName.required}")
+    @Email
     String emailAddress;
-
-    OidcTenantConfig.Roles roles;
+    GuestTeacher guestTeacher;
 
     Provider provider = Provider.AUTH0;
-
-    Teacher teacher;
+    private Set<Role> roles = new HashSet<>();
 
     School school;
 }

@@ -9,11 +9,11 @@ import java.util.UUID;
 public class Location {
     private UUID id;
 
-    @NotEmpty(message = "{Teacher.country.required}")
+    @NotEmpty(message = "{Location.country.required}")
     private String country;
-    @NotEmpty(message = "{Teacher.address.required}")
+    @NotEmpty(message = "{Location.address.required}")
     private String address;
-    @NotEmpty(message = "{Teacher.postalCode.required}")
+    @NotEmpty(message = "{Location.postalCode.required}")
     private String postalCode;
     private String longitude;
     private String latitude;

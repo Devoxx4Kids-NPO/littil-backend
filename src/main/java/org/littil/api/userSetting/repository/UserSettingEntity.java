@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.IdClass;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -21,8 +22,8 @@ public class UserSettingEntity implements Serializable {
     private static final long serialVersionUID = 42L;
 
     @Id
-    @Column(name = "user_id", columnDefinition = "VARCHAR(255)")
-    private String userId;
+    @Column(name = "user_id", columnDefinition = " BINARY(16)")
+    private UUID userId;
 
     @Id
     private String key;
@@ -33,7 +34,7 @@ public class UserSettingEntity implements Serializable {
     @NoArgsConstructor
     public static class UserSettingId implements Serializable {
         private static final long serialVersionUID = 42L;
-        private String userId;
+        private UUID userId;
         private String key;
     }
 }
