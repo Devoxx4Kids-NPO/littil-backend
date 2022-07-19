@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class UserSettingService {
-    public Optional<UserSetting> getUserSettingByKey(UUID id) {
+    public Optional<UserSetting> getUserSettingByKey(String key, UUID userId) {
         return Optional.empty();
     }
 }

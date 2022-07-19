@@ -1,6 +1,7 @@
 package org.littil.api.userSetting.api;
 
 import io.quarkus.security.Authenticated;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -9,7 +10,6 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.authz.UserOwned;
-import org.littil.api.auth.authz.UserSettingInterceptor;
 import org.littil.api.school.service.School;
 import org.littil.api.userSetting.service.UserSetting;
 import org.littil.api.userSetting.service.UserSettingService;
@@ -26,6 +26,8 @@ import javax.ws.rs.core.Response;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
+
 @Path("/api/v1/user-settings")
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
@@ -36,10 +38,11 @@ public class UserSettingResource {
 
     @Inject
     UserSettingService service;
-
+    @Inject
+    JsonWebToken jwt;
     @GET
     @Path("{key}")
-    @UserOwned(filter = UserSettingInterceptor.class)
+    @UserOwned(type = UserOwned.SecurityType.USER_SETTING)
     @Operation(summary = "Get user setting by key for the current user")
     @APIResponse(
             responseCode = "200",
@@ -49,8 +52,8 @@ public class UserSettingResource {
                     schema = @Schema(type = SchemaType.ARRAY, implementation = School.class)
             )
     )
-    public Response get(@Parameter(name = "key", required = true) @PathParam("key") final UUID id) {
-        Optional<UserSetting> userSetting = service.getUserSettingByKey(id);
+    public Response get(@Parameter(name = "key", required = true) @PathParam("key") final String id) {
+        Optional<UserSetting> userSetting = service.getUserSettingByKey(id, UUID.fromString(jwt.getClaim(USER_ID_TOKEN_CLAIM)));
 
         return userSetting.map(r -> Response.ok(r).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
