@@ -12,6 +12,7 @@ import org.littil.api.auth.User;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.exception.ErrorResponse;
 
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -31,6 +32,7 @@ import java.util.List;
 // Temporary ## Added to test functionality of interface with auth0.com
 
 @Path("/api/v1/auth")
+@RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Auth", description = "CRUD Operations")

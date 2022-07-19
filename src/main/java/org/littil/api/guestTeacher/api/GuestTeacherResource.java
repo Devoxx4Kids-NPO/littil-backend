@@ -13,6 +13,7 @@ import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
 
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -34,6 +35,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Path("/api/v1/guest-teacher")
+@RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated

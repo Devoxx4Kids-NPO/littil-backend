@@ -1,10 +1,6 @@
 package org.littil.api.auth;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import org.littil.api.auth.provider.Provider;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.school.service.School;
 
@@ -14,20 +10,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class User {
+    private String id;
 
-    @NonNull
-    String id;
-
-    @NotEmpty(message = "{User.firstName.required}")
+    @NotEmpty(message = "{User.EmailAddress.required}")
     @Email
-    String emailAddress;
-    GuestTeacher guestTeacher;
+    private String emailAddress;
 
-    Provider provider = Provider.AUTH0;
+    private GuestTeacher guestTeacher;
+
+    private School school;
+
     private Set<Role> roles = new HashSet<>();
-
-    School school;
 }
