@@ -42,7 +42,6 @@ public class UserSettingResource {
     JsonWebToken jwt;
     @GET
     @Path("{key}")
-    @UserOwned(type = UserOwned.SecurityType.USER_SETTING)
     @Operation(summary = "Get user setting by key for the current user")
     @APIResponse(
             responseCode = "200",
