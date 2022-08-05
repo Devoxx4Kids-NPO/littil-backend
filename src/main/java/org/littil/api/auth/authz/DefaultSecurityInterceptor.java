@@ -43,13 +43,9 @@ public class DefaultSecurityInterceptor implements ContainerRequestFilter {
         Optional<String> resourceId = resourceIds.stream().findFirst();
         UUID userId = UUID.fromString(jwt.getClaim(USER_ID_TOKEN_CLAIM));
 
-        User user = userService.getUserById(userId);
-        checkIfAuthorized(UUID.fromString(resourceId.get()), userId, user, ctx);
-
-        if (jwt.getClaim("user_id"))
-
-        //if !( jwt.getUserID ()  user check in token voor dit request) {
-            ctx.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+        Optional<User> userOptional = userService.getUserById(userId);
+        userOptional.ifPresentOrElse(user ->checkIfAuthorized(UUID.fromString(resourceId.get()), userId, user, ctx),
+                () -> { throw new UnauthorizedException("Unauthorized"); });
     }
 
     private void checkIfAuthorized(UUID resourceId, UUID userId, User user, ContainerRequestContext ctx) {

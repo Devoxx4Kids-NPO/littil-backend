@@ -128,7 +128,8 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private ManagementAPI getMgmtApi() throws Auth0Exception {
-
+        // todo
+        return null;
     }
 
 }
