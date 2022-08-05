@@ -1,7 +1,7 @@
 package org.littil.api.auth.service;
 
 import org.littil.api.auth.Role;
-import org.littil.api.auth.User;
+import org.littil.api.user.service.User;
 
 import java.util.List;
 

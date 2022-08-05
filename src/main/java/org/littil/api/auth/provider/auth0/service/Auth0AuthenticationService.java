@@ -1,4 +1,4 @@
-package org.littil.api.auth.provider.auth0;
+package org.littil.api.auth.provider.auth0.service;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
@@ -35,7 +35,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     OidcTenantConfig tenantConfig;
 
     @Override
-    public List<org.littil.api.auth.User> listUsers() {
+    public List<org.littil.api.user.service.User> listUsers() {
         UserFilter filter = new UserFilter();
         try {
             ManagementAPI mgmt = getMgmtApi();
@@ -48,7 +48,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public org.littil.api.auth.User getUserById(String userId) {
+    public org.littil.api.user.service.User getUserById(String userId) {
         try {
             ManagementAPI mgmt = getMgmtApi();
             Request<User> request = mgmt.users().get(userId, null);
@@ -63,7 +63,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         }
     }
 
-    public org.littil.api.auth.User createUser(org.littil.api.auth.User authUser) {
+    public org.littil.api.user.service.User createUser(org.littil.api.user.service.User authUser) {
         try {
             ManagementAPI mgmt = getMgmtApi();
             return auth0UserMapper.toDomain(mgmt.users().create(auth0UserMapper.toProviderEntity(authUser)).execute());
@@ -85,7 +85,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public org.littil.api.auth.User getUserByEmail(String email) {
+    public org.littil.api.user.service.User getUserByEmail(String email) {
         try {
             ManagementAPI mgmt = getMgmtApi();
             UserFilter filter = new UserFilter();
@@ -128,11 +128,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private ManagementAPI getMgmtApi() throws Auth0Exception {
-        AuthAPI authAPI = new AuthAPI(tenantConfig.getTenantId().map(Object::toString).orElse(""), tenantConfig.getClientId().map(Object::toString).orElse(""), tenantConfig.getCredentials().getClientSecret().toString());
-        AuthRequest authRequest = authAPI.requestToken(tenantConfig.getAuthorizationPath());
 
-        TokenHolder holder = authRequest.execute();
-        return new ManagementAPI(DOMAIN, holder.getAccessToken());
     }
 
 }

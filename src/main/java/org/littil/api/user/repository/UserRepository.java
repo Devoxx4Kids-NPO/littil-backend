@@ -1,4 +1,4 @@
-package org.littil.api.auth.repository;
+package org.littil.api.user.repository;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 

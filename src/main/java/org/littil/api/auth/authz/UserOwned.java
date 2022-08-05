@@ -17,6 +17,9 @@ public @interface UserOwned { // todo rename to something more generic like Secu
 
     enum SecurityType {
         // School and teacher are now in default, might need to split
-        DEFAULT
+        DEFAULT,
+        LOCATION,
+        SCHOOL,
+        TEACHER
     }
 }

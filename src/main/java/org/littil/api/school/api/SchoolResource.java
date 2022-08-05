@@ -35,7 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-@Path("/api/v1/school")
+@Path("/api/v1/schools")
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)

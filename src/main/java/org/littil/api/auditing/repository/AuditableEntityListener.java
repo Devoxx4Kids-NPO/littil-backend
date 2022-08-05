@@ -1,8 +1,8 @@
 package org.littil.api.auditing.repository;
 
 import io.quarkus.security.identity.SecurityIdentity;
-import org.littil.api.auth.repository.UserEntity;
-import org.littil.api.auth.repository.UserRepository;
+import org.littil.api.user.repository.UserEntity;
+import org.littil.api.user.repository.UserRepository;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;

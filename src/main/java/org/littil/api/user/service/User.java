@@ -1,6 +1,7 @@
-package org.littil.api.auth;
+package org.littil.api.user.service;
 
 import lombok.Data;
+import org.littil.api.auth.Role;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.school.service.School;
 

@@ -4,8 +4,8 @@ import io.quarkus.arc.Priority;
 import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.littil.api.auth.User;
-import org.littil.api.auth.UserService;
+import org.littil.api.user.service.User;
+import org.littil.api.user.service.UserService;
 
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -43,7 +43,7 @@ public class DefaultSecurityInterceptor implements ContainerRequestFilter {
         Optional<String> resourceId = resourceIds.stream().findFirst();
         UUID userId = UUID.fromString(jwt.getClaim(USER_ID_TOKEN_CLAIM));
 
-        User user = userService.getUserFor(userId);
+        User user = userService.getUserById(userId);
         checkIfAuthorized(UUID.fromString(resourceId.get()), userId, user, ctx);
 
         if (jwt.getClaim("user_id"))

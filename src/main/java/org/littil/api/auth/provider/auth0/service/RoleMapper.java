@@ -1,4 +1,4 @@
-package org.littil.api.auth.provider.auth0;
+package org.littil.api.auth.provider.auth0.service;
 
 import org.littil.api.auth.Role;
 

@@ -1,4 +1,4 @@
-package org.littil.api.auth;
+package org.littil.api.user.service;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
