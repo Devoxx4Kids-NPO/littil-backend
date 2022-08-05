@@ -37,6 +37,10 @@ public class DefaultSecurityInterceptor implements ContainerRequestFilter {
 
         MultivaluedMap<String, String> parameters = ctx.getUriInfo().getPathParameters();
         List<String> resourceIds = parameters.get("id");
+        if (resourceIds == null) {
+            // TODO if no id parameters we just skip authorization check for now!
+            return;
+        }
         if (resourceIds.size() != 1) {
             throw new IllegalArgumentException("Whoops we dit not expect this amount of parameters");
         }

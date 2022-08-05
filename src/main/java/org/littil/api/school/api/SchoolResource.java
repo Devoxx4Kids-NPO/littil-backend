@@ -1,6 +1,8 @@
 package org.littil.api.school.api;
 
+import io.quarkus.oidc.OidcTenantConfig;
 import io.quarkus.security.Authenticated;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -37,6 +39,7 @@ import java.util.UUID;
 
 @Path("/api/v1/schools")
 @RequestScoped
+@Slf4j
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
@@ -47,6 +50,8 @@ public class SchoolResource {
     @Inject
     SchoolService schoolService;
 
+    @Inject
+    OidcTenantConfig tenantConfig;
     @GET
     @Operation(summary = "Get all schools")
     @APIResponse(
@@ -58,6 +63,7 @@ public class SchoolResource {
             )
     )
     public Response list() {
+        log.info("tenantconfig {}", tenantConfig);
         List<School> schools = schoolService.findAll();
 
         return Response.ok(schools).build();
