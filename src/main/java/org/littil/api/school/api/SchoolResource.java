@@ -50,8 +50,6 @@ public class SchoolResource {
     @Inject
     SchoolService schoolService;
 
-    @Inject
-    OidcTenantConfig tenantConfig;
     @GET
     @Operation(summary = "Get all schools")
     @APIResponse(
@@ -63,7 +61,6 @@ public class SchoolResource {
             )
     )
     public Response list() {
-        log.info("tenantconfig {}", tenantConfig);
         List<School> schools = schoolService.findAll();
 
         return Response.ok(schools).build();

@@ -1,18 +1,16 @@
 package org.littil.api.auth.service;
 
 import org.littil.api.auth.Role;
-import org.littil.api.user.service.User;
 
 import java.util.List;
 
 public interface AuthenticationService {
-    List<User> listUsers();
+    List<AuthUser> listUsers();
 
-    User getUserById(String userId);
+    AuthUser getUserById(String userId);
 
-    User createUser(User user);
+    AuthUser createUser(AuthUser user, String tempPassword);
 
-    User getUserByEmail(String email);
 
     void deleteUser(String userId);
 

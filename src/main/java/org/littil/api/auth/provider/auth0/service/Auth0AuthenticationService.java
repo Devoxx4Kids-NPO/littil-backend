@@ -1,20 +1,17 @@
 package org.littil.api.auth.provider.auth0.service;
 
-import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.RolesFilter;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.APIException;
 import com.auth0.exception.Auth0Exception;
-import com.auth0.json.auth.TokenHolder;
 import com.auth0.json.mgmt.RolesPage;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
-import com.auth0.net.AuthRequest;
 import com.auth0.net.Request;
-import io.quarkus.oidc.OidcTenantConfig;
 import lombok.RequiredArgsConstructor;
 import org.littil.api.auth.Role;
+import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.exception.AuthenticationException;
 
@@ -32,14 +29,13 @@ public class Auth0AuthenticationService implements AuthenticationService {
     //TODO create config mapping
     private final RoleMapper roleMapper;
     @Inject
-    OidcTenantConfig tenantConfig;
+    private ManagementAPI managementAPI;
 
     @Override
-    public List<org.littil.api.user.service.User> listUsers() {
+    public List<AuthUser> listUsers() {
         UserFilter filter = new UserFilter();
         try {
-            ManagementAPI mgmt = getMgmtApi();
-            Request<UsersPage> request = mgmt.users().list(filter);
+            Request<UsersPage> request = managementAPI.users().list(filter);
             UsersPage response = request.execute();
             return response.getItems().stream().map(auth0UserMapper::toDomain).toList();
         } catch (Auth0Exception exception) {
@@ -48,10 +44,9 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public org.littil.api.user.service.User getUserById(String userId) {
+    public AuthUser getUserById(String userId) {
         try {
-            ManagementAPI mgmt = getMgmtApi();
-            Request<User> request = mgmt.users().get(userId, null);
+            Request<User> request = managementAPI.users().get(userId, null);
             return auth0UserMapper.toDomain(request.execute());
         } catch (APIException exception) {
             if (exception.getStatusCode() == 404) {
@@ -63,10 +58,11 @@ public class Auth0AuthenticationService implements AuthenticationService {
         }
     }
 
-    public org.littil.api.user.service.User createUser(org.littil.api.user.service.User authUser) {
+    @Override
+    public AuthUser createUser(AuthUser authUser, String tempPassword) {
         try {
-            ManagementAPI mgmt = getMgmtApi();
-            return auth0UserMapper.toDomain(mgmt.users().create(auth0UserMapper.toProviderEntity(authUser)).execute());
+            // todo check if user already exists
+            return auth0UserMapper.toDomain(managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute());
         } catch (Auth0Exception exception) {
             exception.printStackTrace();
             throw new AuthenticationException(exception.getMessage());
@@ -76,8 +72,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public void deleteUser(String userId) {
         try {
-            ManagementAPI mgmt = getMgmtApi();
-            mgmt.users().delete(userId).execute();
+            managementAPI.users().delete(userId).execute();
         } catch (Auth0Exception exception) {
             exception.printStackTrace();
             throw new AuthenticationException(exception.getMessage());
@@ -85,25 +80,10 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public org.littil.api.user.service.User getUserByEmail(String email) {
-        try {
-            ManagementAPI mgmt = getMgmtApi();
-            UserFilter filter = new UserFilter();
-            Request<List<User>> request = mgmt.users().listByEmail(email, filter);
-            List<User> response = request.execute();
-            return response.stream().map(auth0UserMapper::toDomain).findFirst().get();
-            // TODO what if not found - findFirst=Optional
-        } catch (Auth0Exception exception) {
-            throw new AuthenticationException(exception.getMessage());
-        }
-    }
-
-    @Override
     public List<Role> getRoles() {
         try {
-            ManagementAPI mgmt = getMgmtApi();
             RolesFilter rolesFilter = new RolesFilter();
-            RolesPage response = mgmt.roles().list(rolesFilter).execute();
+            RolesPage response = managementAPI.roles().list(rolesFilter).execute();
             return response.getItems().stream().map(roleMapper::toEntity).toList();
         } catch (Auth0Exception e) {
             throw new AuthenticationException(e.getMessage());
@@ -113,12 +93,11 @@ public class Auth0AuthenticationService implements AuthenticationService {
     // TODO
     public void assignRole(String userId, String roleName) {
         try {
-            ManagementAPI mgmt = getMgmtApi();
             List<String> userList = List.of(userId);
             Optional<String> roleId = getRoles().stream().filter(r -> r.role().equals(roleName))
                     .map(Role::id).findFirst();
             if (roleId.isPresent()) {
-                mgmt.roles().assignUsers(roleId.get(), userList).execute();
+                managementAPI.roles().assignUsers(roleId.get(), userList).execute();
             } else {
                 throw new NotFoundException("Role not found");
             }
@@ -126,10 +105,4 @@ public class Auth0AuthenticationService implements AuthenticationService {
             throw new AuthenticationException(e.getMessage());
         }
     }
-
-    private ManagementAPI getMgmtApi() throws Auth0Exception {
-        // todo
-        return null;
-    }
-
 }

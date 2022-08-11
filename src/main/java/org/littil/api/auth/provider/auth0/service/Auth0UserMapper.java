@@ -1,6 +1,9 @@
 package org.littil.api.auth.provider.auth0.service;
 
+import com.auth0.json.mgmt.Role;
 import com.auth0.json.mgmt.users.User;
+import org.littil.api.auth.provider.Provider;
+import org.littil.api.auth.service.AuthUser;
 import org.mapstruct.Mapper;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -17,25 +20,27 @@ public class Auth0UserMapper {
 	@Inject
 	RoleMapper roleMapper;
 
-	User toProviderEntity(org.littil.api.user.service.User littleUser) {
+	User toProviderEntity(AuthUser littleUser, String tempPassword) {
 		User auth0User = new User("Username-Password-Authentication");
 		auth0User.setEmail(littleUser.getEmailAddress());
-		auth0User.setPassword(UUID.randomUUID().toString());
+		// todo move password gen to service
+		auth0User.setPassword(tempPassword.toCharArray());
 		return auth0User;
 	}
 
-	public org.littil.api.user.service.User toDomain(User user) {
-		org.littil.api.user.service.User user1 = new org.littil.api.user.service.User();
+	public AuthUser toDomain(User user) {
+		AuthUser user1 = new AuthUser();
 		user1.setEmailAddress(user.getEmail());
 		user1.setId(user.getId());
 		// todo check how to retrieve roles from auth0 user
-		user1.setRoles( ((Set<com.auth0.json.mgmt.Role>) user.getValues().get("roles"))
-				.stream()
-				.map(roleMapper::toEntity)
-				.collect(Collectors.toSet()));
-		// todo set teacher/school -> retrieve from db?
-		user1.setGuestTeacher(null);
-		user1.setSchool(null);
+		Set<Role> roles = (Set<Role>) user.getValues().get("roles");
+		if (roles != null) {
+			user1.setRoles( roles
+					.stream()
+					.map(roleMapper::toEntity)
+					.collect(Collectors.toSet()));
+		}
+		user1.setAuthProvider(Provider.AUTH0);
 		return user1;
 	}
 }

@@ -6,9 +6,13 @@ import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
 import com.auth0.net.AuthRequest;
 import io.quarkus.oidc.OidcTenantConfig;
+import io.quarkus.oidc.runtime.DefaultTenantConfigResolver;
+import io.quarkus.oidc.runtime.TenantConfigBean;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -16,19 +20,29 @@ import javax.inject.Singleton;
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
 public class Auth0ManagementAPI {
+    @ConfigProperty(name = "M2M_CLIENT_ID")
+    private String clientId;
+    @ConfigProperty(name = "M2M_CLIENT_SECRET")
+    private String clientSecret;
     @Inject
-    OidcTenantConfig tenantConfig;
-
-    ManagementAPI managementAPI;
-
-    @PostConstruct
-    void init() throws Auth0Exception {
+    DefaultTenantConfigResolver defaultTenantConfigResolver;
+    @Produces
+    public ManagementAPI produceManagementAPI() throws Auth0Exception {
+        log.info("defaultTenantResolver {}", defaultTenantConfigResolver);
+        TenantConfigBean tenantConfigBean = defaultTenantConfigResolver.getTenantConfigBean();
+        OidcTenantConfig tenantConfig = tenantConfigBean.getDefaultTenant().getOidcTenantConfig();
+        log.info("providing tenantconfig {}", tenantConfig);
         log.info("got tenant {} ", tenantConfig);
-        AuthAPI authAPI = new AuthAPI(tenantConfig.getTenantId().map(Object::toString).orElse(""), tenantConfig.getClientId().map(Object::toString).orElse(""), tenantConfig.getCredentials().getClientSecret().toString());
-        AuthRequest authRequest = authAPI.requestToken(tenantConfig.getAuthorizationPath().get());
+        // todo if not present throw exception
+        AuthAPI authAPI = new AuthAPI(tenantConfig.getTenantId().get() + ".eu.auth0.com",
+                clientId,
+                clientSecret);
+        // todo fix audience url
+        AuthRequest authRequest = authAPI.requestToken("https://dev-g60bne29.eu.auth0.com/api/v2/");
 
+        // Machine2Machine tokens is paid after 1000 tokens each month
         TokenHolder holder = authRequest.execute();
-        // todo check if this is the proper domain
-        managementAPI = new ManagementAPI(tenantConfig.getAuthServerUrl().get(), holder.getAccessToken());
+        // todo fix domain with proper config
+        return new ManagementAPI(tenantConfig.getTenantId().get() + ".eu.auth0.com", holder.getAccessToken());
     }
 }

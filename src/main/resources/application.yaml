@@ -16,6 +16,8 @@ quarkus:
     security-scheme: oauth2-implicit
     oauth-scopes: [openid, email, profile]
   oidc:
+    tenant-id: "dev-g60bne29"
+    authorization-path: /authorize?audience=${OIDC_TENANT}/api/v2/
     client-id: ${OIDC_CLIENT_ID}
     auth-server-url: ${OIDC_TENANT}/auth
     credentials:
