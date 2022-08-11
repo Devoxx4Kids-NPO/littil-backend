@@ -28,7 +28,14 @@ quarkus:
       audience: ${OIDC_TENANT}/api/v2/
     introspection-path: .well-known/openid-configuration
     jwks-path: .well-known/jwks.json
-
+  mailer:
+    from: "no-reply@littil.org"
+    host: ${SMTP_HOST}
+    port: 465
+    ssl: true
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    mock: true #Mock SMTP server when running in development mode. See: http://localhost:8080/mail for incomming mail
 "%dev":
   quarkus:
     datasource:
