@@ -1,3 +1,10 @@
+org:
+  littil:
+    auth:
+      machine2machine:
+        client:
+          id: ${M2M_CLIENT_ID}
+          secret: ${M2M_CLIENT_SECRET}
 quarkus:
   datasource:
     db-kind: mariadb
@@ -48,7 +55,6 @@ quarkus:
           level: DEBUG
         "quarkus.oidc":
           level: DEBUG
-    oidc:
     hibernate-orm:
       log:
         sql: true

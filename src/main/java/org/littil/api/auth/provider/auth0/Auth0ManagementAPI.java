@@ -11,7 +11,6 @@ import io.quarkus.oidc.runtime.TenantConfigBean;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -20,12 +19,14 @@ import javax.inject.Singleton;
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
 public class Auth0ManagementAPI {
-    @ConfigProperty(name = "M2M_CLIENT_ID")
+
+    @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
     private String clientId;
-    @ConfigProperty(name = "M2M_CLIENT_SECRET")
+    @ConfigProperty(name = "org.littil.auth.machine2machine.client.secret")
     private String clientSecret;
     @Inject
     DefaultTenantConfigResolver defaultTenantConfigResolver;
+
     @Produces
     public ManagementAPI produceManagementAPI() throws Auth0Exception {
         log.info("defaultTenantResolver {}", defaultTenantConfigResolver);

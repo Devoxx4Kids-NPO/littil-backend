@@ -7,8 +7,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.littil.api.auth.Role;
-import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
@@ -71,6 +69,7 @@ public class UserResource {
     @Operation(summary = "Create a new user")
     @APIResponse(responseCode = "201", description = "User successfully created", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)))
     @APIResponse(responseCode = "400", description = "Validation errors occurred.", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)))
+    @APIResponse(responseCode = "409", description = "User already exists", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)))
     // todo slim post resource, we only need email now
     public Response create(@NotNull @Valid UserPostResource userPostResource) {
         User user = new User();
