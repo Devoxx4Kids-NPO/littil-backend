@@ -26,10 +26,9 @@ import java.util.Optional;
 public class Auth0AuthenticationService implements AuthenticationService {
 
     private final Auth0UserMapper auth0UserMapper;
-    //TODO create config mapping
     private final RoleMapper roleMapper;
     @Inject
-    private ManagementAPI managementAPI;
+    ManagementAPI managementAPI;
 
     @Override
     public List<AuthUser> listUsers() {
@@ -39,7 +38,8 @@ public class Auth0AuthenticationService implements AuthenticationService {
             UsersPage response = request.execute();
             return response.getItems().stream().map(auth0UserMapper::toDomain).toList();
         } catch (Auth0Exception exception) {
-            throw new AuthenticationException(exception.getMessage());
+            //todo proper exception handling
+            throw new AuthenticationException("todo fixme", exception);
         }
     }
 
@@ -48,6 +48,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         try {
             Request<User> request = managementAPI.users().get(userId, null);
             return auth0UserMapper.toDomain(request.execute());
+            //todo handle Exception properly
         } catch (APIException exception) {
             if (exception.getStatusCode() == 404) {
                 throw new NotFoundException(exception.getMessage());
@@ -64,6 +65,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
             // todo check if user already exists
             return auth0UserMapper.toDomain(managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute());
         } catch (Auth0Exception exception) {
+            //todo handle Exception properly
             exception.printStackTrace();
             throw new AuthenticationException(exception.getMessage());
         }
@@ -74,6 +76,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         try {
             managementAPI.users().delete(userId).execute();
         } catch (Auth0Exception exception) {
+            //todo handle Exception properly
             exception.printStackTrace();
             throw new AuthenticationException(exception.getMessage());
         }
@@ -90,7 +93,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         }
     }
 
-    // TODO
+    // TODO refactor this method
     public void assignRole(String userId, String roleName) {
         try {
             List<String> userList = List.of(userId);
@@ -101,6 +104,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
             } else {
                 throw new NotFoundException("Role not found");
             }
+            //todo handle Exception properly
         } catch (Auth0Exception e) {
             throw new AuthenticationException(e.getMessage());
         }

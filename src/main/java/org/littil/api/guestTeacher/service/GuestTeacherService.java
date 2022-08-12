@@ -43,6 +43,7 @@ public class GuestTeacherService {
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
+            //todo call userService to add school role to user. (first refactor user/school/guestTeacher entity
             return mapper.updateDomainFromEntity(entity, guestTeacher);
         } else {
             throw new PersistenceException();
@@ -51,6 +52,7 @@ public class GuestTeacherService {
 
     @Transactional
     public void deleteTeacher(@NonNull final UUID id) {
+        //todo also call userService to remove school role from the user.
         Optional<GuestTeacherEntity> teacher = repository.findByIdOptional(id);
         teacher.ifPresentOrElse(repository::delete, () -> {
             throw new NotFoundException();

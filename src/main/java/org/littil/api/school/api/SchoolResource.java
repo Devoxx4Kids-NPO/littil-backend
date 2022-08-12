@@ -1,6 +1,5 @@
 package org.littil.api.school.api;
 
-import io.quarkus.oidc.OidcTenantConfig;
 import io.quarkus.security.Authenticated;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -130,6 +129,7 @@ public class SchoolResource {
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
     public Response create(@NotNull @Valid School school) {
+        //todo check whether user already has school or guest teacher attached. Then return error.
         School persistedSchool = schoolService.saveSchool(school);
         URI uri = UriBuilder.fromResource(SchoolResource.class)
                 .path("/" + persistedSchool.getId()).build();

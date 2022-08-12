@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.PasswordService;
+import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.mail.MailService;
+import org.littil.api.school.service.School;
 import org.littil.api.user.repository.UserRepository;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -35,6 +37,16 @@ public class UserService {
     }
 
     @Transactional
+    public void updateUser(School school) {
+        //todo implement update role and store in db
+    }
+
+    @Transactional
+    public void updateUser(GuestTeacher guestTeacher) {
+        //todo implement update role and store in db
+    }
+
+    @Transactional
     public User createUser(User user) {
         String tempPassword = passwordService.generate();
 
@@ -43,15 +55,14 @@ public class UserService {
 
         // todo how does it work if user already is present in db?
         repository.persist(mapper.toEntity(user));
-
-        // todo mail temp password
         mailService.sendWelcomeMail(user, tempPassword);
 
         return user;
     }
 
     @Transactional
-    public void deleteUser(String id) {
-        authenticationService.deleteUser(id);
+    public void deleteUser(UUID id) {
+        //todo find corrensponding user and delete in repository and in auth0
+//        authenticationService.deleteUser(id.toString());
     }
 }

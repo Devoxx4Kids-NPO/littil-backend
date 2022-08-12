@@ -17,7 +17,13 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -89,7 +95,7 @@ public class UserResource {
     @APIResponse(responseCode = "200", description = "Successfully deleted the user.", content = @Content(mediaType = MediaType.APPLICATION_JSON))
     @APIResponse( // TODO
             responseCode = "404", description = "The user to delete was not found.", content = @Content(mediaType = MediaType.APPLICATION_JSON))
-    public Response delete(@PathParam("id") String id) {
+    public Response delete(@PathParam("id") UUID id) {
         userService.deleteUser(id);
         return Response.ok()
                 .build();

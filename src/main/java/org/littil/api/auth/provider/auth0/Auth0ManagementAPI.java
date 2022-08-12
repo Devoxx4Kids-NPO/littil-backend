@@ -7,7 +7,6 @@ import com.auth0.json.auth.TokenHolder;
 import com.auth0.net.AuthRequest;
 import io.quarkus.oidc.OidcTenantConfig;
 import io.quarkus.oidc.runtime.DefaultTenantConfigResolver;
-import io.quarkus.oidc.runtime.TenantConfigBean;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -29,13 +28,12 @@ public class Auth0ManagementAPI {
 
     @Produces
     public ManagementAPI produceManagementAPI() throws Auth0Exception {
-        log.info("defaultTenantResolver {}", defaultTenantConfigResolver);
-        TenantConfigBean tenantConfigBean = defaultTenantConfigResolver.getTenantConfigBean();
-        OidcTenantConfig tenantConfig = tenantConfigBean.getDefaultTenant().getOidcTenantConfig();
-        log.info("providing tenantconfig {}", tenantConfig);
-        log.info("got tenant {} ", tenantConfig);
+        //todo improve trainwreck
+        OidcTenantConfig tenantConfig = defaultTenantConfigResolver.getTenantConfigBean()
+                .getDefaultTenant()
+                .getOidcTenantConfig();
         // todo if not present throw exception
-        AuthAPI authAPI = new AuthAPI(tenantConfig.getTenantId().get() + ".eu.auth0.com",
+        AuthAPI authAPI = new AuthAPI(tenantConfig.getTenantId().get() + ".eu.auth0.com", //todo make uri configurable?
                 clientId,
                 clientSecret);
         // todo fix audience url

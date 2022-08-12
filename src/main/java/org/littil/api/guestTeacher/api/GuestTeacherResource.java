@@ -127,6 +127,7 @@ public class GuestTeacherResource {
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
     public Response create(@NotNull @Valid GuestTeacher guestTeacher) {
+        //todo check whether user already has school or guest teacher attached. Then return error.
         GuestTeacher persistedGuestTeacher = guestTeacherService.saveTeacher(guestTeacher);
         URI uri = UriBuilder.fromResource(GuestTeacherResource.class)
                 .path("/" + persistedGuestTeacher.getId()).build();

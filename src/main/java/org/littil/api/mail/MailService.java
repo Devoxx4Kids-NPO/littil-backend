@@ -19,19 +19,17 @@ public class MailService {
 
     public void sendWelcomeMail(User user, String password) {
         log.info("sending mail to {}", user.getEmailAddress());
-        // todo now sending only NL mails
+        //todo now sending only NL mails
         UniSubscribe<Void> uni = Templates.welcome(user.getEmailAddress(), password)
                 .to(user.getEmailAddress())
-                .subject("Welkom bij Littil")
+                .subject("Welkom bij Littil") //todo make subject configurable?
                 .send().subscribe();
-        // todo fix handling
+        //todo fix handling
         try {
             uni.asCompletionStage().get();
         } catch (InterruptedException | ExecutionException e) {
             log.info("mailing failed! ", e);
             throw new RuntimeException(e);
         }
-        log.info("called uni {}", uni);
-
     }
 }

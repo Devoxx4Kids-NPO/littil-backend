@@ -6,15 +6,11 @@ import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthUser;
 import org.mapstruct.Mapper;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-@ApplicationScoped
-//@Mapper(componentModel = "cdi")
+@Mapper(componentModel = "cdi")
 public class Auth0UserMapper {
 
 	@Inject
@@ -23,12 +19,12 @@ public class Auth0UserMapper {
 	User toProviderEntity(AuthUser littleUser, String tempPassword) {
 		User auth0User = new User("Username-Password-Authentication");
 		auth0User.setEmail(littleUser.getEmailAddress());
-		// todo move password gen to service
 		auth0User.setPassword(tempPassword.toCharArray());
 		return auth0User;
 	}
 
 	public AuthUser toDomain(User user) {
+		//todo refactor method
 		AuthUser user1 = new AuthUser();
 		user1.setEmailAddress(user.getEmail());
 		user1.setId(user.getId());
