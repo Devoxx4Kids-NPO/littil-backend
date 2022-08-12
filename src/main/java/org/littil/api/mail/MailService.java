@@ -1,24 +1,37 @@
 package org.littil.api.mail;
 
-import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.Mailer;
+import io.quarkus.mailer.MailTemplate;
+import io.quarkus.qute.CheckedTemplate;
+import io.smallrye.mutiny.groups.UniSubscribe;
+import lombok.extern.slf4j.Slf4j;
 import org.littil.api.user.service.User;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import java.util.concurrent.ExecutionException;
 
+@Slf4j
 @ApplicationScoped
 public class MailService {
-
-    @Inject
-    Mailer mailer;
+    @CheckedTemplate
+    static class Templates {
+        public static native MailTemplate.MailTemplateInstance welcome(String userEmail, String temporaryPassword);
+    }
 
     public void sendWelcomeMail(User user, String password) {
-        // todo do mail things
-        Mail mail = new Mail();
-        mail.addTo(user.getEmailAddress());
-        mail.setSubject("somesubject");
+        log.info("sending mail to {}", user.getEmailAddress());
+        // todo now sending only NL mails
+        UniSubscribe<Void> uni = Templates.welcome(user.getEmailAddress(), password)
+                .to(user.getEmailAddress())
+                .subject("Welkom bij Littil")
+                .send().subscribe();
+        // todo fix handling
+        try {
+            uni.asCompletionStage().get();
+        } catch (InterruptedException | ExecutionException e) {
+            log.info("mailing failed! ", e);
+            throw new RuntimeException(e);
+        }
+        log.info("called uni {}", uni);
 
-        mailer.send(mail);
     }
 }

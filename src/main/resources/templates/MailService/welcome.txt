@@ -1,0 +1,9 @@
+Beste meneer/mevrouw,
+
+Welkom!
+
+Uw email-adres: {userEmail}
+Uw tijdelijke wachtwoord: {temporaryPassword}
+
+Met vriendelijke groet,
+Littil

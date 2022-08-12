@@ -8,20 +8,16 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.exception.ErrorResponse;
+import org.littil.api.mail.MailService;
 import org.littil.api.user.service.User;
+import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -38,6 +34,10 @@ import java.util.UUID;
 public class UserResource {
     @Inject
     UserService userService;
+    @Inject
+    UserMapper userMapper;
+    @Inject
+    MailService mailService;
 
     // todo remove (for now easy for testing)
     @GET
@@ -45,6 +45,9 @@ public class UserResource {
     @Operation(summary = "Get all users")
     @APIResponse(responseCode = "200", description = "Get all users", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.ARRAY, implementation = User.class)))
     public Response list() {
+        User user = new User();
+        user.setEmailAddress("test@test.nl");
+         mailService.sendWelcomeMail(user, UUID.randomUUID().toString());
         List<User> users = userService.listUsers();
         return Response.ok(users)
                 .build();
@@ -70,10 +73,8 @@ public class UserResource {
     @APIResponse(responseCode = "201", description = "User successfully created", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)))
     @APIResponse(responseCode = "400", description = "Validation errors occurred.", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)))
     @APIResponse(responseCode = "409", description = "User already exists", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)))
-    // todo slim post resource, we only need email now
     public Response create(@NotNull @Valid UserPostResource userPostResource) {
-        User user = new User();
-        user.setEmailAddress(userPostResource.getEmailAddress());
+        User user = userMapper.toDomain(userPostResource);
 
         User createdUser = userService.createUser(user);
         URI uri = UriBuilder.fromResource(UserResource.class).path("/user/" + createdUser.getId()).build();
