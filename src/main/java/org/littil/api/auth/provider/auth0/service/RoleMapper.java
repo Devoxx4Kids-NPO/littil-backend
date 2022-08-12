@@ -14,8 +14,6 @@ public class RoleMapper {
         return mgmtRole;
     }
 
-    ;
-
     Role toEntity(com.auth0.json.mgmt.Role role) {
         return new Role(role.getId(), role.getName());
     }

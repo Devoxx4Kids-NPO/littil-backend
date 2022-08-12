@@ -11,7 +11,6 @@ public interface AuthenticationService {
 
     AuthUser createUser(AuthUser user, String tempPassword);
 
-
     void deleteUser(String userId);
 
     List<Role> getRoles();

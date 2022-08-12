@@ -53,9 +53,9 @@ public class Auth0AuthenticationService implements AuthenticationService {
             if (exception.getStatusCode() == 404) {
                 throw new NotFoundException(exception.getMessage());
             }
-            throw new AuthenticationException(exception.getMessage());
+            throw new AuthenticationException("todo fixme", exception);
         } catch (Auth0Exception exception) {
-            throw new AuthenticationException(exception.getMessage());
+            throw new AuthenticationException("todo fixme", exception);
         }
     }
 
@@ -67,7 +67,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         } catch (Auth0Exception exception) {
             //todo handle Exception properly
             exception.printStackTrace();
-            throw new AuthenticationException(exception.getMessage());
+            throw new AuthenticationException("todo fixme", exception);
         }
     }
 
@@ -78,7 +78,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         } catch (Auth0Exception exception) {
             //todo handle Exception properly
             exception.printStackTrace();
-            throw new AuthenticationException(exception.getMessage());
+            throw new AuthenticationException("todo fixme", exception);
         }
     }
 
@@ -89,7 +89,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
             RolesPage response = managementAPI.roles().list(rolesFilter).execute();
             return response.getItems().stream().map(roleMapper::toEntity).toList();
         } catch (Auth0Exception e) {
-            throw new AuthenticationException(e.getMessage());
+            throw new AuthenticationException("todo fixme", e);
         }
     }
 
@@ -106,7 +106,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
             }
             //todo handle Exception properly
         } catch (Auth0Exception e) {
-            throw new AuthenticationException(e.getMessage());
+            throw new AuthenticationException("todo fixme", e);
         }
     }
 }

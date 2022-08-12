@@ -169,7 +169,7 @@ public class SchoolResource {
         if (!Objects.equals(id, school.getId())) {
             throw new ServiceException("Path variable id does not match School.id");
         }
-
+        // todo check if school exists
         School updatedSchool = schoolService.update(school);
         return Response.ok(updatedSchool).build();
     }

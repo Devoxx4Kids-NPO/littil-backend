@@ -50,9 +50,8 @@ public class UserService {
     public User createUser(User user) {
         String tempPassword = passwordService.generate();
 
-        // todo create and set temp password
         AuthUser createdUser = authenticationService.createUser(mapper.toAuthUser(user), tempPassword);
-
+        // todo use createdUser to store in db
         // todo how does it work if user already is present in db?
         repository.persist(mapper.toEntity(user));
         mailService.sendWelcomeMail(user, tempPassword);
