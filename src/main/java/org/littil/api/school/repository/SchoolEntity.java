@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
 import org.littil.api.location.repository.LocationEntity;
+import org.littil.api.user.repository.UserEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -43,4 +44,8 @@ public class SchoolEntity extends AbstractAuditableEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location", referencedColumnName = "location_id")
     private LocationEntity location;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user", referencedColumnName = "user_id")
+    private UserEntity user;
 }

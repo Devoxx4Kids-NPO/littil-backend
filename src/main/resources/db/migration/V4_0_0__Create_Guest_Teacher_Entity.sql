@@ -4,14 +4,18 @@ CREATE TABLE guest_teacher
     first_name         VARCHAR(255) NOT NULL,
     surname            VARCHAR(255) NOT NULL,
     location           BINARY(16)   NOT NULL,
+    user               BINARY(16)   NOT NULL,
     created_by         BINARY(16),
     created_date       DATETIME,
     last_modified_by   BINARY(16),
     last_modified_date DATETIME,
     PRIMARY KEY (guest_teacher_id),
-    CONSTRAINT fk_teacher_location
+    CONSTRAINT fk_guest_teacher_location
         FOREIGN KEY (location)
-            REFERENCES location (location_id)
+            REFERENCES location (location_id),
+    CONSTRAINT fk_guest_teacher_user
+        FOREIGN KEY (user)
+            REFERENCES `user` (user_id)
 ) ENGINE = INNODB;
 
 CREATE TABLE guest_teacher_availability

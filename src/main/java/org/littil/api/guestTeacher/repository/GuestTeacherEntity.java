@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
 import org.littil.api.location.repository.LocationEntity;
+import org.littil.api.user.repository.UserEntity;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -56,4 +57,8 @@ public class GuestTeacherEntity extends AbstractAuditableEntity {
     @Column(name = "availability")
     @Enumerated(EnumType.STRING)
     private Set<DayOfWeek> availability = new HashSet<>();
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user", referencedColumnName = "user_id")
+    private UserEntity user;
 }

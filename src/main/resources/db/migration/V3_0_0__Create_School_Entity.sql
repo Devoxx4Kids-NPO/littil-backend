@@ -4,6 +4,7 @@ CREATE TABLE school
     school_name         VARCHAR(255) NOT NULL,
     contact_person_name VARCHAR(255) NOT NULL,
     location            BINARY(16)   NOT NULL,
+    user                BINARY(16)   NOT NULL,
     created_by          BINARY(16),
     created_date        DATETIME,
     last_modified_by    BINARY(16),
@@ -11,5 +12,8 @@ CREATE TABLE school
     PRIMARY KEY (school_id),
     CONSTRAINT fk_school_location
         FOREIGN KEY (location)
-            REFERENCES location (location_id)
+            REFERENCES location (location_id),
+    CONSTRAINT fk_school_user
+        FOREIGN KEY (user)
+            REFERENCES `user` (user_id)
 ) ENGINE = INNODB;

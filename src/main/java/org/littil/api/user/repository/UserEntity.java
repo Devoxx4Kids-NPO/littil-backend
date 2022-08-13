@@ -51,14 +51,4 @@ public class UserEntity extends AbstractAuditableEntity {
     @Email
     @Column(name = "email_address", unique = true)
     private String emailAddress;
-
-    //todo move relation of the user to the school entity
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school", referencedColumnName = "school_id")
-    private SchoolEntity school;
-
-    //todo move relation of the user to the guestTeacher entity
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "guest_teacher", referencedColumnName = "guest_teacher_id")
-    private GuestTeacherEntity guestTeacher;
 }
