@@ -76,9 +76,30 @@ public class UserResource {
     @POST
     @Path("user")
     @Operation(summary = "Create a new user")
-    @APIResponse(responseCode = "201", description = "User successfully created", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)))
-    @APIResponse(responseCode = "400", description = "Validation errors occurred.", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)))
-    @APIResponse(responseCode = "409", description = "User already exists", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)))
+    @APIResponse(
+            responseCode = "201",
+            description = "User successfully created",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)
+            )
+    )
+    @APIResponse(
+            responseCode = "400",
+            description = "Validation errors occurred.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+            )
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "User already exists",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+            )
+    )
     public Response create(@NotNull @Valid UserPostResource userPostResource) {
         User user = userMapper.toDomain(userPostResource);
 
@@ -91,13 +112,19 @@ public class UserResource {
 
     @DELETE
     @Path("user/{id}")
-    @Operation(summary = "Delete a user specified with an Id")
-    @APIResponse(responseCode = "200", description = "Successfully deleted the user.", content = @Content(mediaType = MediaType.APPLICATION_JSON))
-    @APIResponse( // TODO
-            responseCode = "404", description = "The user to delete was not found.", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    @Operation(summary = "Delete a user specified with an id")
+    @APIResponse(
+            responseCode = "200",
+            description = "Successfully deleted the user.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "The user to delete was not found.",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+    )
     public Response delete(@PathParam("id") UUID id) {
         userService.deleteUser(id);
-        return Response.ok()
-                .build();
+        return Response.ok().build();
     }
 }

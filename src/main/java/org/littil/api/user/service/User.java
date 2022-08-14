@@ -22,9 +22,5 @@ public class User {
 
     private Provider authProvider;
 
-    private GuestTeacher guestTeacher;
-
-    private School school;
-
     private Set<Role> roles = new HashSet<>();
 }

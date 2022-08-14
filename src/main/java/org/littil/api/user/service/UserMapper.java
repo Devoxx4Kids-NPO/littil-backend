@@ -21,7 +21,12 @@ public interface UserMapper {
     @InheritInverseConfiguration(name = "toDomain")
     AuthUser toAuthUser(User user);
 
+    //todo why does this method return a void?
     abstract void updateEntityFromDomain(User domain, @MappingTarget UserEntity entity);
 
     abstract User updateDomainFromEntity(UserEntity entity, @MappingTarget User domain);
+
+    abstract User updateDomainFromAuthUser(User domain, @MappingTarget AuthUser authUser);
+
+    abstract AuthUser updateAuthUserFromEntity(AuthUser authUser, @MappingTarget User domain);
 }
