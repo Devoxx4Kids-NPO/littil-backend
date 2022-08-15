@@ -20,9 +20,9 @@ import javax.inject.Singleton;
 public class Auth0ManagementAPI {
 
     @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
-    private String clientId;
+    String clientId;
     @ConfigProperty(name = "org.littil.auth.machine2machine.client.secret")
-    private String clientSecret;
+    String clientSecret;
     @Inject
     DefaultTenantConfigResolver defaultTenantConfigResolver;
 

@@ -10,6 +10,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.authz.UserOwned;
+import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.school.service.School;
@@ -42,7 +43,7 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
-@UserOwned
+@UserOwned(type = AuthorizationType.SCHOOL)
 @Tag(name = "School", description = "CRUD Operations")
 public class SchoolResource {
 
@@ -130,6 +131,7 @@ public class SchoolResource {
     )
     public Response create(@NotNull @Valid School school) {
         //todo check whether user already has school or guest teacher attached. Then return error.
+
         School persistedSchool = schoolService.saveSchool(school);
         URI uri = UriBuilder.fromResource(SchoolResource.class)
                 .path("/" + persistedSchool.getId()).build();

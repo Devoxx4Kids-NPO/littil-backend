@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
+import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.PersistenceException;
@@ -24,6 +25,8 @@ public class SchoolService {
 
     private final SchoolRepository repository;
     private final SchoolMapper mapper;
+
+    private final UserService userService;
 
     public List<School> getSchoolByName(@NonNull final String name) {
         return repository.findByName(name).stream().map(mapper::toDomain).toList();
@@ -44,6 +47,7 @@ public class SchoolService {
 
         if (repository.isPersistent(entity)) {
             //todo call userService to add school role to user. (first refactor user/school/guestTeacher entity
+            userService.updateUser(school);
             return mapper.updateDomainFromEntity(entity, school);
         } else {
             throw new PersistenceException();

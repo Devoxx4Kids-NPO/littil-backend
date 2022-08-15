@@ -4,21 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Length;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
 import org.littil.api.auth.provider.Provider;
-import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
-import org.littil.api.school.repository.SchoolEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -40,7 +34,6 @@ public class UserEntity extends AbstractAuditableEntity {
 
     @Column(name = "provider")
     @Enumerated(EnumType.STRING)
-    @Length(max = 50)
     private Provider provider = Provider.AUTH0;
 
     @Column(name = "provider_id")

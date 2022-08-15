@@ -54,7 +54,6 @@ public class UserService {
 
     @Transactional
     public User createUser(User user) {
-        String tempPassword = passwordService.generate();
         Optional<UserEntity> alreadyExistingUser = repository.findByEmailAddress(user.getEmailAddress());
 
         if(alreadyExistingUser.isPresent()) {
@@ -62,10 +61,14 @@ public class UserService {
             throw new UserAlreadyExistsException();
         }
 
-        AuthUser createdUser = authenticationService.createUser(mapper.toAuthUser(user), tempPassword);
-        user = mapper.updateDomainFromAuthUser(user, createdUser);
+        UserEntity userEntity = mapper.toEntity(user);
+        repository.persist(userEntity);
+        user = mapper.updateDomainFromEntity(userEntity, user);
 
-        repository.persist(mapper.toEntity(user));
+        String tempPassword = passwordService.generate();
+        AuthUser createdUser = authenticationService.createUser(mapper.toAuthUser(user), tempPassword);
+        user = mapper.updateDomainFromAuthUser(createdUser, user);
+
         mailService.sendWelcomeMail(user, tempPassword);
 
         return user;

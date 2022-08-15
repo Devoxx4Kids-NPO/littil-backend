@@ -4,12 +4,14 @@ import io.quarkus.security.identity.SecurityIdentity;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import java.util.Optional;
 
+@ApplicationScoped
 public class AuditableEntityListener {
 
     @Inject

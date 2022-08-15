@@ -9,25 +9,28 @@ import com.auth0.json.mgmt.RolesPage;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
 import com.auth0.net.Request;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.littil.api.auth.Role;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.AuthenticationException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @ApplicationScoped
-@RequiredArgsConstructor
+@AllArgsConstructor(onConstructor_ = {@Inject})
 public class Auth0AuthenticationService implements AuthenticationService {
 
     private final Auth0UserMapper auth0UserMapper;
     private final RoleMapper roleMapper;
-    @Inject
     ManagementAPI managementAPI;
 
     @Override
@@ -62,6 +65,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public AuthUser createUser(AuthUser authUser, String tempPassword) {
         try {
+
             // todo check if user already exists
             return auth0UserMapper.toDomain(managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute());
         } catch (Auth0Exception exception) {
@@ -90,6 +94,40 @@ public class Auth0AuthenticationService implements AuthenticationService {
             return response.getItems().stream().map(roleMapper::toEntity).toList();
         } catch (Auth0Exception e) {
             throw new AuthenticationException("todo fixme", e);
+        }
+    }
+
+    @Override
+    //todo refactor single point of definition
+    public void addAuthorization(AuthUser authUser, AuthorizationType type, UUID id) {
+        try {
+            User user = managementAPI.users().get(authUser.getId(), null).execute();
+            Map<String, Object> appMetadata = user.getAppMetadata();
+            Set<UUID> authorizations = (Set<UUID>) appMetadata.get(type.getTokenValue());
+            authorizations.add(id);
+            appMetadata.put(type.getTokenValue(), authorizations);
+            user.setAppMetadata(appMetadata);
+            managementAPI.users().update(authUser.getId(), user).execute();
+        } catch (Auth0Exception e) {
+            //todo better exception handling
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    //todo refactor single point of definition
+    public void deleteAuthorization(AuthUser authUser, AuthorizationType type, UUID id) {
+        try {
+            User user = managementAPI.users().get(authUser.getId(), null).execute();
+            Map<String, Object> appMetadata = user.getAppMetadata();
+            Set<UUID> authorizations = (Set<UUID>) appMetadata.get(type.getTokenValue());
+            authorizations.remove(id);
+            appMetadata.put(type.getTokenValue(), authorizations);
+            user.setAppMetadata(appMetadata);
+            managementAPI.users().update(authUser.getId(), user).execute();
+        } catch (Auth0Exception e) {
+            //todo better exception handling
+            throw new RuntimeException(e);
         }
     }
 

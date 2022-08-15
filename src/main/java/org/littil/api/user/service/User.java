@@ -22,5 +22,7 @@ public class User {
 
     private Provider authProvider;
 
+    private String providerId;
+
     private Set<Role> roles = new HashSet<>();
 }

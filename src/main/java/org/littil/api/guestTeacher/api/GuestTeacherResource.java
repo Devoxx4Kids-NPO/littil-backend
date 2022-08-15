@@ -9,6 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.authz.UserOwned;
+import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.service.GuestTeacher;
@@ -40,7 +41,7 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
-@UserOwned
+@UserOwned(type = AuthorizationType.GUEST_TEACHER)
 @Tag(name = "Teacher", description = "CRUD Operations")
 public class GuestTeacherResource {
 

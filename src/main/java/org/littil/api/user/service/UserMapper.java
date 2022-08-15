@@ -7,26 +7,39 @@ import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.service.UserSetting;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.util.Collections;
+
+import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
+
 @Mapper(componentModel = "cdi")
-public interface UserMapper {
+public abstract class UserMapper {
 
-    User toDomain(UserEntity userEntity);
-    User toDomain(AuthUser userEntity);
-    User toDomain(UserPostResource userPostResource);
+    abstract User toDomain(UserEntity userEntity);
+    public abstract User toDomain(AuthUser userEntity);
+    public abstract User toDomain(UserPostResource userPostResource);
 
     @InheritInverseConfiguration(name = "toDomain")
-    UserEntity toEntity(User user);
-    @InheritInverseConfiguration(name = "toDomain")
-    AuthUser toAuthUser(User user);
+    abstract UserEntity toEntity(User user);
+
+    AuthUser toAuthUser(User user) {
+        AuthUser authUser = new AuthUser();
+        authUser.setEmailAddress(user.getEmailAddress());
+        authUser.setRoles(user.getRoles());
+        authUser.setAppMetadata(Collections.singletonMap(USER_ID_TOKEN_CLAIM, user.getId()));
+        return authUser;
+    }
 
     //todo why does this method return a void?
-    abstract void updateEntityFromDomain(User domain, @MappingTarget UserEntity entity);
+    abstract UserEntity updateEntityFromDomain(User domain, @MappingTarget UserEntity entity);
 
     abstract User updateDomainFromEntity(UserEntity entity, @MappingTarget User domain);
 
-    abstract User updateDomainFromAuthUser(User domain, @MappingTarget AuthUser authUser);
+    @Mapping(target="providerId", source="id")
+    @Mapping(target = "id", ignore = true)
+    abstract User updateDomainFromAuthUser(AuthUser authUser, @MappingTarget User domain);
 
-    abstract AuthUser updateAuthUserFromEntity(AuthUser authUser, @MappingTarget User domain);
+    abstract AuthUser updateAuthUserFromEntity(User domain, @MappingTarget AuthUser authUser);
 }
