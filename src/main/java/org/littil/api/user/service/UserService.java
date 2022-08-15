@@ -70,7 +70,7 @@ public class UserService {
         repository.persist(userEntity);
         mapper.updateDomainFromEntity(userEntity, user);
 
-        // save user to the authentication provider aswell
+        // save user to the authentication provider as well
         String tempPassword = passwordService.generate();
         AuthUser createdUser = authenticationService.createUser(mapper.toAuthUser(user), tempPassword);
         mapper.updateEntityFromAuthUser(createdUser, userEntity);

@@ -20,6 +20,7 @@ public class Auth0UserMapper {
 		User auth0User = new User("Username-Password-Authentication");
 		auth0User.setEmail(littleUser.getEmailAddress());
 		auth0User.setPassword(tempPassword.toCharArray());
+		auth0User.setEmailVerified(true);
 		auth0User.setAppMetadata(littleUser.getAppMetadata());
 		return auth0User;
 	}
