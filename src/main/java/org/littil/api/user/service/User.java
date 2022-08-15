@@ -3,8 +3,6 @@ package org.littil.api.user.service;
 import lombok.Data;
 import org.littil.api.auth.Role;
 import org.littil.api.auth.provider.Provider;
-import org.littil.api.guestTeacher.service.GuestTeacher;
-import org.littil.api.school.service.School;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -20,7 +18,7 @@ public class User {
     @Email
     private String emailAddress;
 
-    private Provider authProvider;
+    private Provider provider;
 
     private String providerId;
 

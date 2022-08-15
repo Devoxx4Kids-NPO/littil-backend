@@ -2,7 +2,7 @@ CREATE TABLE user
 (
     user_id            BINARY(16)   NOT NULL,
     provider           VARCHAR(50)  NOT NULL,
-    provider_id        VARCHAR(255) NOT NULL,
+    provider_id        VARCHAR(255),
     email_address      VARCHAR(255) NOT NULL UNIQUE,
     created_by         BINARY(16),
     created_date       DATETIME,

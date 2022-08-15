@@ -16,7 +16,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data
@@ -25,7 +24,7 @@ import java.util.UUID;
 @Builder
 @Entity(name = "User")
 @Table(name = "user")
-public class UserEntity extends AbstractAuditableEntity {
+public class UserEntity {
 
     @Id
     @GeneratedValue
@@ -34,10 +33,9 @@ public class UserEntity extends AbstractAuditableEntity {
 
     @Column(name = "provider")
     @Enumerated(EnumType.STRING)
-    private Provider provider = Provider.AUTH0;
+    private Provider provider;
 
     @Column(name = "provider_id")
-    @NotNull
     private String providerId;
 
     @NotEmpty(message = "{User.emailAddress.required}")

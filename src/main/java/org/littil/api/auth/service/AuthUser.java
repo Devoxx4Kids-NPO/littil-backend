@@ -10,9 +10,9 @@ import java.util.Set;
 
 @Data
 public class AuthUser {
-    private String id;
+    private String providerId;
     private String emailAddress;
-    private Provider authProvider;
+    private Provider provider;
     private Set<Role> roles = new HashSet<>();
     private Map<String, Object> appMetadata;
 }

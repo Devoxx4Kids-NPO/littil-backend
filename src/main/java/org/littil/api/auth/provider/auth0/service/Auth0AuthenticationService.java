@@ -101,13 +101,13 @@ public class Auth0AuthenticationService implements AuthenticationService {
     //todo refactor single point of definition
     public void addAuthorization(AuthUser authUser, AuthorizationType type, UUID id) {
         try {
-            User user = managementAPI.users().get(authUser.getId(), null).execute();
+            User user = managementAPI.users().get(authUser.getProviderId(), null).execute();
             Map<String, Object> appMetadata = user.getAppMetadata();
             Set<UUID> authorizations = (Set<UUID>) appMetadata.get(type.getTokenValue());
             authorizations.add(id);
             appMetadata.put(type.getTokenValue(), authorizations);
             user.setAppMetadata(appMetadata);
-            managementAPI.users().update(authUser.getId(), user).execute();
+            managementAPI.users().update(authUser.getProviderId(), user).execute();
         } catch (Auth0Exception e) {
             //todo better exception handling
             throw new RuntimeException(e);
@@ -118,13 +118,13 @@ public class Auth0AuthenticationService implements AuthenticationService {
     //todo refactor single point of definition
     public void deleteAuthorization(AuthUser authUser, AuthorizationType type, UUID id) {
         try {
-            User user = managementAPI.users().get(authUser.getId(), null).execute();
+            User user = managementAPI.users().get(authUser.getProviderId(), null).execute();
             Map<String, Object> appMetadata = user.getAppMetadata();
             Set<UUID> authorizations = (Set<UUID>) appMetadata.get(type.getTokenValue());
             authorizations.remove(id);
             appMetadata.put(type.getTokenValue(), authorizations);
             user.setAppMetadata(appMetadata);
-            managementAPI.users().update(authUser.getId(), user).execute();
+            managementAPI.users().update(authUser.getProviderId(), user).execute();
         } catch (Auth0Exception e) {
             //todo better exception handling
             throw new RuntimeException(e);

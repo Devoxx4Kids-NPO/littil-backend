@@ -28,7 +28,7 @@ public class Auth0UserMapper {
 		//todo refactor method
 		AuthUser user1 = new AuthUser();
 		user1.setEmailAddress(user.getEmail());
-		user1.setId(user.getId());
+		user1.setProviderId(user.getId());
 		// todo check how to retrieve roles from auth0 user
 		Set<Role> roles = (Set<Role>) user.getValues().get("roles");
 		if (roles != null) {
@@ -37,7 +37,7 @@ public class Auth0UserMapper {
 					.map(roleMapper::toEntity)
 					.collect(Collectors.toSet()));
 		}
-		user1.setAuthProvider(Provider.AUTH0);
+		user1.setProvider(Provider.AUTH0);
 		return user1;
 	}
 }

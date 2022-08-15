@@ -51,9 +51,6 @@ public class UserResource {
     @Operation(summary = "Get all users")
     @APIResponse(responseCode = "200", description = "Get all users", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.ARRAY, implementation = User.class)))
     public Response list() {
-        User user = new User();
-        user.setEmailAddress("test@test.nl");
-         mailService.sendWelcomeMail(user, UUID.randomUUID().toString());
         List<User> users = userService.listUsers();
         return Response.ok(users)
                 .build();
