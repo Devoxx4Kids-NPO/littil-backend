@@ -38,7 +38,8 @@ public class SchoolEntity extends AbstractAuditableEntity {
     @Column(name = "contact_person_name")
     private String contactPersonName;
 
-    @NotEmpty(message = "{School.location.required}")
+    // todo create validation
+//    @NotEmpty(message = "{School.location.required}")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location", referencedColumnName = "location_id")
     private LocationEntity location;

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
+import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
 import org.littil.api.user.repository.UserEntity;
@@ -29,6 +30,7 @@ import java.util.UUID;
 public class SchoolService {
 
     private final SchoolRepository repository;
+    private final LocationRepository locationRepository;
     private final SchoolMapper mapper;
     private final UserService userService;
     private final UserMapper userMapper;
@@ -57,7 +59,7 @@ public class SchoolService {
 
         UserEntity userEntity = userMapper.toEntity(user.get());
         entity.setUser(userEntity);
-
+        locationRepository.persist(entity.getLocation());
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {

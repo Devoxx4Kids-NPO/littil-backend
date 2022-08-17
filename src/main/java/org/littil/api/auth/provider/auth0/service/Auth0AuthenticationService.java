@@ -20,12 +20,9 @@ import org.littil.api.exception.AuthenticationException;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+
+import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
 
 @ApplicationScoped
 @AllArgsConstructor(onConstructor_ = {@Inject})
@@ -102,18 +99,25 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
     @Override
     //todo refactor single point of definition
-    public void addAuthorization(String issuer, AuthorizationType type, UUID id) {
+    public void addAuthorization(String userId, AuthorizationType type, UUID id) {
         try {
-            User user = managementAPI.users().get(issuer, null).execute();
-            Map<String, Object> appMetadata = user.getAppMetadata();
-            Set<UUID> authorizations = (Set<UUID>) appMetadata.get(type.getTokenValue());
-            if (authorizations == null) {
-                authorizations = new HashSet<>();
+            User userFromAuth = managementAPI.users().get(userId, null).execute();
+            // we need to create a new user, to prevent an error of editing additional properties.
+            User user = new User();
+
+            Map<String, Object> appMetadata = userFromAuth.getAppMetadata();
+            Map<String, List<UUID>> authorizations = (Map<String, List<UUID>>)  appMetadata.getOrDefault(AUTHORIZATIONS_TOKEN_CLAIM, new HashMap<>());
+            List<UUID> authorizationTypeAuthorizations = authorizations.getOrDefault(type.getTokenValue(), new ArrayList<>());
+
+            if (!authorizationTypeAuthorizations.contains(id)) {
+                authorizationTypeAuthorizations.add(id);
             }
-            authorizations.add(id);
-            appMetadata.put(type.getTokenValue(), authorizations);
+            authorizations.put(type.getTokenValue(), authorizationTypeAuthorizations);
+            appMetadata.put(AUTHORIZATIONS_TOKEN_CLAIM, authorizations);
+
             user.setAppMetadata(appMetadata);
-            managementAPI.users().update(issuer, user).execute();
+            // todo add role to user
+            managementAPI.users().update(userFromAuth.getId(), user).execute();
         } catch (Auth0Exception e) {
             //todo better exception handling
             throw new RuntimeException(e);
