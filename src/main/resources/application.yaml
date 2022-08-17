@@ -43,10 +43,16 @@ quarkus:
     username: ${SMTP_USERNAME}
     password: ${SMTP_PASSWORD}
     mock: true #Mock SMTP server when running in development mode. See: http://localhost:8080/mail for incomming mail
+
 "%dev":
+  org:
+    littil:
+      devservices:
+        devdata: true
   quarkus:
     datasource:
       devservices:
+        port: 61052
         enabled: true
         image-name: "mariadb:10.6"
     log:
