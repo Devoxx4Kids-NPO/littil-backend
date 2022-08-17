@@ -12,6 +12,7 @@ public interface SchoolMapper {
     School toDomain(SchoolEntity schoolEntity);
 
     @InheritInverseConfiguration(name = "toDomain")
+    @Mapping(target = "id", ignore = true)
     SchoolEntity toEntity(School school);
 
     @Mapping(target = "id", ignore = true)

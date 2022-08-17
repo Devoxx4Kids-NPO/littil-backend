@@ -1,7 +1,6 @@
 package org.littil.api.school.repository;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
@@ -22,7 +21,6 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity(name = "School")
 @Table(name = "school")
 public class SchoolEntity extends AbstractAuditableEntity {

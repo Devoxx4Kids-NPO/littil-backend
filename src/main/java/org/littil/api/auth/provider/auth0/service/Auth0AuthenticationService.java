@@ -10,6 +10,7 @@ import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
 import com.auth0.net.Request;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.littil.api.auth.Role;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
@@ -19,6 +20,7 @@ import org.littil.api.exception.AuthenticationException;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +29,7 @@ import java.util.UUID;
 
 @ApplicationScoped
 @AllArgsConstructor(onConstructor_ = {@Inject})
+@Slf4j
 public class Auth0AuthenticationService implements AuthenticationService {
 
     private final Auth0UserMapper auth0UserMapper;
@@ -99,15 +102,18 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
     @Override
     //todo refactor single point of definition
-    public void addAuthorization(AuthUser authUser, AuthorizationType type, UUID id) {
+    public void addAuthorization(String issuer, AuthorizationType type, UUID id) {
         try {
-            User user = managementAPI.users().get(authUser.getProviderId(), null).execute();
+            User user = managementAPI.users().get(issuer, null).execute();
             Map<String, Object> appMetadata = user.getAppMetadata();
             Set<UUID> authorizations = (Set<UUID>) appMetadata.get(type.getTokenValue());
+            if (authorizations == null) {
+                authorizations = new HashSet<>();
+            }
             authorizations.add(id);
             appMetadata.put(type.getTokenValue(), authorizations);
             user.setAppMetadata(appMetadata);
-            managementAPI.users().update(authUser.getProviderId(), user).execute();
+            managementAPI.users().update(issuer, user).execute();
         } catch (Auth0Exception e) {
             //todo better exception handling
             throw new RuntimeException(e);
@@ -116,15 +122,19 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
     @Override
     //todo refactor single point of definition
-    public void deleteAuthorization(AuthUser authUser, AuthorizationType type, UUID id) {
+    public void deleteAuthorization(String issuer, AuthorizationType type, UUID id) {
         try {
-            User user = managementAPI.users().get(authUser.getProviderId(), null).execute();
+            User user = managementAPI.users().get(issuer, null).execute();
             Map<String, Object> appMetadata = user.getAppMetadata();
             Set<UUID> authorizations = (Set<UUID>) appMetadata.get(type.getTokenValue());
+            if (authorizations == null) {
+                log.info(String.format("No need to remove authorisation for type %s with id %s because this user does not have any authorizations", type.getTokenValue(), id.toString()));
+                return;
+            }
             authorizations.remove(id);
             appMetadata.put(type.getTokenValue(), authorizations);
             user.setAppMetadata(appMetadata);
-            managementAPI.users().update(authUser.getProviderId(), user).execute();
+            managementAPI.users().update(issuer, user).execute();
         } catch (Auth0Exception e) {
             //todo better exception handling
             throw new RuntimeException(e);

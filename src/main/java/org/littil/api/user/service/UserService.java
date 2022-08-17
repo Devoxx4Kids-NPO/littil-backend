@@ -27,7 +27,6 @@ import java.util.UUID;
 public class UserService {
 
     AuthenticationService authenticationService;
-
     ProviderService providerService;
     UserRepository repository;
     MailService mailService;
@@ -36,6 +35,10 @@ public class UserService {
 
     public Optional<User> getUserById(UUID userId) {
         return repository.findByIdOptional(userId).map(mapper::toDomain);
+    }
+
+    public Optional<User> getUserByProviderId(String providerId) {
+        return repository.findByProviderId(providerId).map(mapper::toDomain);
     }
 
     public List<User> listUsers() {

@@ -9,6 +9,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.authz.UserOwned;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ErrorResponse;
@@ -50,6 +51,9 @@ public class SchoolResource {
     @Inject
     SchoolService schoolService;
 
+    @Inject
+    TokenHelper tokenHelper;
+
     @GET
     @Operation(summary = "Get all schools")
     @APIResponse(
@@ -62,7 +66,6 @@ public class SchoolResource {
     )
     public Response list() {
         List<School> schools = schoolService.findAll();
-
         return Response.ok(schools).build();
     }
 
@@ -79,12 +82,10 @@ public class SchoolResource {
     )
     @APIResponse(
             responseCode = "404",
-            description = "School with specific Id was not found.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            description = "School with specific Id was not found."
     )
     public Response get(@Parameter(name = "id", required = true) @PathParam("id") final UUID id) {
         Optional<School> school = schoolService.getSchoolById(id);
-
         return school.map(r -> Response.ok(r).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }
@@ -99,6 +100,10 @@ public class SchoolResource {
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(type = SchemaType.ARRAY, implementation = School.class)
             )
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "School with specific name was not found."
     )
     public Response getByName(@Parameter(name = "name", required = true) @PathParam("name") final String name) {
         List<School> schools = schoolService.getSchoolByName(name);
@@ -125,14 +130,23 @@ public class SchoolResource {
             )
     )
     @APIResponse(
+            responseCode = "409",
+            description = "Current user already either a school or guest teacher profile attached",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+            )
+    )
+    @APIResponse(
             responseCode = "500",
-            description = "Persistence error occurred. Failed to persist school.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            description = "Persistence error occurred. Failed to persist school."
     )
     public Response create(@NotNull @Valid School school) {
-        //todo check whether user already has school or guest teacher attached. Then return error.
+        if (tokenHelper.hasUserAuthorizations()) {
+            throw new ServiceException("User already has either a school or guest teacher attached");
+        }
 
-        School persistedSchool = schoolService.saveSchool(school);
+        School persistedSchool = schoolService.saveSchool(school, tokenHelper.getSubject());
         URI uri = UriBuilder.fromResource(SchoolResource.class)
                 .path("/" + persistedSchool.getId()).build();
         return Response.created(uri).entity(persistedSchool).build();
@@ -160,18 +174,24 @@ public class SchoolResource {
     @APIResponse(
             responseCode = "500",
             description = "Path variable Id does not match School.id",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+            )
     )
     @APIResponse(
             responseCode = "404",
-            description = "No School found for id provided",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            description = "No School found for  provided id"
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "Current user is not owner of this school"
     )
     public Response put(@Parameter(name = "id", required = true) @PathParam("id") final UUID id, @NotNull @Valid School school) {
         if (!Objects.equals(id, school.getId())) {
             throw new ServiceException("Path variable id does not match School.id");
         }
-        // todo check if school exists
+
         School updatedSchool = schoolService.update(school);
         return Response.ok(updatedSchool).build();
     }
@@ -186,8 +206,11 @@ public class SchoolResource {
     )
     @APIResponse(
             responseCode = "404",
-            description = "The school to delete was not found.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            description = "The school to delete was not found."
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "Current user is not owner of this school"
     )
     public Response delete(@PathParam("id") UUID id) {
         schoolService.deleteSchool(id);

@@ -1,13 +1,13 @@
 package org.littil.api.userSetting.service;
 
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.littil.api.exception.ServiceException;
-import org.littil.api.school.service.School;
 import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
-@RequiredArgsConstructor
+@AllArgsConstructor(onConstructor_ = {@Inject})
 public class UserSettingService {
 
     UserSettingRepository repository;

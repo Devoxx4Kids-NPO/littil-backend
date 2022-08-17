@@ -3,9 +3,14 @@ package org.littil.api.school.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
+import org.littil.api.user.repository.UserEntity;
+import org.littil.api.user.service.User;
+import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -25,8 +30,9 @@ public class SchoolService {
 
     private final SchoolRepository repository;
     private final SchoolMapper mapper;
-
     private final UserService userService;
+    private final UserMapper userMapper;
+    private final AuthenticationService authenticationService;
 
     public List<School> getSchoolByName(@NonNull final String name) {
         return repository.findByName(name).stream().map(mapper::toDomain).toList();
@@ -41,12 +47,22 @@ public class SchoolService {
     }
 
     @Transactional
-    public School saveSchool(@Valid School school) {
+    public School saveSchool(@Valid School school, String subject) {
         SchoolEntity entity = mapper.toEntity(school);
+        // todo I don't like having to inject the user mapper and user service for this usecase.
+        Optional<User> user = userService.getUserByProviderId(subject);
+        if (user.isEmpty()) {
+            throw new ServiceException(String.format("Unable to create school due to the fact the corresponding user with provider id %s does not exists.", subject));
+        }
+
+        UserEntity userEntity = userMapper.toEntity(user.get());
+        entity.setUser(userEntity);
+
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
-            //todo call userService to add school role to user. (first refactor user/school/guestTeacher entity
+            authenticationService.addAuthorization(subject, AuthorizationType.SCHOOL, entity.getId());
+            //todo add school role
             userService.updateUser(school);
             return mapper.updateDomainFromEntity(entity, school);
         } else {

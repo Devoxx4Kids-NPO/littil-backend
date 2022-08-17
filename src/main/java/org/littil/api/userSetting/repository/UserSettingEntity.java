@@ -26,7 +26,10 @@ public class UserSettingEntity implements Serializable {
     private UUID userId;
 
     @Id
+    @Column(name = "setting_key")
     private String key;
+
+    @Column(name = "setting_value")
     private String value;
 
     @Data

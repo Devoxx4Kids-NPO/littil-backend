@@ -15,7 +15,9 @@ public interface AuthenticationService {
     void deleteUser(String userId);
 
     List<Role> getRoles();
-    void addAuthorization(AuthUser authUser, AuthorizationType type, UUID id);
-    void deleteAuthorization(AuthUser authUser, AuthorizationType type, UUID id);
+
+    void addAuthorization(String issuer, AuthorizationType type, UUID id);
+
+    void deleteAuthorization(String issuer, AuthorizationType type, UUID id);
 
 }

@@ -77,8 +77,7 @@ public class GuestTeacherResource {
     )
     @APIResponse(
             responseCode = "404",
-            description = "Teacher with specific Id was not found.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            description = "Teacher with specific Id was not found."
     )
     public Response get(@Parameter(name = "id", required = true) @PathParam("id") final UUID id) {
         Optional<GuestTeacher> teacher = guestTeacherService.getTeacherById(id);
@@ -98,9 +97,12 @@ public class GuestTeacherResource {
                     schema = @Schema(type = SchemaType.ARRAY, implementation = GuestTeacher.class)
             )
     )
+    @APIResponse(
+            responseCode = "404",
+            description = "Teacher with specific name was not found."
+    )
     public Response getByName(@Parameter(name = "name", required = true) @PathParam("name") final String name) {
         List<GuestTeacher> guestTeachers = guestTeacherService.getTeacherByName(name);
-
         return Response.ok(guestTeachers).build();
     }
 
@@ -117,6 +119,14 @@ public class GuestTeacherResource {
     @APIResponse(
             responseCode = "400",
             description = "Validation errors occurred.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+            )
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "Current user already either a school or guest teacher profile attached",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
@@ -157,12 +167,14 @@ public class GuestTeacherResource {
     @APIResponse(
             responseCode = "500",
             description = "Path variable Id does not match Teacher.id",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+            )
     )
     @APIResponse(
             responseCode = "404",
-            description = "No Teacher found for id provided",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            description = "No Teacher found for id provided"
     )
     public Response put(@Parameter(name = "id", required = true) @PathParam("id") final UUID id, @NotNull @Valid GuestTeacher guestTeacher) {
         if (!Objects.equals(id, guestTeacher.getId())) {
@@ -185,6 +197,10 @@ public class GuestTeacherResource {
             responseCode = "404",
             description = "The teacher to delete was not found.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "Current user is not owner of this guest teacher profile"
     )
     public Response delete(@PathParam("id") UUID id) {
         guestTeacherService.deleteTeacher(id);

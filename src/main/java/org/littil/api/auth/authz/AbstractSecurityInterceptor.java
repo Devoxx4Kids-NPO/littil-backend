@@ -36,10 +36,10 @@ public abstract class AbstractSecurityInterceptor implements ContainerRequestFil
 
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
-
-        if (ctx.getMethod().equals("GET")){
+        if (ctx.getMethod().equals("GET") || ctx.getMethod().equals("POST")) {
             // GET methods are public, so always allowed
-             return;
+            // POST methods are used to create new instances that attached to the current user. Allowed for now.
+            return;
         }
 
         MultivaluedMap<String, String> parameters = ctx.getUriInfo().getPathParameters();

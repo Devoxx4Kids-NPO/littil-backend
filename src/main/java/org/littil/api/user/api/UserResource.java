@@ -8,11 +8,11 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.exception.ErrorResponse;
-import org.littil.api.mail.MailService;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
 
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -42,30 +42,44 @@ public class UserResource {
     UserService userService;
     @Inject
     UserMapper userMapper;
-    @Inject
-    MailService mailService;
 
-    // todo remove (for now easy for testing)
     @GET
     @Path("user")
+    @RolesAllowed({"admin"})
     @Operation(summary = "Get all users")
-    @APIResponse(responseCode = "200", description = "Get all users", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.ARRAY, implementation = User.class)))
+    @APIResponse(
+            responseCode = "200",
+            description = "Get all users",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.ARRAY, implementation = User.class)
+            )
+    )
     public Response list() {
         List<User> users = userService.listUsers();
-        return Response.ok(users)
-                .build();
+        return Response.ok(users).build();
     }
 
     @GET
     @Path("user/{id}")
+    @RolesAllowed({"admin"})
     @Operation(summary = "Fetch a specific user by Id")
-    @APIResponse(responseCode = "200", description = "User with Id found.", content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)))
-    @APIResponse(responseCode = "404", description = "User with specific Id was not found.", content = @Content(mediaType = MediaType.APPLICATION_JSON))
+    @APIResponse(
+            responseCode = "200",
+            description = "User with Id found.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)
+            )
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "User with specific Id was not found."
+    )
     public Response get(@Parameter(name = "id", required = true) @PathParam("id") final UUID id) {
         Optional<User> user = userService.getUserById(id);
         if (user.isPresent()) {
-            return Response.ok(user)
-                    .build();
+            return Response.ok(user).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
     }
@@ -91,7 +105,7 @@ public class UserResource {
     )
     @APIResponse(
             responseCode = "409",
-            description = "User already exists",
+            description = "User with the same e-mail address already exists",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
@@ -99,26 +113,22 @@ public class UserResource {
     )
     public Response create(@NotNull @Valid UserPostResource userPostResource) {
         User user = userMapper.toDomain(userPostResource);
-
         User createdUser = userService.createUser(user);
         URI uri = UriBuilder.fromResource(UserResource.class).path("/user/" + createdUser.getId()).build();
-        return Response.created(uri)
-                .entity(createdUser)
-                .build();
+        return Response.created(uri).entity(createdUser).build();
     }
 
     @DELETE
     @Path("user/{id}")
+    @RolesAllowed({"admin"})
     @Operation(summary = "Delete a user specified with an id")
     @APIResponse(
             responseCode = "200",
-            description = "Successfully deleted the user.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            description = "Successfully deleted the user."
     )
     @APIResponse(
             responseCode = "404",
-            description = "The user to delete was not found.",
-            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+            description = "The user to delete was not found."
     )
     public Response delete(@PathParam("id") UUID id) {
         userService.deleteUser(id);

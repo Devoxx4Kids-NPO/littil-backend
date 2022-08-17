@@ -1,7 +1,6 @@
 package org.littil.api.userSetting.api;
 
 import io.quarkus.security.Authenticated;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -9,6 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.school.service.School;
@@ -27,18 +27,14 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-
-import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
 
 @Path("/api/v1/user-settings")
 @RequestScoped
@@ -52,7 +48,7 @@ public class UserSettingResource {
     UserSettingService service;
 
     @Inject
-    JsonWebToken jwt;
+    TokenHelper tokenHelper;
 
     @GET
     @Operation(summary = "Get all user settings for current user")
@@ -64,9 +60,8 @@ public class UserSettingResource {
                     schema = @Schema(type = SchemaType.ARRAY, implementation = UserSetting.class)
             )
     )
-    public Response list(@Context SecurityContext context) {
-        final UUID userId =  UUID.fromString(jwt.getClaim(USER_ID_TOKEN_CLAIM));
-        final List<UserSetting> userSettings = service.findAll(userId);
+    public Response list() {
+        final List<UserSetting> userSettings = service.findAll(tokenHelper.getCurrentUserId());
         return Response.ok(userSettings).build();
     }
 
@@ -82,7 +77,7 @@ public class UserSettingResource {
             )
     )
     public Response get(@Parameter(name = "key", required = true) @PathParam("key") final String id) {
-        final Optional<UserSetting> userSetting = service.getUserSettingByKey(id, UUID.fromString(jwt.getClaim(USER_ID_TOKEN_CLAIM)));
+        final Optional<UserSetting> userSetting = service.getUserSettingByKey(id, tokenHelper.getCurrentUserId());
 
         return userSetting.map(r -> Response.ok(r).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
@@ -111,9 +106,8 @@ public class UserSettingResource {
             description = "Persistence error occurred. Failed to persist user setting.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
-    public Response create(@NotNull @Valid UserSetting userSetting) {
-        final UUID userId = UUID.fromString(jwt.getClaim(USER_ID_TOKEN_CLAIM));
-        final UserSetting savedUserSetting = service.save(userSetting, userId);
+    public Response create(@NotNull @Valid final UserSetting userSetting) {
+        final UserSetting savedUserSetting = service.save(userSetting, tokenHelper.getCurrentUserId());
         final URI uri = UriBuilder.fromResource(UserSettingResource.class)
                 .path("/" + savedUserSetting.getKey()).build();
         return Response.created(uri).entity(savedUserSetting).build();
@@ -148,15 +142,13 @@ public class UserSettingResource {
             description = "No user setting found for key provided and current user",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
-    public Response update(@Parameter(name = "key", required = true) @PathParam("key") final String key, @NotNull @Valid UserSetting userSetting) {
+    public Response update(@Parameter(name = "key", required = true) @PathParam("key") final String key, @NotNull @Valid final UserSetting userSetting) {
         if (!Objects.equals(key, userSetting.getKey())) {
             throw new ServiceException("Path variable key does not match UserSetting.key");
         }
-
-        final UUID userId = UUID.fromString(jwt.getClaim(USER_ID_TOKEN_CLAIM));
+        final UUID userId = tokenHelper.getCurrentUserId();
         final Optional<UserSetting> existingUserSetting = service.getUserSettingByKey(key, userId);
-
-        return existingUserSetting.map(s -> service.update(s, userId))
+        return existingUserSetting.map(s -> service.update(userSetting, userId))
                 .map(updatedUserSetting -> Response.ok(updatedUserSetting).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
     }
@@ -174,9 +166,8 @@ public class UserSettingResource {
             description = "The user setting to delete was not found.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
-    public Response delete(@PathParam("key") String key) {
-        final UUID userId = UUID.fromString(jwt.getClaim(USER_ID_TOKEN_CLAIM));
-        service.delete(key, userId);
+    public Response delete(@PathParam("key") final String key) {
+        service.delete(key, tokenHelper.getCurrentUserId());
         return Response.ok().build();
     }
 }

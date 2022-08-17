@@ -11,7 +11,7 @@ public class AuthenticationExceptionMapper implements ExceptionMapper<Authentica
 	public Response toResponse(AuthenticationException e) {
 		ErrorResponse.ErrorMessage errorMessage = new ErrorResponse.ErrorMessage(e.getMessage());
 		ErrorResponse errorResponse = new ErrorResponse(errorMessage);
-		return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
+		return Response.status(Response.Status.FORBIDDEN).entity(errorResponse).build();
 	}
 
 }

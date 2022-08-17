@@ -149,7 +149,6 @@ class SchoolResourceTest {
     @Test
     void givenCreateNewSchoolWithoutRequiredNameAndAddressAndInvalidContactPersonEmail_thenShouldReturnWithAnErrorResponse() {
         School school = createSchool();
-        school.setContactPersonEmail(RandomStringUtils.randomAlphabetic(10));
         school.setName(null);
         school.setAddress(null);
 
@@ -311,7 +310,6 @@ class SchoolResourceTest {
         school.setAddress(RandomStringUtils.randomAlphabetic(10));
         school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
         school.setContactPersonName(RandomStringUtils.randomAlphabetic(10));
-        school.setContactPersonEmail(RandomStringUtils.randomAlphabetic(10) + "@littil.org");
 
         return school;
     }
