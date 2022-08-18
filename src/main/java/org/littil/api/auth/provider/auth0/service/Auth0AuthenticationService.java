@@ -118,7 +118,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
             user.setAppMetadata(appMetadata);
             // todo add role to user
             // todo refactor! Should cache the role? Shouldn't change that much
-            RolesPage roles = managementAPI.roles().list(new RolesFilter().withName(type.getTokenValue())).execute();
+            RolesPage roles = managementAPI.roles().list(new RolesFilter().withName(type.name().toLowerCase())).execute();
             String roleId = roles.getItems().stream().findFirst().get().getId();
 
             managementAPI.users().update(userFromAuth.getId(), user).execute();
@@ -150,12 +150,11 @@ public class Auth0AuthenticationService implements AuthenticationService {
             user.setAppMetadata(appMetadata);
 
             // todo refactor! Should cache the role? Shouldn't change that much
-            RolesPage roles = managementAPI.roles().list(new RolesFilter().withName(type.getTokenValue())).execute();
+            RolesPage roles = managementAPI.roles().list(new RolesFilter().withName(type.name().toLowerCase())).execute();
             String roleId = roles.getItems().stream().findFirst().get().getId();
-            // todo how to remove users? we can only assign
-//            managementAPI.roles().assignUsers(roleId, List.of(userFromAuth.getId()));
 
             managementAPI.users().update(issuer, user).execute();
+            managementAPI.users().removeRoles(issuer, List.of(roleId));
         } catch (Auth0Exception e) {
             //todo better exception handling
             throw new RuntimeException(e);
