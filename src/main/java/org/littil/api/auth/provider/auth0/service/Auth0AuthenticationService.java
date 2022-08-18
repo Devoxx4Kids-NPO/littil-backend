@@ -117,7 +117,13 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
             user.setAppMetadata(appMetadata);
             // todo add role to user
+            // todo refactor! Should cache the role? Shouldn't change that much
+            RolesPage roles = managementAPI.roles().list(new RolesFilter().withName(type.getTokenValue())).execute();
+            String roleId = roles.getItems().stream().findFirst().get().getId();
+
             managementAPI.users().update(userFromAuth.getId(), user).execute();
+            // list of users is added, this is not "current state"
+            managementAPI.roles().assignUsers(roleId, List.of(userFromAuth.getId()));
         } catch (Auth0Exception e) {
             //todo better exception handling
             throw new RuntimeException(e);
@@ -130,35 +136,29 @@ public class Auth0AuthenticationService implements AuthenticationService {
         try {
             User user = managementAPI.users().get(issuer, null).execute();
             Map<String, Object> appMetadata = user.getAppMetadata();
-            Set<UUID> authorizations = (Set<UUID>) appMetadata.get(type.getTokenValue());
-            if (authorizations == null) {
+            Map<String, List<UUID>> authorizations = (Map<String, List<UUID>>)  appMetadata.getOrDefault(AUTHORIZATIONS_TOKEN_CLAIM, new HashMap<>());
+            List<UUID> authorizationTypeAuthorizations = authorizations.getOrDefault(type.getTokenValue(), new ArrayList<>());
+
+            if (!authorizationTypeAuthorizations.contains(id)) {
                 log.info(String.format("No need to remove authorisation for type %s with id %s because this user does not have any authorizations", type.getTokenValue(), id.toString()));
                 return;
             }
-            authorizations.remove(id);
-            appMetadata.put(type.getTokenValue(), authorizations);
+
+            authorizationTypeAuthorizations.remove(id);
+            authorizations.put(type.getTokenValue(), authorizationTypeAuthorizations);
+            appMetadata.put(AUTHORIZATIONS_TOKEN_CLAIM, authorizations);
             user.setAppMetadata(appMetadata);
+
+            // todo refactor! Should cache the role? Shouldn't change that much
+            RolesPage roles = managementAPI.roles().list(new RolesFilter().withName(type.getTokenValue())).execute();
+            String roleId = roles.getItems().stream().findFirst().get().getId();
+            // todo how to remove users? we can only assign
+//            managementAPI.roles().assignUsers(roleId, List.of(userFromAuth.getId()));
+
             managementAPI.users().update(issuer, user).execute();
         } catch (Auth0Exception e) {
             //todo better exception handling
             throw new RuntimeException(e);
-        }
-    }
-
-    // TODO refactor this method
-    public void assignRole(String userId, String roleName) {
-        try {
-            List<String> userList = List.of(userId);
-            Optional<String> roleId = getRoles().stream().filter(r -> r.role().equals(roleName))
-                    .map(Role::id).findFirst();
-            if (roleId.isPresent()) {
-                managementAPI.roles().assignUsers(roleId.get(), userList).execute();
-            } else {
-                throw new NotFoundException("Role not found");
-            }
-            //todo handle Exception properly
-        } catch (Auth0Exception e) {
-            throw new AuthenticationException("todo fixme", e);
         }
     }
 }
