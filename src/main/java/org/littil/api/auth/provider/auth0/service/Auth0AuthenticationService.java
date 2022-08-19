@@ -15,11 +15,9 @@ import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
-import org.littil.api.exception.AuthenticationException;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
 import java.util.*;
 
 import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;

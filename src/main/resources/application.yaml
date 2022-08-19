@@ -1,6 +1,7 @@
 org:
   littil:
     auth:
+      namespace: ${LITTIL_NAMESPACE:https://littil.org/}
       machine2machine:
         client:
           id: ${M2M_CLIENT_ID}

@@ -1,15 +1,13 @@
 package org.littil.api.auth;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.AuthenticationException;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
 import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
@@ -18,9 +16,15 @@ import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
 public class TokenHelper {
     @Inject
     JsonWebToken jwt;
+    @ConfigProperty(name = "org.littil.auth.namespace")
+    String nameSpace;
+
+    public <T> T getCustomClaim(String claimName) {
+        return jwt.getClaim(nameSpace + claimName);
+    }
 
     public UUID getCurrentUserId() {
-        String userId = jwt.getClaim(USER_ID_TOKEN_CLAIM);
+        String userId = getCustomClaim(USER_ID_TOKEN_CLAIM);
         return Optional.ofNullable(userId)
                 .map(UUID::fromString)
                 .orElseThrow(() -> {
@@ -32,20 +36,23 @@ public class TokenHelper {
         return jwt.getSubject();
     }
 
-    public Map<String, Set<UUID>> getUserAuthorizations() {
-        return jwt.getClaim(AUTHORIZATIONS_TOKEN_CLAIM);
-    }
-
     public Boolean hasUserAuthorizations() {
-        final Map<String, Set<UUID>> authorizations = getUserAuthorizations();
-        return authorizations != null && !authorizations.isEmpty();
+        final Map<String, List<UUID>> authorizations = getUserAuthorizations();
+        return authorizations != null &&
+                !authorizations.isEmpty() &&
+                (!hasSchoolAuthorizations(authorizations) || !hasGuestTeacherAuthorizations(authorizations));
     }
 
-    public Boolean hasSchoolAuthorizations() {
-        return getUserAuthorizations().containsKey(AuthorizationType.SCHOOL.getTokenValue());
+    private Map<String, List<UUID>> getUserAuthorizations() {
+        return getCustomClaim(AUTHORIZATIONS_TOKEN_CLAIM);
     }
 
-    public Boolean hasGuestTeacherAuthorizations() {
-        return getUserAuthorizations().containsKey(AuthorizationType.GUEST_TEACHER.getTokenValue());
+    private Boolean hasSchoolAuthorizations(Map<String, List<UUID>> authorizations) {
+        return authorizations.getOrDefault(AuthorizationType.SCHOOL.getTokenValue(), new ArrayList<>()).size() > 0;
+    }
+
+    private Boolean hasGuestTeacherAuthorizations(Map<String, List<UUID>> authorizations) {
+        return authorizations.getOrDefault(AuthorizationType.GUEST_TEACHER.getTokenValue(), new ArrayList<>()).size() > 0;
+
     }
 }
