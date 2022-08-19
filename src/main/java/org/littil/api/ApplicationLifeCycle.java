@@ -52,7 +52,7 @@ public class ApplicationLifeCycle {
 
         User user = new User();
         String userId = "auth0|62fd3224f76949850e9eb264";
-        Map<String, Object> appMetadata = Map.of(USER_ID_TOKEN_CLAIM, userId,
+        Map<String, Object> appMetadata = Map.of(USER_ID_TOKEN_CLAIM, "e87cda48-9a98-41a7-89bb-9ee62441c84c",
                 AUTHORIZATIONS_TOKEN_CLAIM, Collections.emptyMap());
         user.setAppMetadata(appMetadata);
         managementAPI.users().update(userId, user).execute();
