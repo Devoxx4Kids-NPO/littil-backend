@@ -9,7 +9,8 @@ import java.util.UUID;
 @ApplicationScoped
 public class SchoolRepository implements PanacheRepositoryBase<SchoolEntity, UUID> {
 
-    public List<SchoolEntity> findByName(final String name) {
-        return find("school_name", name).list();
+    public List<SchoolEntity> findBySchoolNameLike(final String name) {
+        String searchInput = "%" + name + "%";
+        return list("school_name like ?1", searchInput );
     }
 }

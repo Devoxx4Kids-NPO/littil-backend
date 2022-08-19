@@ -30,7 +30,7 @@ class SchoolRepositoryTest {
         doReturn(query).when(repository).find("school_name", name);
         when(query.list()).thenReturn(school);
 
-        List<SchoolEntity> foundSchool = repository.findByName(name);
+        List<SchoolEntity> foundSchool = repository.findBySchoolNameLike(name);
 
         assertThat(school).isEqualTo(foundSchool);
     }
@@ -43,7 +43,7 @@ class SchoolRepositoryTest {
         doReturn(query).when(repository).find("surname", searchSurname);
         when(query.list()).thenReturn(Collections.emptyList());
 
-        List<SchoolEntity> foundSchool = repository.findByName(searchSurname);
+        List<SchoolEntity> foundSchool = repository.findBySchoolNameLike(searchSurname);
 
         assertThat(foundSchool).isEmpty();
     }

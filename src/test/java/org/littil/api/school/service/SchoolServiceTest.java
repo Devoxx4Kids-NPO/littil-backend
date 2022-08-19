@@ -66,7 +66,7 @@ class SchoolServiceTest {
     void givenGetSchoolByUnknownName_thenShouldReturnEmptyOptional() {
         final String unknownName = RandomStringUtils.randomAlphabetic(10);
 
-        doReturn(Collections.emptyList()).when(repository).findByName(unknownName);
+        doReturn(Collections.emptyList()).when(repository).findBySchoolNameLike(unknownName);
 
         final List<School> school = service.getSchoolByName(unknownName);
 

@@ -15,6 +15,7 @@ import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.school.service.School;
+import org.littil.api.school.service.SchoolMapper;
 import org.littil.api.school.service.SchoolService;
 
 import javax.enterprise.context.RequestScoped;
@@ -50,7 +51,8 @@ public class SchoolResource {
 
     @Inject
     SchoolService schoolService;
-
+    @Inject
+    SchoolMapper mapper;
     @Inject
     TokenHelper tokenHelper;
 
@@ -141,12 +143,12 @@ public class SchoolResource {
             responseCode = "500",
             description = "Persistence error occurred. Failed to persist school."
     )
-    public Response create(@NotNull @Valid School school) {
+    public Response create(@NotNull @Valid SchoolPostResource school) {
         if (tokenHelper.hasUserAuthorizations()) {
             throw new ServiceException("User already has either a school or guest teacher attached");
         }
 
-        School persistedSchool = schoolService.saveSchool(school, tokenHelper.getSubject());
+        School persistedSchool = schoolService.saveSchool(mapper.toDomain(school), tokenHelper.getSubject());
         URI uri = UriBuilder.fromResource(SchoolResource.class)
                 .path("/" + persistedSchool.getId()).build();
         return Response.created(uri).entity(persistedSchool).build();

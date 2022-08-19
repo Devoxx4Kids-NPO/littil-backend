@@ -37,7 +37,7 @@ public class SchoolService {
     private final AuthenticationService authenticationService;
 
     public List<School> getSchoolByName(@NonNull final String name) {
-        return repository.findByName(name).stream().map(mapper::toDomain).toList();
+        return repository.findBySchoolNameLike(name).stream().map(mapper::toDomain).toList();
     }
 
     public Optional<School> getSchoolById(@NonNull final UUID id) {
