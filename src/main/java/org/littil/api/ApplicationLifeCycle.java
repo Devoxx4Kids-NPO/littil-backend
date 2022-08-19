@@ -1,5 +1,8 @@
 package org.littil.api;
 
+import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.exception.Auth0Exception;
+import com.auth0.json.mgmt.users.User;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.runtime.configuration.ProfileManager;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +19,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.Map;
+
+import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
+import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
 
 @ApplicationScoped
 @Slf4j
@@ -27,12 +35,29 @@ public class ApplicationLifeCycle {
 
     @Inject
     DataSource dataSource;
+    @Inject
+    ManagementAPI managementAPI;
 
-    void onStart(@Observes StartupEvent ev) {
+    void onStart(@Observes StartupEvent ev) throws Auth0Exception {
         log.info("The application is starting with profile " + ProfileManager.getActiveProfile());
 
-        if (insertDevData)
+        if (insertDevData) {
             persistDevData();
+            cleanLittilAuth0User();
+        }
+    }
+
+    private void cleanLittilAuth0User() throws Auth0Exception {
+        log.info("Removing all authorizations from Auth0 appMetadata, this might cause issues when 2 developers are testing at once.");
+
+        User user = new User();
+        String userId = "auth0|62fd3224f76949850e9eb264";
+        Map<String, Object> appMetadata = Map.of(USER_ID_TOKEN_CLAIM, userId,
+                AUTHORIZATIONS_TOKEN_CLAIM, Collections.emptyMap());
+        user.setAppMetadata(appMetadata);
+        managementAPI.users().update(userId, user).execute();
+
+        log.info("Done all authorizations from Auth0 appMetadata, this might cause issues when 2 developers are testing at once.");
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
