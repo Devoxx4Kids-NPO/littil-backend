@@ -6,30 +6,25 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthorizationType;
-import org.littil.api.user.service.UserService;
 
 import javax.inject.Inject;
 import javax.json.JsonString;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.util.*;
 
 import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
 
-@Priority(3000)
-@Provider
+@Priority(Priorities.AUTHORIZATION)
+//@Provider
 @Slf4j
-@UserOwned(type = AuthorizationType.UNKNOWN)
 @NoArgsConstructor
 public abstract class AbstractSecurityInterceptor implements ContainerRequestFilter {
     @Inject
     TokenHelper tokenHelper;
-
-    @Inject
-    UserService userService;
 
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
