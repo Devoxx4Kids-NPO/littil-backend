@@ -40,7 +40,7 @@ public class TokenHelper {
         final Map<String, List<UUID>> authorizations = getUserAuthorizations();
         return authorizations != null &&
                 !authorizations.isEmpty() &&
-                (!hasSchoolAuthorizations(authorizations) || !hasGuestTeacherAuthorizations(authorizations));
+                (hasSchoolAuthorizations(authorizations) || hasGuestTeacherAuthorizations(authorizations));
     }
 
     private Map<String, List<UUID>> getUserAuthorizations() {

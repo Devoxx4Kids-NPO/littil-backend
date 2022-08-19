@@ -18,6 +18,7 @@ public class GuestTeacher {
     @NotEmpty(message = "{GuestTeacher.surname.required}")
     private String surname;
 
+    // todo consider if we need this, and if we need it why not on school?
     @NotEmpty(message = "{GuestTeacher.email.required}")
     @Email(message = "{GuestTeacher.email.invalid}")
     private String email;

@@ -8,6 +8,7 @@ import io.quarkus.runtime.configuration.ProfileManager;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.provider.Provider;
+import org.littil.api.auth.service.AuthorizationType;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -19,9 +20,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
 import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
 
@@ -53,7 +54,7 @@ public class ApplicationLifeCycle {
         User user = new User();
         String userId = "auth0|62fd3224f76949850e9eb264";
         Map<String, Object> appMetadata = Map.of(USER_ID_TOKEN_CLAIM, "e87cda48-9a98-41a7-89bb-9ee62441c84c",
-                AUTHORIZATIONS_TOKEN_CLAIM, Collections.emptyMap());
+                AUTHORIZATIONS_TOKEN_CLAIM, Map.of(AuthorizationType.SCHOOL.getTokenValue(), emptyList(), AuthorizationType.GUEST_TEACHER.getTokenValue(), emptyList()));
         user.setAppMetadata(appMetadata);
         managementAPI.users().update(userId, user).execute();
 

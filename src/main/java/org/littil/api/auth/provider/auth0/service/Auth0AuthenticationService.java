@@ -110,8 +110,8 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
     private void manageAuthorization(String userId, AuthorizationType type, UUID resourceId, AuthorizationAction action) throws Auth0Exception {
         Map<String, Object> appMetadata = getAppMetadata(userId);
-        Map<String, List<UUID>> authorizations = (Map<String, List<UUID>>) appMetadata.getOrDefault(AUTHORIZATIONS_TOKEN_CLAIM, new HashMap<>());
-        List<UUID> authorizationTypeAuthorizations = authorizations.getOrDefault(type.getTokenValue(), new ArrayList<>());
+        Map<String, List<String>> authorizations = (Map<String, List<String>>) appMetadata.getOrDefault(AUTHORIZATIONS_TOKEN_CLAIM, new HashMap<>());
+        List<String> authorizationTypeAuthorizations = authorizations.getOrDefault(type.getTokenValue(), new ArrayList<>());
 
         String roleId = roleService.getIdForRoleName(type.name().toLowerCase());
 
@@ -119,18 +119,18 @@ public class Auth0AuthenticationService implements AuthenticationService {
         // todo can we do this neater? dont like the multiline
         switch (action) {
             case ADD -> {
-                managementAPI.roles().assignUsers(roleId, List.of(userId)); // list of users is added, this is not "current state"
-                if (!authorizationTypeAuthorizations.contains(resourceId)) {
-                    authorizationTypeAuthorizations.add(resourceId);
+                managementAPI.roles().assignUsers(roleId, List.of(userId)).execute(); // list of users is added, this is not "current state"
+                if (!authorizationTypeAuthorizations.contains(resourceId.toString())) {
+                    authorizationTypeAuthorizations.add(resourceId.toString());
                 }
             }
             case REMOVE -> {
-                managementAPI.users().removeRoles(userId, List.of(roleId));
-                if (!authorizationTypeAuthorizations.contains(resourceId)) {
+                managementAPI.users().removeRoles(userId, List.of(roleId)).execute();
+                if (!authorizationTypeAuthorizations.contains(resourceId.toString())) {
                     log.info(String.format("No need to remove authorisation for type %s with id %s because this user does not have any authorizations", type.getTokenValue(), resourceId.toString()));
                     return;
                 } else {
-                    authorizationTypeAuthorizations.remove(resourceId);
+                    authorizationTypeAuthorizations.remove(resourceId.toString());
                 }
             }
         }

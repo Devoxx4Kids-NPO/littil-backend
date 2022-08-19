@@ -1,15 +1,16 @@
 package org.littil.api.user.service;
 
 import org.littil.api.auth.service.AuthUser;
+import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.user.api.UserPostResource;
 import org.littil.api.user.repository.UserEntity;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
-import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
 import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
 
@@ -27,7 +28,7 @@ public abstract class UserMapper {
         AuthUser authUser = new AuthUser();
         authUser.setEmailAddress(user.getEmailAddress());
         authUser.setRoles(user.getRoles());
-        authUser.setAppMetadata(Map.of(USER_ID_TOKEN_CLAIM, user.getId(), AUTHORIZATIONS_TOKEN_CLAIM, Collections.emptyMap()));
+        authUser.setAppMetadata(Map.of(USER_ID_TOKEN_CLAIM, user.getId(), AUTHORIZATIONS_TOKEN_CLAIM, Map.of(AuthorizationType.SCHOOL.getTokenValue(), emptyList(), AuthorizationType.GUEST_TEACHER.getTokenValue(), emptyList())));
         return authUser;
     }
 
