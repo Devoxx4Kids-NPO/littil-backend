@@ -9,6 +9,9 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.user.service.UserService;
 
+import javax.decorator.Decorator;
+import javax.decorator.Delegate;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -26,12 +29,13 @@ import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
 @Priority(3000)
 @Provider
 @Slf4j
-@AllArgsConstructor(onConstructor_ =  {@Inject})
 @UserOwned(type = AuthorizationType.UNKNOWN)
 @NoArgsConstructor
 public abstract class AbstractSecurityInterceptor implements ContainerRequestFilter {
+    @Inject
     JsonWebToken jwt;
 
+    @Inject
     UserService userService;
 
     @Override
@@ -57,6 +61,9 @@ public abstract class AbstractSecurityInterceptor implements ContainerRequestFil
     }
 
     private void checkIfAuthorized(UUID resourceId, Map<String, List<UUID>> authorizations, ContainerRequestContext ctx) {
+        if (authorizations == null){
+            throw new UnauthorizedException("Not allowed to access resource of type " + getAuthorizationType().name() +"!");
+        }
         List<UUID> authorizedResourceIds = authorizations.getOrDefault(getAuthorizationType().getTokenValue(), Collections.emptyList());
         if (!authorizedResourceIds.contains(resourceId)){
             throw new UnauthorizedException("Not allowed to access resource of type " + getAuthorizationType().name() +"!");
