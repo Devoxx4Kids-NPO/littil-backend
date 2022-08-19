@@ -9,6 +9,7 @@ import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.user.service.UserService;
 
 import javax.inject.Inject;
+import javax.json.JsonString;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
@@ -47,18 +48,18 @@ public abstract class AbstractSecurityInterceptor implements ContainerRequestFil
             throw new IllegalArgumentException("Whoops we dit not expect this amount of parameters");
         }
         Optional<String> resourceId = resourceIds.stream().findFirst();
-        Map<String, List<UUID>> authorizations = tokenHelper.getCustomClaim(AUTHORIZATIONS_TOKEN_CLAIM);
+        Map<String, List<JsonString>> authorizations = tokenHelper.getCustomClaim(AUTHORIZATIONS_TOKEN_CLAIM);
 
-        checkIfAuthorized(UUID.fromString(resourceId.get()), authorizations, ctx);
+        checkIfAuthorized(UUID.fromString(resourceId.get()), authorizations);
     }
 
-    private void checkIfAuthorized(UUID resourceId, Map<String, List<UUID>> authorizations, ContainerRequestContext ctx) {
-        if (authorizations == null){
-            throw new UnauthorizedException("Not allowed to access resource of type " + getAuthorizationType().name() +"!");
+    private void checkIfAuthorized(UUID resourceId, Map<String, List<JsonString>> authorizations) {
+        if (authorizations == null) {
+            throw new UnauthorizedException("Not allowed to access resource of type " + getAuthorizationType().name() + "!");
         }
-        List<UUID> authorizedResourceIds = authorizations.getOrDefault(getAuthorizationType().getTokenValue(), Collections.emptyList());
-        if (!authorizedResourceIds.contains(resourceId)){
-            throw new UnauthorizedException("Not allowed to access resource of type " + getAuthorizationType().name() +"!");
+        List<JsonString> authorizedResourceIds = authorizations.getOrDefault(getAuthorizationType().getTokenValue(), Collections.emptyList());
+        if (authorizedResourceIds.stream().noneMatch(id -> id.getChars().equals(resourceId.toString()))) {
+            throw new UnauthorizedException("Not allowed to access resource of type " + getAuthorizationType().name() + "!");
         }
     }
 
