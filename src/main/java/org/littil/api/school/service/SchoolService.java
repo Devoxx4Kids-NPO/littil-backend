@@ -71,12 +71,13 @@ public class SchoolService {
     }
 
     @Transactional
-    public void deleteSchool(@NonNull final UUID id) {
-        //todo also call userService to remove school role from the user.
+    public void deleteSchool(@NonNull final UUID id, UUID userId) {
         Optional<SchoolEntity> school = repository.findByIdOptional(id);
         school.ifPresentOrElse(repository::delete, () -> {
             throw new NotFoundException();
         });
+        authenticationService.removeAuthorization(userId, AuthorizationType.SCHOOL, id);
+
     }
 
     @Transactional

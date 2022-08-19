@@ -9,10 +9,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
-import org.littil.api.auth.authz.UserOwned;
-import org.littil.api.auth.service.AuthorizationType;
+import org.littil.api.auth.authz.GuestTeacherSecured;
 import org.littil.api.exception.ErrorResponse;
-import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.guestTeacher.service.GuestTeacherMapper;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
@@ -36,7 +34,7 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
-@UserOwned(type = AuthorizationType.GUEST_TEACHER)
+@GuestTeacherSecured
 @Tag(name = "Teacher", description = "CRUD Operations")
 public class GuestTeacherResource {
 
@@ -182,7 +180,9 @@ public class GuestTeacherResource {
     )
     public Response put(@Parameter(name = "id", required = true) @PathParam("id") final UUID id, @NotNull @Valid GuestTeacher guestTeacher) {
         if (!Objects.equals(id, guestTeacher.getId())) {
-            throw new ServiceException("Path variable id does not match Teacher.id");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Path variable id does not match Teacher.id")
+                    .build();
         }
 
         GuestTeacher updatedGuestTeacher = guestTeacherService.update(guestTeacher);

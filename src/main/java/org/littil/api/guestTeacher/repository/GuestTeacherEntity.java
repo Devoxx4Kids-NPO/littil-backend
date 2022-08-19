@@ -1,25 +1,13 @@
 package org.littil.api.guestTeacher.repository;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.user.repository.UserEntity;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.time.DayOfWeek;
 import java.util.HashSet;
@@ -29,7 +17,6 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity(name = "GuestTeacher")
 @Table(name = "guest_teacher")
 public class GuestTeacherEntity extends AbstractAuditableEntity {
@@ -47,7 +34,6 @@ public class GuestTeacherEntity extends AbstractAuditableEntity {
     @Column(name = "surname")
     private String surname;
 
-    @NotEmpty(message = "{GuestTeacher.location.required}")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location", referencedColumnName = "location_id")
     private LocationEntity location;

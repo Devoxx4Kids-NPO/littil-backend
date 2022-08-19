@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class GuestGuestTeacherRepositoryTest {
@@ -30,7 +28,7 @@ class GuestGuestTeacherRepositoryTest {
         doReturn(query).when(repository).find("surname", surname);
         when(query.list()).thenReturn(teacher);
 
-        List<GuestTeacherEntity> foundTeacher = repository.findByName(surname);
+        List<GuestTeacherEntity> foundTeacher = repository.findBySurnameLike(surname);
 
         assertThat(teacher).isEqualTo(foundTeacher);
     }
@@ -43,7 +41,7 @@ class GuestGuestTeacherRepositoryTest {
         doReturn(query).when(repository).find("surname", searchSurname);
         when(query.list()).thenReturn(Collections.emptyList());
 
-        List<GuestTeacherEntity> foundTeacher = repository.findByName(searchSurname);
+        List<GuestTeacherEntity> foundTeacher = repository.findBySurnameLike(searchSurname);
 
         assertThat(foundTeacher).isEmpty();
     }

@@ -4,6 +4,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
@@ -18,15 +20,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class GuestGuestTeacherServiceTest {
@@ -36,6 +32,8 @@ class GuestGuestTeacherServiceTest {
 
     @InjectMock
     GuestTeacherRepository repository;
+    @InjectMock
+    AuthenticationService authenticationService;
 
     @InjectMock
     GuestTeacherMapper mapper;
@@ -44,15 +42,14 @@ class GuestGuestTeacherServiceTest {
     void givenGetTeacherByName_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
         final String surname = RandomStringUtils.randomAlphabetic(10);
-        final GuestTeacherEntity expectedTeacher = GuestTeacherEntity.builder()
-                .id(teacherId)
-                .surname(surname)
-                .build();
+        final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
+        expectedTeacher.setId(teacherId);
+        expectedTeacher.setSurname(surname);
         final GuestTeacher mappedGuestTeacher = new GuestTeacher();
         mappedGuestTeacher.setId(teacherId);
         mappedGuestTeacher.setSurname(surname);
 
-        doReturn(List.of(expectedTeacher)).when(repository).findByName(surname);
+        doReturn(List.of(expectedTeacher)).when(repository).findBySurnameLike(surname);
         doReturn(mappedGuestTeacher).when(mapper).toDomain(expectedTeacher);
 
         List<GuestTeacher> guestTeacher = service.getTeacherByName(surname);
@@ -69,7 +66,7 @@ class GuestGuestTeacherServiceTest {
     void givenGetTeacherByUnknownName_thenShouldReturnEmptyList() {
         final String unknownName = RandomStringUtils.randomAlphabetic(10);
 
-        doReturn(Collections.emptyList()).when(repository).findByName(unknownName);
+        doReturn(Collections.emptyList()).when(repository).findBySurnameLike(unknownName);
 
         final List<GuestTeacher> guestTeacher = service.getTeacherByName(unknownName);
 
@@ -80,9 +77,8 @@ class GuestGuestTeacherServiceTest {
     @Test
     void givenGetTeacherById_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
-        final GuestTeacherEntity expectedTeacher = GuestTeacherEntity.builder()
-                .id(teacherId)
-                .build();
+        final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
+        expectedTeacher.setId(teacherId);
         final GuestTeacher mappedGuestTeacher = new GuestTeacher();
         mappedGuestTeacher.setId(teacherId);
 
@@ -114,7 +110,7 @@ class GuestGuestTeacherServiceTest {
 
     @Test
     void giveFindAll_thenShouldReturnTeacherList() {
-        final List<GuestTeacherEntity> expectedTeacherEntities = Collections.nCopies(3, GuestTeacherEntity.builder().build());
+        final List<GuestTeacherEntity> expectedTeacherEntities = Collections.nCopies(3, new GuestTeacherEntity());
         final List<GuestTeacher> expectedGuestTeachers = expectedTeacherEntities.stream().map(mapper::toDomain).toList();
 
         doReturn(expectedTeacherEntities).when(repository).listAll();
@@ -140,6 +136,7 @@ class GuestGuestTeacherServiceTest {
     @Test
     void givenSaveTeacherUnknownErrorOccurred_thenShouldThrowPersistenceException() {
         final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
         final String emailAddress = RandomStringUtils.randomAlphabetic(10).concat("@littil.org");
@@ -153,11 +150,10 @@ class GuestGuestTeacherServiceTest {
         guestTeacher.setLocale(locale);
         guestTeacher.setPostalCode(postalCode);
 
-        final GuestTeacherEntity entity = GuestTeacherEntity.builder()
-                .id(teacherId)
-                .surname(surname)
-                .firstName(firstName)
-                .build();
+        final GuestTeacherEntity entity = new GuestTeacherEntity();
+        entity.setId(teacherId);
+        entity.setSurname(surname);
+        entity.setFirstName(firstName);
 
         final GuestTeacher expectedGuestTeacher = new GuestTeacher();
         expectedGuestTeacher.setId(entity.getId());
@@ -167,12 +163,13 @@ class GuestGuestTeacherServiceTest {
         doReturn(entity).when(mapper).toEntity(guestTeacher);
         doReturn(false).when(repository).isPersistent(entity);
 
-        assertThrows(PersistenceException.class, () -> service.saveTeacher(guestTeacher));
+        assertThrows(PersistenceException.class, () -> service.saveTeacher(guestTeacher, userId));
     }
 
     @Test
     void givenDeleteTeacher_thenShouldDeleteTeacher() {
         final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
         final String locale = RandomStringUtils.randomAlphabetic(2);
@@ -183,29 +180,30 @@ class GuestGuestTeacherServiceTest {
         guestTeacher.setSurname(surname);
         guestTeacher.setFirstName(firstName);
 
-        final GuestTeacherEntity entity = GuestTeacherEntity.builder()
-                .id(teacherId)
-                .surname(surname)
-                .firstName(firstName)
-                .build();
+        final GuestTeacherEntity entity = new GuestTeacherEntity();
+        entity.setId(teacherId);
+        entity.setSurname(surname);
+        entity.setFirstName(firstName);
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
 
-        service.deleteTeacher(teacherId);
+        service.deleteTeacher(teacherId, userId);
 
         then(repository).should().delete(entity);
+        then(authenticationService).should().removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, teacherId);
     }
 
     @Test
     void givenDeleteUnknownTeacher_thenShouldThrowNotFoundException() {
         final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
 
         doReturn(Optional.empty()).when(repository).findByIdOptional(teacherId);
 
         when(repository.findByIdOptional(teacherId)).thenReturn(Optional.empty());
         verifyNoMoreInteractions(repository);
 
-        assertThrows(NotFoundException.class, () -> service.deleteTeacher(teacherId));
+        assertThrows(NotFoundException.class, () -> service.deleteTeacher(teacherId, userId));
     }
 
     @Test
@@ -223,11 +221,10 @@ class GuestGuestTeacherServiceTest {
         guestTeacher.setSurname(newSurname);
         guestTeacher.setFirstName(firstName);
 
-        final GuestTeacherEntity entity = GuestTeacherEntity.builder()
-                .id(teacherId)
-                .surname(surname)
-                .firstName(firstName)
-                .build();
+        final GuestTeacherEntity entity = new GuestTeacherEntity();
+        entity.setId(teacherId);
+        entity.setSurname(surname);
+        entity.setFirstName(firstName);
 
         final GuestTeacher updatedGuestTeacher = new GuestTeacher();
         updatedGuestTeacher.setId(entity.getId());

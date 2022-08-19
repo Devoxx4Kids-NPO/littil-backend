@@ -38,7 +38,7 @@ public class GuestTeacherService {
 
 
     public List<GuestTeacher> getTeacherByName(@NonNull final String name) {
-        return repository.findByName(name).stream().map(mapper::toDomain).toList();
+        return repository.findBySurnameLike(name).stream().map(mapper::toDomain).toList();
     }
 
     public Optional<GuestTeacher> getTeacherById(@NonNull final UUID id) {
@@ -73,7 +73,6 @@ public class GuestTeacherService {
 
     @Transactional
     public void deleteTeacher(@NonNull final UUID id, UUID userId) {
-        //todo also call userService to remove school role from the user.
         Optional<GuestTeacherEntity> teacher = repository.findByIdOptional(id);
         teacher.ifPresentOrElse(repository::delete, () -> {
             throw new NotFoundException();

@@ -9,8 +9,7 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "cdi")
 public interface GuestTeacherMapper {
-
-    GuestTeacher toDomain(GuestTeacherPostResource guestTeacherEntity);
+    GuestTeacher toDomain(GuestTeacherPostResource guestTeacherPostResource);
 
     @Mapping(source = "location.address", target = "address")
     @Mapping(source = "location.postalCode", target = "postalCode")

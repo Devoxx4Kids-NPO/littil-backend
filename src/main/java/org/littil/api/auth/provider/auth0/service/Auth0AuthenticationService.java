@@ -4,9 +4,9 @@ import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.APIException;
 import com.auth0.exception.Auth0Exception;
+import com.auth0.json.mgmt.Role;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
-import com.auth0.net.Request;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.littil.api.auth.provider.auth0.exception.Auth0AuthorizationException;
@@ -44,8 +44,8 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public Optional<AuthUser> getUserById(String userId) {
         try {
-            Request<User> request = managementAPI.users().get(userId, null);
-            AuthUser authUser = auth0UserMapper.toDomain(request.execute());
+            User user = managementAPI.users().get(userId, null).execute();
+            AuthUser authUser = getAuthUser(user);
             return Optional.of(authUser);
         } catch (APIException exception) {
             if (exception.getStatusCode() == 404) {
@@ -60,15 +60,21 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public AuthUser createUser(AuthUser authUser, String tempPassword) {
         try {
-            UsersPage usersForEmail = managementAPI.users().list(new UserFilter().withQuery("email:"+authUser.getEmailAddress())).execute();
-            
-            if (!usersForEmail.getItems().isEmpty()){
+            UsersPage usersForEmail = managementAPI.users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute();
+
+            if (!usersForEmail.getItems().isEmpty()) {
                 throw new Auth0DuplicateUserException("User already exists for" + authUser.getEmailAddress());
             }
-            return auth0UserMapper.toDomain(managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute());
+            User user = managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute();
+            return getAuthUser(user);
         } catch (Auth0Exception exception) {
             throw new Auth0UserException("Could not create user for email " + authUser.getEmailAddress(), exception);
         }
+    }
+
+    private AuthUser getAuthUser(User user) throws Auth0Exception {
+        List<Role> roles = managementAPI.users().listRoles(user.getId(), null).execute().getItems();
+        return auth0UserMapper.toDomain(user, roles);
     }
 
     @Override

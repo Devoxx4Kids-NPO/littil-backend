@@ -1,7 +1,6 @@
 package org.littil.api.user.service;
 
 import lombok.Data;
-import org.littil.api.auth.Role;
 import org.littil.api.auth.provider.Provider;
 
 import javax.validation.constraints.Email;
@@ -22,5 +21,5 @@ public class User {
 
     private String providerId;
 
-    private Set<Role> roles = new HashSet<>();
+    private Set<String> roles = new HashSet<>();
 }

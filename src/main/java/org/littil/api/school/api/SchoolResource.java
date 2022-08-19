@@ -10,10 +10,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
-import org.littil.api.auth.authz.UserOwned;
-import org.littil.api.auth.service.AuthorizationType;
+import org.littil.api.auth.authz.SchoolSecured;
 import org.littil.api.exception.ErrorResponse;
-import org.littil.api.exception.ServiceException;
 import org.littil.api.school.service.School;
 import org.littil.api.school.service.SchoolMapper;
 import org.littil.api.school.service.SchoolService;
@@ -38,7 +36,7 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
-@UserOwned(type = AuthorizationType.SCHOOL)
+@SchoolSecured
 @Tag(name = "School", description = "CRUD Operations")
 public class SchoolResource {
 
@@ -185,7 +183,9 @@ public class SchoolResource {
     )
     public Response put(@Parameter(name = "id", required = true) @PathParam("id") final UUID id, @NotNull @Valid School school) {
         if (!Objects.equals(id, school.getId())) {
-            throw new ServiceException("Path variable id does not match School.id");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Path variable id does not match School.id")
+                    .build();
         }
 
         School updatedSchool = schoolService.update(school);
@@ -209,7 +209,7 @@ public class SchoolResource {
             description = "Current user is not owner of this school"
     )
     public Response delete(@PathParam("id") UUID id) {
-        schoolService.deleteSchool(id);
+        schoolService.deleteSchool(id, tokenHelper.getCurrentUserId());
         return Response.ok().build();
     }
 }

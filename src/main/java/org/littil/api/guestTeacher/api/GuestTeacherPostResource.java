@@ -9,20 +9,23 @@ import java.util.EnumSet;
 
 @Data
 public class GuestTeacherPostResource {
-    @NotEmpty(message = "{Teacher.firstName.required}")
+    @NotEmpty(message = "{GuestTeacher.firstName.required}")
     private String firstName;
 
-    @NotEmpty(message = "{Teacher.surname.required}")
+    @NotEmpty(message = "{GuestTeacher.surname.required}")
     private String surname;
 
-    @NotEmpty(message = "{Teacher.email.required}")
-    @Email(message = "{Teacher.email.invalid}")
+    @NotEmpty(message = "{GuestTeacher.email.required}")
+    @Email(message = "{GuestTeacher.email.invalid}")
     private String email;
 
-    @NotEmpty(message = "{Teacher.postalCode.required}")
+    @NotEmpty(message = "{GuestTeacher.address.required}")
+    private String address;
+
+    @NotEmpty(message = "{GuestTeacher.postalCode.required}")
     private String postalCode;
 
-    @NotEmpty(message = "{Teacher.locale.required}")
+    @NotEmpty(message = "{GuestTeacher.locale.required}")
     private String locale;
 
     private String preferences;

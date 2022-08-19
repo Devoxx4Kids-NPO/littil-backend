@@ -9,7 +9,8 @@ import java.util.UUID;
 @ApplicationScoped
 public class GuestTeacherRepository implements PanacheRepositoryBase<GuestTeacherEntity, UUID> {
 
-    public List<GuestTeacherEntity> findByName(final String name) {
-        return find("surname", name).list();
+    public List<GuestTeacherEntity> findBySurnameLike(final String name) {
+        String searchInput = "%" + name + "%";
+        return list("surname like ?1", searchInput);
     }
 }
