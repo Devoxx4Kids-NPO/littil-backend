@@ -49,26 +49,24 @@ public class SchoolService {
     }
 
     @Transactional
-    public School saveSchool(@Valid School school, String subject) {
+    public School saveSchool(@Valid School school, UUID userId) {
         SchoolEntity entity = mapper.toEntity(school);
         // todo I don't like having to inject the user mapper and user service for this usecase.
-        Optional<User> user = userService.getUserByProviderId(subject);
+        Optional<User> user = userService.getUserById(userId);
         if (user.isEmpty()) {
-            throw new ServiceException(String.format("Unable to create school due to the fact the corresponding user with provider id %s does not exists.", subject));
+            throw new ServiceException(String.format("Unable to create School due to the fact the corresponding user with provider id %s does not exists.", userId));
         }
-
+        // todo why store entire user in entity, we could also only store id. Would prevent us from using userService here
         UserEntity userEntity = userMapper.toEntity(user.get());
         entity.setUser(userEntity);
         locationRepository.persist(entity.getLocation());
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
-            authenticationService.addAuthorization(subject, AuthorizationType.SCHOOL, entity.getId());
-            //todo add school role
-            userService.updateUser(school);
+            authenticationService.addAuthorization(userId, AuthorizationType.SCHOOL, entity.getId());
             return mapper.updateDomainFromEntity(entity, school);
         } else {
-            throw new PersistenceException();
+            throw new PersistenceException("Something went wrong when persisting School for user " + userId);
         }
     }
 

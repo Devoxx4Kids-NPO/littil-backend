@@ -9,10 +9,10 @@ public interface AuthenticationService {
 
     AuthUser createUser(AuthUser user, String tempPassword);
 
-    void deleteUser(String userId);
+    void deleteUser(UUID littilUserId);
 
-    void addAuthorization(String issuer, AuthorizationType type, UUID id);
+    void addAuthorization(UUID littilUserId, AuthorizationType type, UUID id);
 
-    void removeAuthorization(String issuer, AuthorizationType type, UUID id);
+    void removeAuthorization(UUID littilUserId, AuthorizationType type, UUID id);
 
 }

@@ -3,9 +3,16 @@ package org.littil.api.guestTeacher.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
+import org.littil.api.location.repository.LocationRepository;
+import org.littil.api.user.repository.UserEntity;
+import org.littil.api.user.service.User;
+import org.littil.api.user.service.UserMapper;
+import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.PersistenceException;
@@ -23,7 +30,12 @@ import java.util.UUID;
 public class GuestTeacherService {
 
     private final GuestTeacherRepository repository;
+    private final LocationRepository locationRepository;
     private final GuestTeacherMapper mapper;
+    private final UserService userService;
+    private final UserMapper userMapper;
+    private final AuthenticationService authenticationService;
+
 
     public List<GuestTeacher> getTeacherByName(@NonNull final String name) {
         return repository.findByName(name).stream().map(mapper::toDomain).toList();
@@ -38,25 +50,35 @@ public class GuestTeacherService {
     }
 
     @Transactional
-    public GuestTeacher saveTeacher(@Valid GuestTeacher guestTeacher) {
+    public GuestTeacher saveTeacher(@Valid GuestTeacher guestTeacher, UUID userId) {
         GuestTeacherEntity entity = mapper.toEntity(guestTeacher);
+        Optional<User> user = userService.getUserById(userId);
+        if (user.isEmpty()) {
+            throw new ServiceException(String.format("Unable to create GuestTeacher due to the fact the corresponding user with provider id %s does not exists.", userId));
+        }
+
+        // todo why store entire user in entity, we could also only store id. Would prevent us from using userService here
+        UserEntity userEntity = userMapper.toEntity(user.get());
+        entity.setUser(userEntity);
+        locationRepository.persist(entity.getLocation());
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
-            //todo call userService to add school role to user. (first refactor user/school/guestTeacher entity
+            authenticationService.addAuthorization(userId, AuthorizationType.GUEST_TEACHER, entity.getId());
             return mapper.updateDomainFromEntity(entity, guestTeacher);
         } else {
-            throw new PersistenceException();
+            throw new PersistenceException("Something went wrong when persisting GuestTeacher for user " + userId);
         }
     }
 
     @Transactional
-    public void deleteTeacher(@NonNull final UUID id) {
+    public void deleteTeacher(@NonNull final UUID id, UUID userId) {
         //todo also call userService to remove school role from the user.
         Optional<GuestTeacherEntity> teacher = repository.findByIdOptional(id);
         teacher.ifPresentOrElse(repository::delete, () -> {
             throw new NotFoundException();
         });
+        authenticationService.removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, id);
     }
 
     @Transactional

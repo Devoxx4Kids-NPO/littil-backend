@@ -7,9 +7,7 @@ import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.PasswordService;
 import org.littil.api.auth.service.ProviderService;
-import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.mail.MailService;
-import org.littil.api.school.service.School;
 import org.littil.api.user.UserAlreadyExistsException;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
@@ -47,16 +45,6 @@ public class UserService {
                 .toList();
     }
 
-    @Transactional
-    public void updateUser(School school) {
-        //todo implement update role and store in db
-    }
-
-    @Transactional
-    public void updateUser(GuestTeacher guestTeacher) {
-        //todo implement update role and store in db
-    }
-
     //todo can we refactor this method?
     @Transactional
     public User createUser(User user) {
@@ -92,7 +80,7 @@ public class UserService {
     public void deleteUser(UUID id) {
         Optional<UserEntity> user = repository.findByIdOptional(id);
         user.ifPresentOrElse(userEntity -> {
-            authenticationService.deleteUser(userEntity.getProviderId());
+            authenticationService.deleteUser(userEntity.getId());
             repository.delete(userEntity);
         }, () -> {
             throw new NotFoundException();

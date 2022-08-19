@@ -142,7 +142,7 @@ public class SchoolResource {
                     .build();
         }
 
-        School persistedSchool = schoolService.saveSchool(mapper.toDomain(school), tokenHelper.getSubject());
+        School persistedSchool = schoolService.saveSchool(mapper.toDomain(school), tokenHelper.getCurrentUserId());
         URI uri = UriBuilder.fromResource(SchoolResource.class)
                 .path("/" + persistedSchool.getId()).build();
         return Response.created(uri).entity(persistedSchool).build();

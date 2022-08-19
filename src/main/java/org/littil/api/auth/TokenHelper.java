@@ -53,6 +53,5 @@ public class TokenHelper {
 
     private Boolean hasGuestTeacherAuthorizations(Map<String, List<UUID>> authorizations) {
         return authorizations.getOrDefault(AuthorizationType.GUEST_TEACHER.getTokenValue(), new ArrayList<>()).size() > 0;
-
     }
 }

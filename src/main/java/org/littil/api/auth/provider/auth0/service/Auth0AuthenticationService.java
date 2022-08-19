@@ -15,6 +15,7 @@ import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
+import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -30,6 +31,15 @@ public class Auth0AuthenticationService implements AuthenticationService {
     private final Auth0UserMapper auth0UserMapper;
     ManagementAPI managementAPI;
     Auth0RoleService roleService;
+    UserService userService;
+
+    private String getAuth0IdFor(UUID littilUserId) {
+        Optional<org.littil.api.user.service.User> userById = userService.getUserById(littilUserId);
+        if (userById.isPresent()) {
+            return userById.get().getProviderId();
+        }
+        throw new Auth0UserException("Could not find auth0 id for littilUserId " + littilUserId);
+    }
 
     @Override
     public Optional<AuthUser> getUserById(String userId) {
@@ -62,7 +72,8 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public void deleteUser(String userId) {
+    public void deleteUser(UUID littilUserId) {
+        String userId = getAuth0IdFor(littilUserId);
         try {
             managementAPI.users().delete(userId).execute();
         } catch (Auth0Exception exception) {
@@ -71,26 +82,29 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public void addAuthorization(String userId, AuthorizationType type, UUID resourceId) {
+    public void addAuthorization(UUID littilUserId, AuthorizationType type, UUID resourceId) {
+        String userId = getAuth0IdFor(littilUserId);
         try {
             manageAuthorization(userId, type, resourceId, AuthorizationAction.ADD);
         } catch (Auth0Exception e) {
-            throw new Auth0AuthorizationException("Unable to add the authorization from auth0 for userId "+ userId, e);
+            throw new Auth0AuthorizationException("Unable to add the authorization from auth0 for userId " + userId, e);
 
         }
     }
 
     @Override
-    public void removeAuthorization(String userId, AuthorizationType type, UUID resourceId) {
+    public void removeAuthorization(UUID littilUserId, AuthorizationType type, UUID resourceId) {
+        String userId = getAuth0IdFor(littilUserId);
         try {
             manageAuthorization(userId, type, resourceId, AuthorizationAction.REMOVE);
         } catch (Auth0Exception e) {
-            throw new Auth0AuthorizationException("Unable to remove the authorization from auth0 for userId "+ userId, e);
+            throw new Auth0AuthorizationException("Unable to remove the authorization from auth0 for userId " + littilUserId, e);
         }
     }
+
     private void manageAuthorization(String userId, AuthorizationType type, UUID resourceId, AuthorizationAction action) throws Auth0Exception {
         Map<String, Object> appMetadata = getAppMetadata(userId);
-        Map<String, List<UUID>> authorizations = (Map<String, List<UUID>>)  appMetadata.getOrDefault(AUTHORIZATIONS_TOKEN_CLAIM, new HashMap<>());
+        Map<String, List<UUID>> authorizations = (Map<String, List<UUID>>) appMetadata.getOrDefault(AUTHORIZATIONS_TOKEN_CLAIM, new HashMap<>());
         List<UUID> authorizationTypeAuthorizations = authorizations.getOrDefault(type.getTokenValue(), new ArrayList<>());
 
         String roleId = roleService.getIdForRoleName(type.name().toLowerCase());

@@ -8,25 +8,20 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.authz.UserOwned;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.service.GuestTeacher;
+import org.littil.api.guestTeacher.service.GuestTeacherMapper;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -47,6 +42,11 @@ public class GuestTeacherResource {
 
     @Inject
     GuestTeacherService guestTeacherService;
+    @Inject
+    GuestTeacherMapper mapper;
+    @Inject
+    TokenHelper tokenHelper;
+
 
     @GET
     @Operation(summary = "Get all guest teachers")
@@ -137,9 +137,13 @@ public class GuestTeacherResource {
             description = "Persistence error occurred. Failed to persist teacher.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
-    public Response create(@NotNull @Valid GuestTeacher guestTeacher) {
-        //todo check whether user already has school or guest teacher attached. Then return error.
-        GuestTeacher persistedGuestTeacher = guestTeacherService.saveTeacher(guestTeacher);
+    public Response create(@NotNull @Valid GuestTeacherPostResource guestTeacher) {
+        if (tokenHelper.hasUserAuthorizations()) {
+            return Response.status(Response.Status.CONFLICT)
+                    .build();
+        }
+
+        GuestTeacher persistedGuestTeacher = guestTeacherService.saveTeacher(mapper.toDomain(guestTeacher), tokenHelper.getCurrentUserId());
         URI uri = UriBuilder.fromResource(GuestTeacherResource.class)
                 .path("/" + persistedGuestTeacher.getId()).build();
         return Response.created(uri).entity(persistedGuestTeacher).build();
@@ -203,7 +207,7 @@ public class GuestTeacherResource {
             description = "Current user is not owner of this guest teacher profile"
     )
     public Response delete(@PathParam("id") UUID id) {
-        guestTeacherService.deleteTeacher(id);
+        guestTeacherService.deleteTeacher(id, tokenHelper.getCurrentUserId());
         return Response.ok().build();
     }
 }
