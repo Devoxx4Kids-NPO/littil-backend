@@ -105,6 +105,20 @@
             <groupId>com.auth0</groupId>
             <artifactId>auth0</artifactId>
             <version>${auth0.version}</version>
+            <!-- The shipped version of okhttp has a critical CVE -->
+            <!-- Therefore we exclude it and import a newer version directly -->
+            <!-- See: https://security.snyk.io/vuln/SNYK-JAVA-COMSQUAREUPOKHTTP3-2958044 -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.squareup.okhttp3</groupId>
+                    <artifactId>okhttp</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
