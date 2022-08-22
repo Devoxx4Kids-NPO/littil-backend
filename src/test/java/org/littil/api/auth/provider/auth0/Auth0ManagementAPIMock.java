@@ -6,12 +6,14 @@ import io.quarkus.test.Mock;
 import org.mockito.Mockito;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
 
 @ApplicationScoped
 @Mock
 class Auth0ManagementAPIMock extends Auth0ManagementAPI {
 
     @Override
+    @Produces
     public ManagementAPI produceManagementAPI() throws Auth0Exception {
         return Mockito.mock(ManagementAPI.class);
     }
