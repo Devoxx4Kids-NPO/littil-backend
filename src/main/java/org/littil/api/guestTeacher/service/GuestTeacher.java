@@ -2,7 +2,6 @@ package org.littil.api.guestTeacher.service;
 
 import lombok.Data;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
@@ -18,11 +17,6 @@ public class GuestTeacher {
     @NotEmpty(message = "{GuestTeacher.surname.required}")
     private String surname;
 
-    // todo consider if we need this, and if we need it why not on school?
-    @NotEmpty(message = "{GuestTeacher.email.required}")
-    @Email(message = "{GuestTeacher.email.invalid}")
-    private String email;
-
     @NotEmpty(message = "{GuestTeacher.address.required}")
     private String address;
 
@@ -32,6 +26,5 @@ public class GuestTeacher {
     @NotEmpty(message = "{GuestTeacher.locale.required}")
     private String locale;
 
-    private String preferences;
     private EnumSet<DayOfWeek> availability;
 }

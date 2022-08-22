@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @NameBinding
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-public @interface GuestTeacherSecured { // todo rename to something more generic like SecuredAPI?
+public @interface GuestTeacherSecured {
 
     AuthorizationType type() default AuthorizationType.GUEST_TEACHER;
 }
