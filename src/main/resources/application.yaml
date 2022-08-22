@@ -4,8 +4,8 @@ org:
       namespace: ${LITTIL_NAMESPACE:https://littil.org/}
       machine2machine:
         client:
-          id: ${M2M_CLIENT_ID}
-          secret: ${M2M_CLIENT_SECRET}
+          id: ${M2M_CLIENT_ID:m2m_client_id}
+          secret: ${M2M_CLIENT_SECRET:m2m_client_secret}
 quarkus:
   datasource:
     db-kind: mariadb
@@ -15,35 +15,35 @@ quarkus:
   log:
     level: INFO
   swagger-ui:
-    oauth-client-id: ${OIDC_CLIENT_ID}
+    oauth-client-id: ${OIDC_CLIENT_ID:oidc_client_id}
   smallrye-openapi:
     store-schema-directory: "target/generated"
-    oauth2-implicit-authorization-url: ${OIDC_TENANT}/authorize?audience=${OIDC_TENANT}/api/v2/ # we add audience as query param to make sure we get a token with payload
-    oidc-open-id-connect-url: ${OIDC_TENANT}/authorize
+    oauth2-implicit-authorization-url: ${OIDC_TENANT:oidc_tenant}/authorize?audience=${OIDC_TENANT:oidc_tenant}/api/v2/ # we add audience as query param to make sure we get a token with payload
+    oidc-open-id-connect-url: ${OIDC_TENANT:oidc_tenant}/authorize
     security-scheme-name: Auth0
     security-scheme: oauth2-implicit
     oauth-scopes: [openid, email, profile]
   oidc:
     tenant-id: "dev-g60bne29"
-    authorization-path: /authorize?audience=${OIDC_TENANT}/api/v2/
+    authorization-path: /authorize?audience=${OIDC_TENANT:oidc_tenant}/api/v2/
     client-id: ${OIDC_CLIENT_ID}
-    auth-server-url: ${OIDC_TENANT}/auth
+    auth-server-url: ${OIDC_TENANT:oidc_tenant}/auth
     credentials:
-      secret: ${OIDC_CLIENT_SECRET}
+      secret: ${OIDC_CLIENT_SECRET:oidc_client_secret}
       jwt:
-        audience: ${OIDC_TENANT}/api/v2/
+        audience: ${OIDC_TENANT:oidc_tenant}/api/v2/
     token:
-      audience: ${OIDC_TENANT}/api/v2/
+      audience: ${OIDC_TENANT:oidc_tenant}/api/v2/
     introspection-path: .well-known/openid-configuration
     jwks-path: .well-known/jwks.json
   mailer:
     from: "no-reply@littil.org"
-    host: ${SMTP_HOST}
+    host: ${SMTP_HOST:smtp_stub.local}
     port: 465
     ssl: true
     username: ${SMTP_USERNAME}
     password: ${SMTP_PASSWORD}
-    mock: true #Mock SMTP server when running in development mode. See: http://localhost:8080/mail for incomming mail
+    mock: true #Mock SMTP server when running in development mode. See: http://localhost:8080/mail for incoming mail
 
 "%dev":
   org:
