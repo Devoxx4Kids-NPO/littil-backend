@@ -3,6 +3,7 @@ package org.littil.api.exception;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.littil.api.guestTeacher.api.GuestTeacherResource;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @TestHTTPEndpoint(GuestTeacherResource.class)
+@Disabled("Disabled, needs a lot of refactoring")
 class ThrowableMapperTest {
 
     @InjectMock
