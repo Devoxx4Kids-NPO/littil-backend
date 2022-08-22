@@ -105,6 +105,18 @@
             <groupId>com.auth0</groupId>
             <artifactId>auth0</artifactId>
             <version>${auth0.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.squareup.okhttp3</groupId>
+                    <artifactId>okhttp</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!--  We manually include the okhttp lib to fix the vulnerability in 3.14.9 which comes with auth0 dep     -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.9.2</version>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
