@@ -2,7 +2,6 @@ package org.littil.api.school.service;
 
 import lombok.Data;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import java.util.UUID;
 
@@ -21,8 +20,4 @@ public class School {
 
     @NotEmpty(message = "{School.contactPersonName.required}")
     private String contactPersonName;
-
-    @Email(message = "{School.contactPersonEmail.invalid}")
-    @NotEmpty(message = "{School.contactPersonEmail.required}")
-    private String contactPersonEmail;
 }

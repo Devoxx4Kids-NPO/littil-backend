@@ -3,9 +3,16 @@ package org.littil.api.school.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
+import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
+import org.littil.api.user.repository.UserEntity;
+import org.littil.api.user.service.User;
+import org.littil.api.user.service.UserMapper;
+import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.PersistenceException;
@@ -23,10 +30,14 @@ import java.util.UUID;
 public class SchoolService {
 
     private final SchoolRepository repository;
+    private final LocationRepository locationRepository;
     private final SchoolMapper mapper;
+    private final UserService userService;
+    private final UserMapper userMapper;
+    private final AuthenticationService authenticationService;
 
     public List<School> getSchoolByName(@NonNull final String name) {
-        return repository.findByName(name).stream().map(mapper::toDomain).toList();
+        return repository.findBySchoolNameLike(name).stream().map(mapper::toDomain).toList();
     }
 
     public Optional<School> getSchoolById(@NonNull final UUID id) {
@@ -38,23 +49,35 @@ public class SchoolService {
     }
 
     @Transactional
-    public School saveSchool(@Valid School school) {
+    public School saveSchool(@Valid School school, UUID userId) {
         SchoolEntity entity = mapper.toEntity(school);
+        // todo I don't like having to inject the user mapper and user service for this usecase.
+        Optional<User> user = userService.getUserById(userId);
+        if (user.isEmpty()) {
+            throw new ServiceException(String.format("Unable to create School due to the fact the corresponding user with provider id %s does not exists.", userId));
+        }
+        // todo why store entire user in entity, we could also only store id. Would prevent us from using userService here
+        UserEntity userEntity = userMapper.toEntity(user.get());
+        entity.setUser(userEntity);
+        locationRepository.persist(entity.getLocation());
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
+            authenticationService.addAuthorization(userId, AuthorizationType.SCHOOL, entity.getId());
             return mapper.updateDomainFromEntity(entity, school);
         } else {
-            throw new PersistenceException();
+            throw new PersistenceException("Something went wrong when persisting School for user " + userId);
         }
     }
 
     @Transactional
-    public void deleteSchool(@NonNull final UUID id) {
+    public void deleteSchool(@NonNull final UUID id, UUID userId) {
         Optional<SchoolEntity> school = repository.findByIdOptional(id);
         school.ifPresentOrElse(repository::delete, () -> {
             throw new NotFoundException();
         });
+        authenticationService.removeAuthorization(userId, AuthorizationType.SCHOOL, id);
+
     }
 
     @Transactional

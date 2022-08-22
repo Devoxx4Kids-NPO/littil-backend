@@ -1,3 +1,11 @@
+org:
+  littil:
+    auth:
+      namespace: ${LITTIL_NAMESPACE:https://littil.org/}
+      machine2machine:
+        client:
+          id: ${M2M_CLIENT_ID:m2m_client_id}
+          secret: ${M2M_CLIENT_SECRET:m2m_client_secret}
 quarkus:
   datasource:
     db-kind: mariadb
@@ -6,18 +14,53 @@ quarkus:
       generation: none
   log:
     level: INFO
+  swagger-ui:
+    oauth-client-id: ${OIDC_CLIENT_ID:oidc_client_id}
   smallrye-openapi:
     store-schema-directory: "target/generated"
+    oauth2-implicit-authorization-url: ${OIDC_TENANT:https://oidc_tenant}/authorize?audience=${OIDC_TENANT:https://oidc_tenant}/api/v2/ # we add audience as query param to make sure we get a token with payload
+    oidc-open-id-connect-url: ${OIDC_TENANT:https://oidc_tenant}/authorize
+    security-scheme-name: Auth0
+    security-scheme: oauth2-implicit
+    oauth-scopes: [openid, email, profile]
+  oidc:
+    tenant-id: "dev-g60bne29"
+    authorization-path: /authorize?audience=${OIDC_TENANT:https://oidc_tenant}/api/v2/
+    client-id: ${OIDC_CLIENT_ID:oidc_client_id}
+    auth-server-url: ${OIDC_TENANT:https://oidc_tenant}/auth
+    credentials:
+      secret: ${OIDC_CLIENT_SECRET:oidc_client_secret}
+      jwt:
+        audience: ${OIDC_TENANT:https://oidc_tenant}/api/v2/
+    token:
+      audience: ${OIDC_TENANT:https://oidc_tenant}/api/v2/
+    introspection-path: .well-known/openid-configuration
+    jwks-path: .well-known/jwks.json
+  mailer:
+    from: "no-reply@littil.org"
+    host: ${SMTP_HOST:smtp_stub.local}
+    port: 465
+    ssl: true
+    username: ${SMTP_USERNAME:user}
+    password: ${SMTP_PASSWORD:pwd}
+    mock: true #Mock SMTP server when running in development mode. See: http://localhost:8080/mail for incoming mail
 
 "%dev":
+  org:
+    littil:
+      devservices:
+        devdata: true
   quarkus:
     datasource:
       devservices:
+        port: 61052
         enabled: true
         image-name: "mariadb:10.6"
     log:
       category:
         "org.littil":
+          level: DEBUG
+        "quarkus.oidc":
           level: DEBUG
     hibernate-orm:
       log:
