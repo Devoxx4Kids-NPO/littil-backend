@@ -13,7 +13,7 @@ env:
 
 jobs:
   push:
-    name: Building native image
+    name: Building project image
     runs-on: ubuntu-latest
     permissions:
       packages: write
