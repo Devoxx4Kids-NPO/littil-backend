@@ -29,11 +29,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 1
           min-coverage-changed-files: 0
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5.5
       - name: Analyze build code
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.branch.target=main -Dsonar.branch.name=${{ steps.branch-name.outputs.head_ref_branch }}
 
   security-scan:
     if: github.event.pull_request.draft == false

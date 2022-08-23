@@ -1,3 +1,6 @@
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=littil-backend&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=littil-backend)
+![Build image workflow status](https://github.com/Devoxx4Kids-NPO/littil-backend/actions/workflows/publish-build-container.yml/badge.svg)
+
 # LITTIL initiative
 
 The LITTIL project is an initiative to develop and maintain an Open-Source platform to connect schools with volunteer
