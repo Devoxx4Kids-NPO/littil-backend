@@ -33,6 +33,11 @@ jobs:
           maven-version: 3.6.3
       - name: Verify project
         run: mvn verify --batch-mode
+      - name: Analyze build code
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
       - name: Build image
         run: docker build . --file src/main/docker/Dockerfile.jvm --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
       - name: Log in to registry
