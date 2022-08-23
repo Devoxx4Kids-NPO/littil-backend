@@ -32,9 +32,9 @@ jobs:
           java-distribution: temurin
           maven-version: 3.6.3
       - name: Verify project
-        run: mvn verify -Pnative --batch-mode
+        run: mvn verify --batch-mode
       - name: Build image
-        run: docker build . --file src/main/docker/Dockerfile.native-distroless --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
+        run: docker build . --file src/main/docker/Dockerfile.jvm --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
       - name: Log in to registry
         # This is where you will update the PAT to GITHUB_TOKEN
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
