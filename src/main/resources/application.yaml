@@ -1,7 +1,12 @@
 org:
   littil:
     auth:
-      namespace: ${LITTIL_NAMESPACE:https://littil.org/}
+      token:
+        claim:
+          namespace: https://littil.org/
+          user_id: littil_user_id
+          authorizations: authorizations
+      tenant_uri: ${OIDC_TENANT:https://oidc_tenant}
       machine2machine:
         client:
           id: ${M2M_CLIENT_ID:m2m_client_id}
@@ -18,22 +23,22 @@ quarkus:
     oauth-client-id: ${OIDC_CLIENT_ID:oidc_client_id}
   smallrye-openapi:
     store-schema-directory: "target/generated"
-    oauth2-implicit-authorization-url: ${OIDC_TENANT:https://oidc_tenant}/authorize?audience=${OIDC_TENANT:https://oidc_tenant}/api/v2/ # we add audience as query param to make sure we get a token with payload
-    oidc-open-id-connect-url: ${OIDC_TENANT:https://oidc_tenant}/authorize
+    oauth2-implicit-authorization-url: ${org.littil.auth.tenant_uri}/authorize?audience=${org.littil.auth.tenant_uri}/api/v2/ # we add audience as query param to make sure we get a token with payload
+    oidc-open-id-connect-url: ${org.littil.auth.tenant_uri}/authorize
     security-scheme-name: Auth0
     security-scheme: oauth2-implicit
     oauth-scopes: [openid, email, profile]
   oidc:
     tenant-id: "dev-g60bne29"
-    authorization-path: /authorize?audience=${OIDC_TENANT:https://oidc_tenant}/api/v2/
+    authorization-path: /authorize?audience=${org.littil.auth.tenant_uri}/api/v2/
     client-id: ${OIDC_CLIENT_ID:oidc_client_id}
-    auth-server-url: ${OIDC_TENANT:https://oidc_tenant}/auth
+    auth-server-url: ${org.littil.auth.tenant_uri}/auth
     credentials:
       secret: ${OIDC_CLIENT_SECRET:oidc_client_secret}
       jwt:
-        audience: ${OIDC_TENANT:https://oidc_tenant}/api/v2/
+        audience: ${org.littil.auth.tenant_uri}/api/v2/
     token:
-      audience: ${OIDC_TENANT:https://oidc_tenant}/api/v2/
+      audience: ${org.littil.auth.tenant_uri}/api/v2/
     introspection-path: .well-known/openid-configuration
     jwks-path: .well-known/jwks.json
   mailer:

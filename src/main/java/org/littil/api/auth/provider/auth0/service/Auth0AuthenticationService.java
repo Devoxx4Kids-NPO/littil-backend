@@ -9,6 +9,7 @@ import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.provider.auth0.exception.Auth0AuthorizationException;
 import org.littil.api.auth.provider.auth0.exception.Auth0DuplicateUserException;
 import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
@@ -19,9 +20,12 @@ import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.*;
-
-import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @ApplicationScoped
 @AllArgsConstructor(onConstructor_ = {@Inject})
@@ -32,6 +36,9 @@ public class Auth0AuthenticationService implements AuthenticationService {
     ManagementAPI managementAPI;
     Auth0RoleService roleService;
     UserService userService;
+
+    @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
+    String authorizationsClaimName;
 
     private String getAuth0IdFor(UUID littilUserId) {
         Optional<org.littil.api.user.service.User> userById = userService.getUserById(littilUserId);
@@ -110,7 +117,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
     private void manageAuthorization(String userId, AuthorizationType type, UUID resourceId, AuthorizationAction action) throws Auth0Exception {
         Map<String, Object> appMetadata = getAppMetadata(userId);
-        Map<String, List<String>> authorizations = (Map<String, List<String>>) appMetadata.getOrDefault(AUTHORIZATIONS_TOKEN_CLAIM, new HashMap<>());
+        Map<String, List<String>> authorizations = (Map<String, List<String>>) appMetadata.getOrDefault(authorizationsClaimName, new HashMap<>());
         List<String> authorizationTypeAuthorizations = authorizations.getOrDefault(type.getTokenValue(), new ArrayList<>());
 
         String roleId = roleService.getIdForRoleName(type.name().toLowerCase());
@@ -127,7 +134,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
             case REMOVE -> {
                 managementAPI.users().removeRoles(userId, List.of(roleId)).execute();
                 if (!authorizationTypeAuthorizations.contains(resourceId.toString())) {
-                    log.info(String.format("No need to remove authorisation for type %s with id %s because this user does not have any authorizations", type.getTokenValue(), resourceId.toString()));
+                    log.info(String.format("No need to remove authorisation for type %s with id %s because this user does not have any authorizations", type.getTokenValue(), resourceId));
                     return;
                 } else {
                     authorizationTypeAuthorizations.remove(resourceId.toString());
@@ -136,12 +143,13 @@ public class Auth0AuthenticationService implements AuthenticationService {
         }
 
         authorizations.put(type.getTokenValue(), authorizationTypeAuthorizations);
-        appMetadata.put(AUTHORIZATIONS_TOKEN_CLAIM, authorizations);
+        appMetadata.put(authorizationsClaimName, authorizations);
 
         // we need to create a new user, to prevent an error of editing additional properties.
         User user = getUserWithNewAppMetaData(appMetadata);
         managementAPI.users().update(userId, user).execute();
     }
+
     private Map<String, Object> getAppMetadata(String userId) throws Auth0Exception {
         User userFromAuth = getUserForId(userId);
         return userFromAuth.getAppMetadata();
@@ -158,7 +166,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         return managementAPI.users().get(userId, null).execute();
     }
 
-    enum AuthorizationAction{
+    enum AuthorizationAction {
         ADD,
         REMOVE
     }
