@@ -7,7 +7,7 @@ org:
           user_id: littil_user_id
           authorizations: authorizations
       tenant_uri: ${OIDC_TENANT:https://oidc_tenant}
-      provider_api: ${org.littil.auth.tenant_uri}/api/v2/
+      provider_api: ${org.littil.auth.tenant_uri}
       machine2machine:
         client:
           id: ${M2M_CLIENT_ID:m2m_client_id}
