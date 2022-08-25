@@ -10,6 +10,7 @@ import java.util.Map;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 @Slf4j
 public class APIManagementMock implements QuarkusTestResourceLifecycleManager {
@@ -18,7 +19,7 @@ public class APIManagementMock implements QuarkusTestResourceLifecycleManager {
 
     @Override
     public Map<String, String> start() {
-        wireMockServer = new WireMockServer();
+        wireMockServer = new WireMockServer(options().dynamicPort());
         wireMockServer.start();
 
         /*
