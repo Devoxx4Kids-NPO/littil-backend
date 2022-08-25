@@ -21,8 +21,11 @@ jobs:
           java-distribution: temurin
           maven-version: 3.6.3
       - run: mvn verify --batch-mode
-      - uses: scacap/action-surefire-report@v1
+      - name: Save test results
+        uses: scacap/action-surefire-report@v1
+        if: ${{ github.actor != 'dependabot[bot]' }}
       - name: Publish code coverage to pull request
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: madrapps/jacoco-report@v1.1
         with:
           path: ${{ github.workspace }}/target/jacoco-report/jacoco.xml
@@ -30,9 +33,11 @@ jobs:
           min-coverage-overall: 1
           min-coverage-changed-files: 0
       - name: Get branch name
+        if: ${{ github.actor != 'dependabot[bot]' }}
         id: branch-name
         uses: tj-actions/branch-names@v5.5
       - name: Analyze build code
+        if: ${{ github.actor != 'dependabot[bot]' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
