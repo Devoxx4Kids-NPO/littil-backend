@@ -7,6 +7,7 @@ org:
           user_id: littil_user_id
           authorizations: authorizations
       tenant_uri: ${OIDC_TENANT:https://oidc_tenant}
+      provider_api: ${org.littil.auth.tenant_uri}/api/v2/
       machine2machine:
         client:
           id: ${M2M_CLIENT_ID:m2m_client_id}
@@ -23,7 +24,7 @@ quarkus:
     oauth-client-id: ${OIDC_CLIENT_ID:oidc_client_id}
   smallrye-openapi:
     store-schema-directory: "target/generated"
-    oauth2-implicit-authorization-url: ${org.littil.auth.tenant_uri}/authorize?audience=${org.littil.auth.tenant_uri}/api/v2/ # we add audience as query param to make sure we get a token with payload
+    oauth2-implicit-authorization-url: ${org.littil.auth.tenant_uri}/authorize?audience=${org.littil.auth.provider_api}/api/v2/ # we add audience as query param to make sure we get a token with payload
     oidc-open-id-connect-url: ${org.littil.auth.tenant_uri}/authorize
     security-scheme-name: Auth0
     security-scheme: oauth2-implicit
@@ -92,6 +93,8 @@ quarkus:
     flyway:
       migrate-at-start: true
       locations: db/migration,db/testdata
+    smallrye-openapi:
+      oauth2-implicit-authorization-url: ${org.littil.auth.tenant_uri}/authorize
 
 "%prod":
   quarkus:

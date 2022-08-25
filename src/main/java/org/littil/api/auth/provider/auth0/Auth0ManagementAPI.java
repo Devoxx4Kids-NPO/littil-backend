@@ -28,8 +28,12 @@ public class Auth0ManagementAPI {
     String clientSecret;
 
     @Inject
+    @ConfigProperty(name = "org.littil.auth.provider_api")
+    String providerApiUri;
+
+    @Inject
     @ConfigProperty(name = "org.littil.auth.tenant_uri")
-    String tenant_uri;
+    String tenantUri;
 
     @Inject
     DefaultTenantConfigResolver defaultTenantConfigResolver;
@@ -47,11 +51,12 @@ public class Auth0ManagementAPI {
         String audience = tenantConfig.token.audience.get().get(0);
 
         // todo if not present throw exception
-        AuthAPI authAPI = new AuthAPI(tenant_uri, clientId, clientSecret);
+        AuthAPI authAPI = new AuthAPI(tenantUri, clientId, clientSecret);
         AuthRequest authRequest = authAPI.requestToken(audience);
 
         // Machine2Machine tokens is paid after 1000 tokens each month
         TokenHolder holder = authRequest.execute();
-        return new ManagementAPI(tenant_uri, holder.getAccessToken());
+
+        return new ManagementAPI(providerApiUri, holder.getAccessToken());
     }
 }

@@ -17,7 +17,7 @@ import java.util.UUID;
 public class TokenHelper {
 
     @Inject
-    JsonWebToken jwt;
+    JsonWebToken accessToken;
 
     @Inject
     @ConfigProperty(name = "org.littil.auth.token.claim.namespace")
@@ -32,7 +32,7 @@ public class TokenHelper {
     String authorizationsClaimName;
 
     public <T> T getCustomClaim(String claimName) {
-        return jwt.getClaim(claimNamespace.concat(claimName));
+        return accessToken.getClaim(claimNamespace.concat(claimName));
     }
 
     public UUID getCurrentUserId() {
@@ -40,7 +40,7 @@ public class TokenHelper {
         return Optional.ofNullable(userId)
                 .map(UUID::fromString)
                 .orElseThrow(() -> {
-                    throw new AuthenticationException(String.format("Unable to retrieve LiTTiL userId from JWT token with provider id %s", jwt.getIssuer()));
+                    throw new AuthenticationException(String.format("Unable to retrieve LiTTiL userId from JWT token with provider id %s", accessToken.getIssuer()));
                 });
     }
 

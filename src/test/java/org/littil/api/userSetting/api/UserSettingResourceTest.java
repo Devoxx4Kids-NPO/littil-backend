@@ -1,17 +1,19 @@
 package org.littil.api.userSetting.api;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import io.quarkus.test.security.jwt.Claim;
-import io.quarkus.test.security.jwt.JwtSecurity;
-import org.junit.jupiter.api.Disabled;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import org.junit.jupiter.api.Test;
+import org.littil.mock.auth0.APIManagementMock;
 
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
 @TestHTTPEndpoint(UserSettingResource.class)
+@QuarkusTestResource(APIManagementMock.class)
 class UserSettingResourceTest {
 
     @Test
@@ -25,10 +27,9 @@ class UserSettingResourceTest {
 
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
-    @JwtSecurity(claims = {
+    @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")
     })
-    @Disabled("Needs debugging")
     void givenListAllAuthenticated_thenShouldReturnOk() {
         given()
                 .when()
