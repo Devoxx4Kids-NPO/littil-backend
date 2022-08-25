@@ -23,8 +23,6 @@ import java.sql.Statement;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
-import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
-import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
 
 @ApplicationScoped
 @Slf4j
@@ -35,7 +33,16 @@ public class ApplicationLifeCycle {
     boolean insertDevData;
 
     @Inject
+    @ConfigProperty(name = "org.littil.auth.token.claim.user_id")
+    String userIdClaimName;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
+    String authorizationsClaimName;
+
+    @Inject
     DataSource dataSource;
+
     @Inject
     ManagementAPI managementAPI;
 
@@ -48,13 +55,14 @@ public class ApplicationLifeCycle {
         }
     }
 
+    //todo fix this. This won't work when developing simultaneously
     private void cleanLittilAuth0User() throws Auth0Exception {
         log.info("Removing all authorizations from Auth0 appMetadata, this might cause issues when 2 developers are testing at once.");
 
         User user = new User();
         String userId = "auth0|62fd3224f76949850e9eb264";
-        Map<String, Object> appMetadata = Map.of(USER_ID_TOKEN_CLAIM, "e87cda48-9a98-41a7-89bb-9ee62441c84c",
-                AUTHORIZATIONS_TOKEN_CLAIM, Map.of(AuthorizationType.SCHOOL.getTokenValue(), emptyList(), AuthorizationType.GUEST_TEACHER.getTokenValue(), emptyList()));
+        Map<String, Object> appMetadata = Map.of(userIdClaimName, "e87cda48-9a98-41a7-89bb-9ee62441c84c",
+                authorizationsClaimName, Map.of(AuthorizationType.SCHOOL.getTokenValue(), emptyList(), AuthorizationType.GUEST_TEACHER.getTokenValue(), emptyList()));
         user.setAppMetadata(appMetadata);
         managementAPI.users().update(userId, user).execute();
 

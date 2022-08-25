@@ -4,6 +4,7 @@ import io.quarkus.arc.Priority;
 import io.quarkus.security.UnauthorizedException;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthorizationType;
 
@@ -14,9 +15,11 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
-import java.util.*;
-
-import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Priority(Priorities.AUTHORIZATION)
 //@Provider
@@ -25,6 +28,10 @@ import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
 public abstract class AbstractSecurityInterceptor implements ContainerRequestFilter {
     @Inject
     TokenHelper tokenHelper;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
+    String authorizationsClaimName;
 
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
@@ -43,7 +50,7 @@ public abstract class AbstractSecurityInterceptor implements ContainerRequestFil
             throw new IllegalArgumentException("Whoops we dit not expect this amount of parameters");
         }
         Optional<String> resourceId = resourceIds.stream().findFirst();
-        Map<String, List<JsonString>> authorizations = tokenHelper.getCustomClaim(AUTHORIZATIONS_TOKEN_CLAIM);
+        Map<String, List<JsonString>> authorizations = tokenHelper.getCustomClaim(authorizationsClaimName);
 
         checkIfAuthorized(UUID.fromString(resourceId.get()), authorizations);
     }

@@ -7,33 +7,41 @@ import org.littil.api.exception.AuthenticationException;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import java.util.*;
-
-import static org.littil.api.Util.AUTHORIZATIONS_TOKEN_CLAIM;
-import static org.littil.api.Util.USER_ID_TOKEN_CLAIM;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @RequestScoped
 public class TokenHelper {
+
     @Inject
-    JsonWebToken jwt;
-    @ConfigProperty(name = "org.littil.auth.namespace")
-    String nameSpace;
+    JsonWebToken accessToken;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.auth.token.claim.namespace")
+    String claimNamespace;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.auth.token.claim.user_id")
+    String userIdClaimName;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
+    String authorizationsClaimName;
 
     public <T> T getCustomClaim(String claimName) {
-        return jwt.getClaim(nameSpace + claimName);
+        return accessToken.getClaim(claimNamespace.concat(claimName));
     }
 
     public UUID getCurrentUserId() {
-        String userId = getCustomClaim(USER_ID_TOKEN_CLAIM);
+        String userId = getCustomClaim(userIdClaimName);
         return Optional.ofNullable(userId)
                 .map(UUID::fromString)
                 .orElseThrow(() -> {
-                    throw new AuthenticationException(String.format("Unable to retrieve LiTTiL userId from JWT token with provider id %s", jwt.getIssuer()));
+                    throw new AuthenticationException(String.format("Unable to retrieve LiTTiL userId from JWT token with provider id %s", accessToken.getIssuer()));
                 });
-    }
-
-    public String getSubject() {
-        return jwt.getSubject();
     }
 
     public Boolean hasUserAuthorizations() {
@@ -44,7 +52,7 @@ public class TokenHelper {
     }
 
     private Map<String, List<UUID>> getUserAuthorizations() {
-        return getCustomClaim(AUTHORIZATIONS_TOKEN_CLAIM);
+        return getCustomClaim(authorizationsClaimName);
     }
 
     private Boolean hasSchoolAuthorizations(Map<String, List<UUID>> authorizations) {
