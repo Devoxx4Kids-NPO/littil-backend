@@ -12,11 +12,11 @@ import org.littil.api.guestTeacher.service.GuestTeacher;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.littil.Helper.getErrorMessage;
 
 @QuarkusTest
 @TestHTTPEndpoint(GuestTeacherResource.class)
@@ -296,9 +296,5 @@ class GuestGuestTeacherResourceTest {
         guestTeacher.setAvailability(EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
 
         return guestTeacher;
-    }
-
-    private String getErrorMessage(String key) {
-        return ResourceBundle.getBundle("ValidationMessages").getString(key);
     }
 }
