@@ -327,9 +327,6 @@ class UserSettingResourceTest {
     }
 
     private UserSetting createUserSetting() {
-        UserSetting userSetting = new UserSetting();
-        userSetting.setKey(RandomStringUtils.randomAlphabetic(5));
-        userSetting.setValue(RandomStringUtils.randomAlphabetic(10));
-        return userSetting;
+        return new UserSetting(RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10));
     }
 }
