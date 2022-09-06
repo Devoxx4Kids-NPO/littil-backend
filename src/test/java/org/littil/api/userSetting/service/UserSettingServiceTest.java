@@ -9,12 +9,15 @@ import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
 
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -92,4 +95,31 @@ class UserSettingServiceTest {
 
         assertThat(userSetting).isNotPresent();
     }
+
+    @Test
+    void givenDeleteUserSetting_thenShouldDeleteUserSetting() {
+        final UUID userId = UUID.randomUUID();
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(10);
+
+        final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
+
+        doReturn(Optional.of(userSettingEntity)).when(repository)
+                .findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
+        service.delete(key, userId);
+        then(repository).should().delete(userSettingEntity);
+    }
+
+    @Test
+    void givenDeleteUnknownUserSetting_thenShouldThrowNotFoundException() {
+        final UUID userId = UUID.randomUUID();
+        final String key = RandomStringUtils.randomAlphabetic(5);
+
+        doReturn(Optional.empty()).when(repository)
+                .findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
+        verifyNoMoreInteractions(repository);
+
+        assertThrows(NotFoundException.class, () -> service.delete(key, userId));
+    }
+
 }
