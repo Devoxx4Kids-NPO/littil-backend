@@ -9,6 +9,7 @@ import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
 
 import javax.inject.Inject;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
@@ -120,6 +121,81 @@ class UserSettingServiceTest {
         verifyNoMoreInteractions(repository);
 
         assertThrows(NotFoundException.class, () -> service.delete(key, userId));
+    }
+
+    @Test
+    void givenUpdateUserSetting_thenShouldSuccessfullyUpdateUserSetting() {
+        final UUID userId = UUID.randomUUID();
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(10);
+        final String newValue = RandomStringUtils.randomAlphabetic(10);
+
+        final UserSetting userSetting = new UserSetting(key, value);
+        final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
+        final UserSetting updatedUserSetting = new UserSetting(key, newValue);
+
+        doReturn(Optional.of(userSettingEntity)).when(repository)
+                .findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
+        doReturn(updatedUserSetting).when(mapper).updateDomainFromEntity(userSettingEntity, userSetting);
+
+        UserSetting persisted = service.update(userSetting, userId);
+
+        then(mapper).should().updateEntityFromDomain(userSetting, userSettingEntity);
+        then(repository).should().persist(userSettingEntity);
+        assertThat(persisted.getKey()).isEqualTo(key);
+        assertThat(persisted.getValue()).isEqualTo(newValue);
+        assertThat(persisted).usingRecursiveComparison()
+                .ignoringFields("value")
+                .isEqualTo(userSetting);
+    }
+
+    @Test
+    void givenUpdateUnknownUserSetting_thenShouldThrowNotFoundException() {
+        final UUID userId = UUID.randomUUID();
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(10);
+
+        final UserSetting userSetting = new UserSetting(key, value);
+
+        doReturn(Optional.empty()).when(repository)
+                .findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
+        then(repository).shouldHaveNoMoreInteractions();
+        then(mapper).shouldHaveNoInteractions();
+
+        assertThrows(NotFoundException.class, () -> service.update(userSetting, userId));
+    }
+
+    @Test
+    void givenSaveUserSetting_thenShouldReturnPersistedUser() {
+        final UUID userId = UUID.randomUUID();
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(10);
+
+        final UserSetting userSetting = new UserSetting(key, value);
+        final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
+
+        doReturn(true).when(repository).isPersistent(userSettingEntity);
+        doReturn(userSettingEntity).when(mapper).toEntity(userSetting, userId);
+        doReturn(userSetting).when(mapper).updateDomainFromEntity(userSettingEntity, userSetting);
+
+        UserSetting persist = service.save(userSetting, userId);
+
+        assertThat(persist).isEqualTo(userSetting);
+    }
+
+    @Test
+    void givenSaveUserSettingUnknownErrorOccurred_thenShouldThrowPersistenceException() {
+        final UUID userId = UUID.randomUUID();
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(10);
+
+        final UserSetting userSetting = new UserSetting(key, value);
+        final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
+
+        doReturn(false).when(repository).isPersistent(userSettingEntity);
+        doReturn(userSettingEntity).when(mapper).toEntity(userSetting, userId);
+
+        assertThrows(PersistenceException.class, () -> service.save(userSetting, userId));
     }
 
 }
