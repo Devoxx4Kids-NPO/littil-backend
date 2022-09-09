@@ -14,12 +14,17 @@ public class LocationEntityListener {
     @Inject
     CoordinatesService coordinatesService;
 
+    private static final int INT_FACTOR = 10000;
+
     @PrePersist
     @PreUpdate
     public void prePersistOrUpdate(LocationEntity location) {
         Coordinates coordinates = coordinatesService.getCoordinates(location.getPostalCode(), location.getAddress());
-        location.setLatitude(coordinates.getLat());
-        location.setLongitude(coordinates.getLon());
+        location.setLatitude(castToInt(coordinates.getLat()));
+        location.setLongitude(castToInt(coordinates.getLon()));
     }
 
+    private int castToInt(Double coordinate) {
+        return (int) (coordinate * INT_FACTOR);
+    }
 }
