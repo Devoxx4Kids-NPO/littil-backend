@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
-import org.littil.api.auditing.repository.AbstractAuditableEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Entity(name = "Location")
 @Table(name = "location")
-public class LocationEntity extends AbstractAuditableEntity {
+public class LocationEntity extends AbstractLocationEntity {
 
     @Id
     @GeneratedValue
@@ -50,10 +49,4 @@ public class LocationEntity extends AbstractAuditableEntity {
     @Column(name = "postal_code")
     @Length(max = 10)
     private String postalCode;
-
-    @Column(name = "latitude")
-    private Integer latitude;
-
-    @Column(name = "longitude")
-    private Integer longitude;
 }
