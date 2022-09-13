@@ -12,6 +12,7 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.authz.SchoolSecured;
 import org.littil.api.exception.ErrorResponse;
+import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.service.School;
 import org.littil.api.school.service.SchoolMapper;
 import org.littil.api.school.service.SchoolService;
@@ -46,6 +47,8 @@ public class SchoolResource {
     SchoolMapper mapper;
     @Inject
     TokenHelper tokenHelper;
+    @Inject
+    LocationRepository repository;
 
     @GET
     @Operation(summary = "Get all schools")
@@ -59,6 +62,7 @@ public class SchoolResource {
     )
     public Response list() {
         List<School> schools = schoolService.findAll();
+        repository.findLocationsOrderedByDistance(52.37, 4.93, 1, 10500, 5, "0 = 0"); //Todo: remove, only for testing
         return Response.ok(schools).build();
     }
 
