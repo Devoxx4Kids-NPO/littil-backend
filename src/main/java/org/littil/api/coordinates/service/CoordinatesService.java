@@ -17,10 +17,10 @@ public class CoordinatesService {
     @RestClient
     private SearchService coordinatesService;
 
-    public Coordinates getCoordinates(String postalcode, String adres) {
-        Set<Coordinates> coordinatesSet = coordinatesService.getCoordinatesByAdres(postalcode, adres, FORMAT);
+    public Coordinates getCoordinates(String postalCode, String address) {
+        Set<Coordinates> coordinatesSet = coordinatesService.getCoordinatesByAddress(postalCode, address, FORMAT);
         if(coordinatesSet.isEmpty()) {
-            log.warn("Coordinates could not be fetched with postalcode: " + postalcode + " and adres " + adres);
+            log.warn("Coordinates could not be fetched with postal code: " + postalCode + " and address " + address);
             throw new IllegalArgumentException();
         }
         return coordinatesSet.iterator().next();

@@ -3,7 +3,7 @@ org:
     api:
       coordinates:
         service:
-          SearchService/mp-rest/url: https://nominatim.openstreetmap.org
+          SearchService/mp-rest/url: https://nominatim.openstreetmap.org/search
     auth:
       token:
         claim:
