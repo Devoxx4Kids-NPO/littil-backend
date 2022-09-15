@@ -9,6 +9,7 @@ import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
 
 import javax.inject.Inject;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @QuarkusTest
@@ -52,7 +55,6 @@ class UserSettingServiceTest {
     }
 
     @Test
-    @Disabled
     void givenWhenGettingUserSettingByKey_thenShouldReturnUserSetting() {
         final UUID userId = UUID.randomUUID();
         final String key = RandomStringUtils.randomAlphabetic(5);
@@ -61,7 +63,7 @@ class UserSettingServiceTest {
         final UserSettingEntity expectedUserSettingEntity = new UserSettingEntity(userId, key, value);
         final UserSetting mappedUserSetting = new UserSetting(key, value);
 
-        doReturn(expectedUserSettingEntity).when(repository).findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
+        doReturn(Optional.of(expectedUserSettingEntity)).when(repository).findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
         doReturn(mappedUserSetting).when(mapper).toDomain(expectedUserSettingEntity);
 
         final Optional<UserSetting> userSetting = service.getUserSettingByKey(key, userId);
@@ -120,6 +122,22 @@ class UserSettingServiceTest {
         verifyNoMoreInteractions(repository);
 
         assertThrows(NotFoundException.class, () -> service.delete(key, userId));
+    }
+
+    @Test
+    void givenSaveUserSettingPersistenceFails_thenShouldThrowPersistenceException() {
+        final UUID userId = UUID.randomUUID();
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(10);
+        final UserSetting userSetting = new UserSetting(key, value);
+        final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
+
+        doReturn(userSettingEntity).when(mapper).toEntity(userSetting, userId);
+        doReturn(false).when(repository).isPersistent(userSettingEntity);
+        verifyNoMoreInteractions(mapper);
+
+        assertThrows(PersistenceException.class, () -> service.save(userSetting, userId));
+        verify(repository).persist(userSettingEntity);
     }
 
 }
