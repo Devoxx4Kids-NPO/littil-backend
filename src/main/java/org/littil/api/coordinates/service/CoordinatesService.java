@@ -18,11 +18,18 @@ public class CoordinatesService {
     private SearchService coordinatesService;
 
     public Coordinates getCoordinates(String postalCode, String address) {
+        if(postalCode.isBlank() || address.isBlank()) {
+            throwException(postalCode, address);
+        }
         Set<Coordinates> coordinatesSet = coordinatesService.getCoordinatesByAddress(postalCode, address, FORMAT);
         if(coordinatesSet.isEmpty()) {
-            log.warn("Coordinates could not be fetched with postal code: " + postalCode + " and address " + address);
-            throw new IllegalArgumentException();
+            throwException(postalCode, address);
         }
         return coordinatesSet.iterator().next();
+    }
+
+    private void throwException(String postalCode, String address) {
+        log.warn("Coordinates could not be fetched with postal code: " + postalCode + " and address " + address);
+        throw new IllegalArgumentException();
     }
 }

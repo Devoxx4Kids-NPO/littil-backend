@@ -62,7 +62,6 @@ public class SchoolResource {
     )
     public Response list() {
         List<School> schools = schoolService.findAll();
-        repository.findLocationsOrderedByDistance(52.37, 4.93, 1, 10500, 5, "0 = 0"); //Todo: remove, only for testing
         return Response.ok(schools).build();
     }
 

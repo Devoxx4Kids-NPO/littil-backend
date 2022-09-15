@@ -11,7 +11,7 @@ public interface SearchService {
 
     @GET
     Set<Coordinates> getCoordinatesByAddress(
-            @QueryParam("postalcode") String postalCode,
+            @QueryParam("postal_code") String postalCode,
             @QueryParam("street") String street,
             @QueryParam("format") String format );
 }
