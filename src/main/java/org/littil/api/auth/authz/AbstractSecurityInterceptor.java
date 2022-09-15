@@ -35,7 +35,7 @@ public abstract class AbstractSecurityInterceptor implements ContainerRequestFil
 
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
-        if (ctx.getMethod().equals("GET") || ctx.getMethod().equals("POST")) {
+        if (ctx.getMethod().equals("GET") || ctx.getMethod().equals("POST") || ctx.getMethod().equals("PUT")) {
             // GET methods are public, so always allowed
             // POST methods are used to create new instances that attached to the current user. Allowed for now.
             return;

@@ -5,9 +5,13 @@ import lombok.Data;
 import javax.validation.constraints.NotEmpty;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
+import java.util.UUID;
 
 @Data
 public class GuestTeacherPostResource {
+
+    private UUID id;
+
     @NotEmpty(message = "{GuestTeacher.firstName.required}")
     private String firstName;
 
