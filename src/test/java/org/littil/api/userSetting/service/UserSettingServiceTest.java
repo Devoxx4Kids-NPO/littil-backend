@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @QuarkusTest
@@ -192,10 +193,12 @@ class UserSettingServiceTest {
         final UserSetting userSetting = new UserSetting(key, value);
         final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
 
-        doReturn(false).when(repository).isPersistent(userSettingEntity);
         doReturn(userSettingEntity).when(mapper).toEntity(userSetting, userId);
+        doReturn(false).when(repository).isPersistent(userSettingEntity);
+        verifyNoMoreInteractions(mapper);
 
         assertThrows(PersistenceException.class, () -> service.save(userSetting, userId));
+        verify(repository).persist(userSettingEntity);
     }
 
 }
