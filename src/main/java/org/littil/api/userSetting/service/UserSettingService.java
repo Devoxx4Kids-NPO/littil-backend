@@ -2,7 +2,6 @@ package org.littil.api.userSetting.service;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import org.littil.api.exception.ServiceException;
 import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
 
@@ -13,7 +12,6 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,10 +33,6 @@ public class UserSettingService {
 
     @Transactional
     public UserSetting update(@Valid UserSetting userSetting, final UUID userId) {
-        if (Objects.isNull(userSetting.getKey())) {
-            throw new ServiceException("UserSetting does not have a key");
-        }
-
         UserSettingEntity entity = repository.findByIdOptional(new UserSettingEntity.UserSettingId(userId, userSetting.getKey()))
                 .orElseThrow(() -> new NotFoundException(String.format("No UserSetting found for userId %s and key %s", userId.toString(), userSetting.getKey())));
 

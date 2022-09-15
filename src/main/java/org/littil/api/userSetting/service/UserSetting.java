@@ -1,10 +1,12 @@
 package org.littil.api.userSetting.service;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 
 @Data
+@AllArgsConstructor
 public class UserSetting {
     @NotEmpty(message = "{UserSetting.key.required}")
     private String key;
