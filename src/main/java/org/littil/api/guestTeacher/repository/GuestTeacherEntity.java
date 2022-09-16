@@ -34,6 +34,9 @@ public class GuestTeacherEntity extends AbstractAuditableEntity {
     @Column(name = "surname")
     private String surname;
 
+    @Column(name = "prefix")
+    private String prefix;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location", referencedColumnName = "location_id")
     private LocationEntity location;

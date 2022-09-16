@@ -14,6 +14,8 @@ public class GuestTeacherPostResource {
     @NotEmpty(message = "{GuestTeacher.surname.required}")
     private String surname;
 
+    private String prefix;
+
     @NotEmpty(message = "{GuestTeacher.address.required}")
     private String address;
 

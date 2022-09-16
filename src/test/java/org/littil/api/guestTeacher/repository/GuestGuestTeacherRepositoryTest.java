@@ -26,7 +26,7 @@ class GuestGuestTeacherRepositoryTest {
     @Test
     void givenFindExistingTeacherByName_thenShouldReturnSuccessfully() {
         String surname = RandomStringUtils.randomAlphabetic(10);
-        List<GuestTeacherEntity> teacher = List.of(new GuestTeacherEntity(UUID.randomUUID(), surname, null, null, null, null));
+        List<GuestTeacherEntity> teacher = List.of(new GuestTeacherEntity(UUID.randomUUID(), surname, null, null, null, null, null));
 
         PanacheQuery<GuestTeacherEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("surname", surname);
