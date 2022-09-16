@@ -1,5 +1,9 @@
 org:
-  littil:
+  littil: #org.littil.api.coordinates.service;
+    api:
+      coordinates:
+        service:
+          SearchService/mp-rest/url: https://nominatim.openstreetmap.org/search
     auth:
       token:
         claim:
