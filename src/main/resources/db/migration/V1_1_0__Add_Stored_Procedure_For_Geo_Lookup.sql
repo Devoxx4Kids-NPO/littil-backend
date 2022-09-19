@@ -47,7 +47,7 @@ BEGIN
     -- lat and lng are in degrees -90..+90 and -180..+180
     -- All computations done in Latitude degrees.
     -- Thing to tailor
-    --   *Locations* -- the table
+    --   *location* -- the table
     --   Scaling of lat, lon; here using *10000 in MEDIUMINT
     --   Table name
     --   miles versus km.
@@ -60,7 +60,7 @@ BEGIN
     -- Hardcoded constant:
     SET @my_lat := _my_lat * 10000,
         @my_lon := _my_lon * 10000,
-        @deg2dist := 0.0069172, -- 69.172 for miles; 111.325 for km  *** (mi vs km)
+        @deg2dist := 0.0111325, -- 69.172 for miles; 111.325 for km  *** (mi vs km)
         @start_deg := _start_dist / @deg2dist, -- Start with this radius first (eg, 15 miles)
         @max_deg := _max_dist / @deg2dist,
         @cutoff := @max_deg / SQRT(2), -- (slightly pessimistic)
@@ -77,10 +77,10 @@ BEGIN
     -- This is the "first SELECT":
     SET @sql = CONCAT(
             "SELECT COUNT(*) INTO @near_ct
-                FROM Locations
-                WHERE lat    BETWEEN @my_lat - @dlat
+                FROM location
+                WHERE latitude    BETWEEN @my_lat - @dlat
                                  AND @my_lat + @dlat   -- PARTITION Pruning and bounding box
-                  AND lon    BETWEEN @my_lon - @dlon
+                  AND longitude    BETWEEN @my_lon - @dlon
                                  AND @my_lon + @dlon   -- first part of PK
                   AND ", _condition);
     PREPARE _sql FROM @sql;
@@ -130,11 +130,11 @@ BEGIN
     -- Hardcoded table name:
         SET @sql = CONCAT(
                 "SELECT *,
-                        @deg2dist * GCDist(@my_lat, @my_lon, lat, lon) AS dist
-                    FROM Locations
-                    WHERE lat BETWEEN @my_lat - @dlat
+                        @deg2dist * GCDist(@my_lat, @my_lon, latitude, longitude) AS dist
+                    FROM location
+                    WHERE latitude BETWEEN @my_lat - @dlat
                                   AND @my_lat + @dlat   -- PARTITION Pruning and bounding box
-                      AND lon BETWEEN @my_lon - @dlon
+                      AND longitude BETWEEN @my_lon - @dlon
                                   AND @my_lon + @dlon   -- first part of PK
                       AND ", _condition, "
                 HAVING dist <= ", _max_dist, "
@@ -149,21 +149,21 @@ BEGIN
         -- One of those will be beyond +/- 180; this gets points beyond the dateline
         SET @sql = CONCAT(
                 "( SELECT *,
-                        @deg2dist * GCDist(@my_lat, @west_lon, lat, lon) AS dist
-                    FROM Locations
-                    WHERE lat BETWEEN @my_lat - @dlat
+                        @deg2dist * GCDist(@my_lat, @west_lon, latitude, longitude) AS dist
+                    FROM location
+                    WHERE latitude BETWEEN @my_lat - @dlat
                                   AND @my_lat + @dlat   -- PARTITION Pruning and bounding box
-                      AND lon BETWEEN @west_lon - @dlon
+                      AND longitude BETWEEN @west_lon - @dlon
                                   AND @west_lon + @dlon   -- first part of PK
                       AND ", _condition, "
                 HAVING dist <= ", _max_dist, " )
             UNION ALL
             ( SELECT *,
-                    @deg2dist * GCDist(@my_lat, @east_lon, lat, lon) AS dist
-                FROM Locations
-                WHERE lat BETWEEN @my_lat - @dlat
+                    @deg2dist * GCDist(@my_lat, @east_lon, latitude, longitude) AS dist
+                FROM location
+                WHERE latitude BETWEEN @my_lat - @dlat
                               AND @my_lat + @dlat   -- PARTITION Pruning and bounding box
-                  AND lon BETWEEN @east_lon - @dlon
+                  AND longitude BETWEEN @east_lon - @dlon
                               AND @east_lon + @dlon   -- first part of PK
                   AND ", _condition, "
                 HAVING dist <= ", _max_dist, " )
