@@ -1,6 +1,7 @@
 package org.littil.api.guestTeacher.repository;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity(name = "GuestTeacher")
 @Table(name = "guest_teacher")
 public class GuestTeacherEntity extends AbstractAuditableEntity {
