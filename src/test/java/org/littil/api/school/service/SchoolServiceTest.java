@@ -186,7 +186,7 @@ class SchoolServiceTest {
 
         doReturn(expectedSchool).when(mapper).updateDomainFromEntity(any(SchoolEntity.class), any(School.class));
         
-        School savedSchool = schoolService.saveSchool(school, userId);
+        School savedSchool = schoolService.saveOrUpdate(school, userId);
         assertNotNull(savedSchool);
         assertEquals(expectedSchool,savedSchool);
         
@@ -220,7 +220,7 @@ class SchoolServiceTest {
         doReturn(false).when(repository).isPersistent(entity);
         doNothing().when(locationRepository).persist(any(LocationEntity.class));
 
-        assertThrows(PersistenceException.class, () -> schoolService.saveSchool(school, userId));
+        assertThrows(PersistenceException.class, () -> schoolService.saveOrUpdate(school, userId));
        
         then(authenticationService).shouldHaveNoInteractions();
     }
@@ -247,7 +247,7 @@ class SchoolServiceTest {
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.empty()).when(userService).getUserById(userId);
 
-        assertThrows(ServiceException.class, () -> schoolService.saveSchool(school, UUID.randomUUID()));
+        assertThrows(ServiceException.class, () -> schoolService.saveOrUpdate(school, UUID.randomUUID()));
     }
     
     @Test
@@ -330,7 +330,7 @@ class SchoolServiceTest {
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
         doReturn(updatedSchool).when(mapper).updateDomainFromEntity(entity, school);
 
-        School persisted = schoolService.update(school);
+        School persisted = schoolService.saveOrUpdate(school, null);
 
         then(mapper).should().updateEntityFromDomain(school, entity);
         then(repository).should().persist(entity);
@@ -344,6 +344,7 @@ class SchoolServiceTest {
     @Test
     void givenUpdateSchoolWithoutId_thenShouldThrowServiceException() {
         School school = new School();
+        school.setId(UUID.randomUUID());
         school.setName(RandomStringUtils.randomAlphabetic(10));
         school.setFirstName(RandomStringUtils.randomAlphabetic(10));
         school.setSurname(RandomStringUtils.randomAlphabetic(10));
@@ -356,7 +357,7 @@ class SchoolServiceTest {
         then(repository).shouldHaveNoInteractions();
         then(mapper).shouldHaveNoInteractions();
 
-        assertThrows(NotFoundException.class, () -> schoolService.update(school));
+        assertThrows(NotFoundException.class, () -> schoolService.saveOrUpdate(school,null));
     }
 
     @Test
@@ -374,9 +375,9 @@ class SchoolServiceTest {
         then(repository).shouldHaveNoMoreInteractions();
         then(mapper).shouldHaveNoInteractions();
 
-        assertThrows(NotFoundException.class, () -> schoolService.update(school));
+        assertThrows(NotFoundException.class, () -> schoolService.saveOrUpdate(school, null));
     }
-    
+
     private SchoolEntity createSchoolEntity(UUID schoolId, String schoolName) {
         SchoolEntity schoolEntity = new SchoolEntity();
         schoolEntity.setId(schoolId);
