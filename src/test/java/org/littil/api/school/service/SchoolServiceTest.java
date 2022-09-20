@@ -356,7 +356,7 @@ class SchoolServiceTest {
         then(repository).shouldHaveNoInteractions();
         then(mapper).shouldHaveNoInteractions();
 
-        assertThrows(ServiceException.class, () -> schoolService.update(school));
+        assertThrows(NotFoundException.class, () -> schoolService.update(school));
     }
 
     @Test
