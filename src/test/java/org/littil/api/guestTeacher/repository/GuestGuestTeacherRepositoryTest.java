@@ -21,9 +21,8 @@ import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
 import javax.inject.Inject;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.time.DayOfWeek;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -78,7 +77,7 @@ class GuestGuestTeacherRepositoryTest {
         String address = RandomStringUtils.randomAlphabetic(10);
         String postalCode = RandomStringUtils.randomAlphabetic(6);
 
-        GuestTeacherEntity guestTeacher = createGuestTeacherEntity(surname);
+        GuestTeacherEntity expectedTeacher = createGuestTeacherEntity(surname);
 
         UserEntity userEntity = createUserEntity();
         userRepository.persist(userEntity);
@@ -89,15 +88,19 @@ class GuestGuestTeacherRepositoryTest {
         LocationEntity location = createLocation(address, postalCode);
         locationRepository.persist(location);
 
-        guestTeacher.setLocation(location);
-        guestTeacher.setUser(userEntity);
-        repository.persist(guestTeacher);
+        expectedTeacher.setLocation(location);
+        expectedTeacher.setUser(userEntity);
+        repository.persist(expectedTeacher);
 
-        List<GuestTeacherEntity> foundTeacher = repository.findBySurnameLike(surname);
+        Optional<GuestTeacherEntity> foundTeacher = repository.findBySurnameLike(surname).stream().findFirst();
 
-        List<GuestTeacherEntity> expectedTeacher = List.of(guestTeacher);
-
-        assertThat(expectedTeacher).isEqualTo(foundTeacher);
+        assertThat(foundTeacher.isPresent()).isTrue();
+        assertThat(expectedTeacher.getFirstName()).isEqualTo(foundTeacher.get().getFirstName());
+        assertThat(expectedTeacher.getSurname()).isEqualTo(foundTeacher.get().getSurname());
+        assertThat(expectedTeacher.getPrefix()).isEqualTo(foundTeacher.get().getPrefix());
+        assertThat(expectedTeacher.getLocation()).isEqualTo(foundTeacher.get().getLocation());
+        assertThat(expectedTeacher.getAvailability()).isEqualTo(foundTeacher.get().getAvailability());
+        assertThat(expectedTeacher.getUser()).isEqualTo(foundTeacher.get().getUser());
     }
 
     private UserEntity createUserEntity() {
@@ -113,8 +116,8 @@ class GuestGuestTeacherRepositoryTest {
                 .firstName(RandomStringUtils.randomAlphabetic(10))
                 .prefix(RandomStringUtils.randomAlphabetic(10))
                 .surname(surname)
+                .availability(new LinkedHashSet<>(List.of(DayOfWeek.MONDAY)))
                 .build();
-
     }
 
     private LocationEntity createLocation(String address, String postalCode) {
