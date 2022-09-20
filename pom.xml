@@ -24,7 +24,7 @@
       <archunit.version>0.23.1</archunit.version>
       <jacoco.version>0.8.8</jacoco.version>
       <auth0.version>1.42.0</auth0.version>
-      <wiremock.version>2.33.2</wiremock.version>
+      <wiremock.version>2.34.0</wiremock.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -65,6 +65,10 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-jackson</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

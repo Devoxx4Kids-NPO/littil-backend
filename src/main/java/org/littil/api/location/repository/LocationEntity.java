@@ -7,11 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.util.UUID;
 
@@ -25,6 +21,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @RequiredArgsConstructor
+@EntityListeners(LocationEntityListener.class)
 @Entity(name = "Location")
 @Table(name = "location")
 public class LocationEntity extends AbstractAuditableEntity {
@@ -52,8 +49,8 @@ public class LocationEntity extends AbstractAuditableEntity {
     private String postalCode;
 
     @Column(name = "latitude")
-    private Integer latitude;
+    private Double latitude;
 
     @Column(name = "longitude")
-    private Integer longitude;
+    private Double longitude;
 }
