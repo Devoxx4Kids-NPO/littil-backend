@@ -106,7 +106,7 @@ public class SchoolResource {
     @PUT
     @Operation(summary = "Create or update a school")
     @APIResponse(
-            responseCode = "201",
+            responseCode = "200",
             description = "School successfully created or updated",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
@@ -138,7 +138,7 @@ public class SchoolResource {
         School persistedSchool = schoolService.saveOrUpdate(mapper.toDomain(school), tokenHelper.getCurrentUserId());
         URI uri = UriBuilder.fromResource(SchoolResource.class)
                 .path("/" + persistedSchool.getId()).build();
-        return Response.created(uri).entity(persistedSchool).build();
+        return Response.ok(uri).entity(persistedSchool).build();
     }
 
     @DELETE
