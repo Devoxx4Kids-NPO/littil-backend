@@ -7,6 +7,9 @@ import java.util.UUID;
 
 @Data
 public class SchoolPostResource {
+
+    private UUID id;
+
     @NotEmpty(message = "{School.name.required}")
     private String name;
 

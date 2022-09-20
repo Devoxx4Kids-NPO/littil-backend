@@ -22,7 +22,6 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -32,7 +31,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -110,8 +108,16 @@ public class GuestTeacherResource {
         return Response.ok(guestTeachers).build();
     }
 
-    @POST
-    @Operation(summary = "Create a new teacher")
+    @PUT
+    @Operation(summary = "Create or update a teacher")
+    @APIResponse(
+            responseCode = "200",
+            description = "Teacher successfully updated",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = GuestTeacher.class)
+            )
+    )
     @APIResponse(
             responseCode = "201",
             description = "Teacher successfully created",
@@ -147,52 +153,20 @@ public class GuestTeacherResource {
                     .build();
         }
 
+        if(guestTeacher.getId() != null) {
+            if (guestTeacherService.getTeacherById(guestTeacher.getId()).isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Request contains path variable id but Teacher.id does not exist")
+                        .build();
+            }
+            GuestTeacher updatedGuestTeacher = guestTeacherService.update(mapper.toDomain(guestTeacher));
+            return Response.ok(updatedGuestTeacher).build();
+        }
+
         GuestTeacher persistedGuestTeacher = guestTeacherService.saveTeacher(mapper.toDomain(guestTeacher), tokenHelper.getCurrentUserId());
         URI uri = UriBuilder.fromResource(GuestTeacherResource.class)
                 .path("/" + persistedGuestTeacher.getId()).build();
         return Response.created(uri).entity(persistedGuestTeacher).build();
-    }
-
-    @PUT
-    @Path("/{id}")
-    @Operation(summary = "Update the teacher")
-    @APIResponse(
-            responseCode = "200",
-            description = "Teacher successfully updated",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = GuestTeacher.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid teacher",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "500",
-            description = "Path variable Id does not match Teacher.id",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "404",
-            description = "No Teacher found for id provided"
-    )
-    public Response put(@Parameter(name = "id", required = true) @PathParam("id") final UUID id, @NotNull @Valid GuestTeacher guestTeacher) {
-        if (!Objects.equals(id, guestTeacher.getId())) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Path variable id does not match Teacher.id")
-                    .build();
-        }
-
-        GuestTeacher updatedGuestTeacher = guestTeacherService.update(guestTeacher);
-        return Response.ok(updatedGuestTeacher).build();
     }
 
     @DELETE

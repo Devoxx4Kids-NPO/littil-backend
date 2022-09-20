@@ -12,7 +12,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.authz.SchoolSecured;
 import org.littil.api.exception.ErrorResponse;
-import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.service.School;
 import org.littil.api.school.service.SchoolMapper;
 import org.littil.api.school.service.SchoolService;
@@ -27,7 +26,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,8 +45,6 @@ public class SchoolResource {
     SchoolMapper mapper;
     @Inject
     TokenHelper tokenHelper;
-    @Inject
-    LocationRepository repository;
 
     @GET
     @Operation(summary = "Get all schools")
@@ -107,11 +103,11 @@ public class SchoolResource {
         return Response.ok(schools).build();
     }
 
-    @POST
-    @Operation(summary = "Create a new school")
+    @PUT
+    @Operation(summary = "Create or update a school")
     @APIResponse(
-            responseCode = "201",
-            description = "School successfully created",
+            responseCode = "200",
+            description = "School successfully created or updated",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(type = SchemaType.OBJECT, implementation = School.class)
@@ -126,73 +122,23 @@ public class SchoolResource {
             )
     )
     @APIResponse(
-            responseCode = "409",
-            description = "Current user already either a school or guest teacher profile attached",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
-            )
+            responseCode = "401",
+            description = "Current user is not owner of this school"
     )
     @APIResponse(
             responseCode = "500",
             description = "Persistence error occurred. Failed to persist school."
     )
-    public Response create(@NotNull @Valid SchoolPostResource school) {
+    public Response createOrUpdate(@NotNull @Valid SchoolPostResource school) {
         if (tokenHelper.hasUserAuthorizations()) {
             return Response.status(Response.Status.CONFLICT)
                     .build();
         }
 
-        School persistedSchool = schoolService.saveSchool(mapper.toDomain(school), tokenHelper.getCurrentUserId());
+        School persistedSchool = schoolService.saveOrUpdate(mapper.toDomain(school), tokenHelper.getCurrentUserId());
         URI uri = UriBuilder.fromResource(SchoolResource.class)
                 .path("/" + persistedSchool.getId()).build();
-        return Response.created(uri).entity(persistedSchool).build();
-    }
-
-    @PUT
-    @Path("/{id}")
-    @Operation(summary = "Update the school")
-    @APIResponse(
-            responseCode = "200",
-            description = "School successfully updated",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = School.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "400",
-            description = "Invalid school",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "500",
-            description = "Path variable Id does not match School.id",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "404",
-            description = "No School found for  provided id"
-    )
-    @APIResponse(
-            responseCode = "401",
-            description = "Current user is not owner of this school"
-    )
-    public Response put(@Parameter(name = "id", required = true) @PathParam("id") final UUID id, @NotNull @Valid School school) {
-        if (!Objects.equals(id, school.getId())) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Path variable id does not match School.id")
-                    .build();
-        }
-
-        School updatedSchool = schoolService.update(school);
-        return Response.ok(updatedSchool).build();
+        return Response.ok(uri).entity(persistedSchool).build();
     }
 
     @DELETE
