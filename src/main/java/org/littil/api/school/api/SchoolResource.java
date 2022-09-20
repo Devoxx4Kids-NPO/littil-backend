@@ -12,7 +12,6 @@ import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.authz.SchoolSecured;
 import org.littil.api.exception.ErrorResponse;
-import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.service.School;
 import org.littil.api.school.service.SchoolMapper;
 import org.littil.api.school.service.SchoolService;
@@ -46,8 +45,6 @@ public class SchoolResource {
     SchoolMapper mapper;
     @Inject
     TokenHelper tokenHelper;
-    @Inject
-    LocationRepository repository;
 
     @GET
     @Operation(summary = "Get all schools")
@@ -109,16 +106,8 @@ public class SchoolResource {
     @PUT
     @Operation(summary = "Create or update a school")
     @APIResponse(
-            responseCode = "200",
-            description = "School successfully updated",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = School.class)
-            )
-    )
-    @APIResponse(
             responseCode = "201",
-            description = "School successfully created",
+            description = "School successfully created or updated",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(type = SchemaType.OBJECT, implementation = School.class)
@@ -137,14 +126,6 @@ public class SchoolResource {
             description = "Current user is not owner of this school"
     )
     @APIResponse(
-            responseCode = "409",
-            description = "Current user already either a school or guest teacher profile attached",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
-            )
-    )
-    @APIResponse(
             responseCode = "500",
             description = "Persistence error occurred. Failed to persist school."
     )
@@ -154,17 +135,7 @@ public class SchoolResource {
                     .build();
         }
 
-        if(school.getId() != null) {
-            if(schoolService.getSchoolById(school.getId()).isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Request contains path variable id but School.id does not exist")
-                        .build();
-            }
-            School updatedSchool = schoolService.update(mapper.toDomain(school));
-            return Response.ok(updatedSchool).build();
-        }
-
-        School persistedSchool = schoolService.saveSchool(mapper.toDomain(school), tokenHelper.getCurrentUserId());
+        School persistedSchool = schoolService.saveOrUpdate(mapper.toDomain(school), tokenHelper.getCurrentUserId());
         URI uri = UriBuilder.fromResource(SchoolResource.class)
                 .path("/" + persistedSchool.getId()).build();
         return Response.created(uri).entity(persistedSchool).build();

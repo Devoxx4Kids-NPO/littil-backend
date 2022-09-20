@@ -70,6 +70,10 @@ public class SchoolService {
         }
     }
 
+    public School saveOrUpdate(@Valid School school, UUID userId) {
+        return Objects.isNull(school.getId()) ? saveSchool(school, userId) : update(school);
+    }
+
     @Transactional
     public void deleteSchool(@NonNull final UUID id, UUID userId) {
         Optional<SchoolEntity> school = repository.findByIdOptional(id);
@@ -77,21 +81,15 @@ public class SchoolService {
             throw new NotFoundException();
         });
         authenticationService.removeAuthorization(userId, AuthorizationType.SCHOOL, id);
-
     }
 
     @Transactional
     public School update(@Valid School school) {
-        if (Objects.isNull(school.getId())) {
-            throw new ServiceException("School does not have a Id");
-        }
-
         SchoolEntity entity = repository.findByIdOptional(school.getId())
                 .orElseThrow(() -> new NotFoundException("No School found for Id"));
 
         mapper.updateEntityFromDomain(school, entity);
         repository.persist(entity);
         return mapper.updateDomainFromEntity(entity, school);
-
     }
 }
