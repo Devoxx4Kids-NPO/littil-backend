@@ -18,6 +18,11 @@ public class School {
     @NotEmpty(message = "{School.postalCode.required}")
     private String postalCode;
 
-    @NotEmpty(message = "{School.contactPersonName.required}")
-    private String contactPersonName;
+    @NotEmpty(message = "{School.firstName.required}")
+    private String firstName;
+
+    private String prefix;
+
+    @NotEmpty(message = "{School.surname.required}")
+    private String surname;
 }

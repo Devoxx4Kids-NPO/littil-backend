@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
+import org.littil.api.contactPerson.repository.ContactPersonEntity;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.user.repository.UserEntity;
 
@@ -34,15 +35,15 @@ public class SchoolEntity extends AbstractAuditableEntity {
     @Column(name = "school_name")
     private String name;
 
-    @NotEmpty(message = "{School.contactPersonName.required}")
-    @Column(name = "contact_person_name")
-    private String contactPersonName;
-
     // todo create validation
 //    @NotEmpty(message = "{School.location.required}")
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location", referencedColumnName = "location_id")
     private LocationEntity location;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contact_person", referencedColumnName = "contact_person_id")
+    private ContactPersonEntity contactPerson;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user", referencedColumnName = "user_id")

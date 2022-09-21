@@ -259,7 +259,8 @@ class SchoolServiceTest {
     void givenUpdateSchoolWithoutId_thenShouldThrowServiceException() {
         School school = new School();
         school.setName(RandomStringUtils.randomAlphabetic(10));
-        school.setContactPersonName(RandomStringUtils.randomAlphabetic(10));
+        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        school.setSurname(RandomStringUtils.randomAlphabetic(10));
         school.setAddress(RandomStringUtils.randomAlphabetic(10));
         school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
 
@@ -278,7 +279,8 @@ class SchoolServiceTest {
         final School school = new School();
         school.setId(schoolId);
         school.setName(RandomStringUtils.randomAlphabetic(10));
-        school.setContactPersonName(RandomStringUtils.randomAlphabetic(10));
+        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        school.setSurname(RandomStringUtils.randomAlphabetic(10));
         school.setAddress(RandomStringUtils.randomAlphabetic(10));
         school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
 
