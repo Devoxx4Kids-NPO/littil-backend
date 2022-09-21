@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 
 @QuarkusTest
-class GuestGuestTeacherRepositoryTest {
+class GuestTeacherRepositoryTest {
 
     @InjectSpy
     GuestTeacherRepository repository;
@@ -64,11 +64,6 @@ class GuestGuestTeacherRepositoryTest {
 
         GuestTeacherEntity foundTeacher = foundTeacherList.get(0);
 
-        assertThat(expectedTeacher.getFirstName()).isEqualTo(foundTeacher.getFirstName());
-        assertThat(expectedTeacher.getSurname()).isEqualTo(foundTeacher.getSurname());
-        assertThat(expectedTeacher.getPrefix()).isEqualTo(foundTeacher.getPrefix());
-        assertThat(expectedTeacher.getLocation()).isEqualTo(foundTeacher.getLocation());
-        assertThat(expectedTeacher.getAvailability()).isEqualTo(foundTeacher.getAvailability());
-        assertThat(expectedTeacher.getUser()).isEqualTo(foundTeacher.getUser());
+        assertThat(expectedTeacher).usingRecursiveComparison().isEqualTo(foundTeacher);
     }
 }
