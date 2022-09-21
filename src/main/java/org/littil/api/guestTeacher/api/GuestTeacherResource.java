@@ -112,15 +112,7 @@ public class GuestTeacherResource {
     @Operation(summary = "Create or update a teacher")
     @APIResponse(
             responseCode = "200",
-            description = "Teacher successfully updated",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = GuestTeacher.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "201",
-            description = "Teacher successfully created",
+            description = "Teacher successfully created or updated",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(type = SchemaType.OBJECT, implementation = GuestTeacher.class)
@@ -135,38 +127,20 @@ public class GuestTeacherResource {
             )
     )
     @APIResponse(
-            responseCode = "409",
-            description = "Current user already either a school or guest teacher profile attached",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
-            )
-    )
-    @APIResponse(
             responseCode = "500",
             description = "Persistence error occurred. Failed to persist teacher.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
-    public Response create(@NotNull @Valid GuestTeacherPostResource guestTeacher) {
+    public Response createOrUpdate(@NotNull @Valid GuestTeacherPostResource guestTeacher) {
         if (tokenHelper.hasUserAuthorizations()) {
             return Response.status(Response.Status.CONFLICT)
                     .build();
         }
 
-        if(guestTeacher.getId() != null) {
-            if (guestTeacherService.getTeacherById(guestTeacher.getId()).isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Request contains path variable id but Teacher.id does not exist")
-                        .build();
-            }
-            GuestTeacher updatedGuestTeacher = guestTeacherService.update(mapper.toDomain(guestTeacher));
-            return Response.ok(updatedGuestTeacher).build();
-        }
-
-        GuestTeacher persistedGuestTeacher = guestTeacherService.saveTeacher(mapper.toDomain(guestTeacher), tokenHelper.getCurrentUserId());
+        GuestTeacher persistedGuestTeacher = guestTeacherService.saveOrUpdate(mapper.toDomain(guestTeacher), tokenHelper.getCurrentUserId());
         URI uri = UriBuilder.fromResource(GuestTeacherResource.class)
                 .path("/" + persistedGuestTeacher.getId()).build();
-        return Response.created(uri).entity(persistedGuestTeacher).build();
+        return Response.ok(uri).entity(persistedGuestTeacher).build();
     }
 
     @DELETE

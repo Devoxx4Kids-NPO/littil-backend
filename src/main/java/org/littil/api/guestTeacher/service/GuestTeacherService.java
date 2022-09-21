@@ -49,6 +49,10 @@ public class GuestTeacherService {
         return repository.listAll().stream().map(mapper::toDomain).toList();
     }
 
+    public GuestTeacher saveOrUpdate(@Valid GuestTeacher guestTeacher, UUID userId) {
+        return Objects.isNull(guestTeacher.getId()) ? saveTeacher(guestTeacher, userId) : update(guestTeacher);
+    }
+
     @Transactional
     public GuestTeacher saveTeacher(@Valid GuestTeacher guestTeacher, UUID userId) {
         GuestTeacherEntity entity = mapper.toEntity(guestTeacher);
@@ -82,16 +86,11 @@ public class GuestTeacherService {
 
     @Transactional
     public GuestTeacher update(@Valid GuestTeacher guestTeacher) {
-        if (Objects.isNull(guestTeacher.getId())) {
-            throw new ServiceException("Teacher does not have a Id");
-        }
-
         GuestTeacherEntity entity = repository.findByIdOptional(guestTeacher.getId())
                 .orElseThrow(() -> new NotFoundException("No Teacher found for Id"));
 
         mapper.updateEntityFromDomain(guestTeacher, entity);
         repository.persist(entity);
         return mapper.updateDomainFromEntity(entity, guestTeacher);
-
     }
 }
