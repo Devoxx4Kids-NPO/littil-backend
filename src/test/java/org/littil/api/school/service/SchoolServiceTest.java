@@ -4,8 +4,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.api.auditing.repository.AuditableEntityListener;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
+import org.littil.api.contactPerson.repository.ContactPersonEntity;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
@@ -57,6 +59,10 @@ class SchoolServiceTest {
     
     @InjectMock
     LocationRepository locationRepository;
+
+    @InjectMock
+    //TODO refoctor this. Should not need to mock this
+    AuditableEntityListener auditableEntityListener;
 
 
     @Test
@@ -158,22 +164,29 @@ class SchoolServiceTest {
         final UUID schoolId = UUID.randomUUID();
         final String name = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
         final String postalCode = RandomStringUtils.randomAlphabetic(6);
+
+        final ContactPersonEntity contactPerson = new ContactPersonEntity();
+        contactPerson.setFirstName(contactPersonFirstName);
+        contactPerson.setSurname(contactPersonSurname);
 
         final School school = new School();
         school.setName(name);
         school.setAddress(address);
-        school.setContactPersonName(contactPersonName);
+        school.setFirstName(contactPersonFirstName);
+        school.setSurname(contactPersonSurname);
         school.setPostalCode(postalCode);
 
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
-        entity.setContactPersonName(contactPersonName);
+        entity.setContactPerson(contactPerson);
 
         final School expectedSchool = new School();
         expectedSchool.setId(entity.getId());
         expectedSchool.setName(entity.getName());
-        expectedSchool.setContactPersonName(entity.getContactPersonName());
+        school.setFirstName(contactPersonFirstName);
+        school.setSurname(contactPersonSurname);
 
         final UUID userId = UUID.randomUUID();
         User user = new User();
@@ -182,6 +195,7 @@ class SchoolServiceTest {
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(true).when(repository).isPersistent(entity);
+        doNothing().when(auditableEntityListener).prePersist(entity);
         doNothing().when(locationRepository).persist(any(LocationEntity.class));
 
         doReturn(expectedSchool).when(mapper).updateDomainFromEntity(any(SchoolEntity.class), any(School.class));
@@ -199,17 +213,23 @@ class SchoolServiceTest {
         final UUID schoolId = UUID.randomUUID();
         final String name = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
         final String postalCode = RandomStringUtils.randomAlphabetic(6);
+
+        final ContactPersonEntity contactPerson = new ContactPersonEntity();
+        contactPerson.setFirstName(contactPersonFirstName);
+        contactPerson.setSurname(contactPersonSurname);
 
         final School school = new School();
         school.setName(name);
         school.setAddress(address);
-        school.setContactPersonName(contactPersonName);
+        school.setFirstName(contactPersonFirstName);
+        school.setSurname(contactPersonSurname);
         school.setPostalCode(postalCode);
 
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
-        entity.setContactPersonName(contactPersonName);
+        entity.setContactPerson(contactPerson);
 
         final UUID userId = UUID.randomUUID();
         User user = new User();
@@ -217,6 +237,7 @@ class SchoolServiceTest {
         
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
+        doNothing().when(auditableEntityListener).prePersist(entity);
         doReturn(false).when(repository).isPersistent(entity);
         doNothing().when(locationRepository).persist(any(LocationEntity.class));
 
@@ -230,17 +251,23 @@ class SchoolServiceTest {
         final UUID schoolId = UUID.randomUUID();
         final String name = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
         final String postalCode = RandomStringUtils.randomAlphabetic(6);
+
+        final ContactPersonEntity contactPerson = new ContactPersonEntity();
+        contactPerson.setFirstName(contactPersonFirstName);
+        contactPerson.setSurname(contactPersonSurname);
 
         final School school = new School();
         school.setName(name);
         school.setAddress(address);
-        school.setContactPersonName(contactPersonName);
+        school.setFirstName(contactPersonFirstName);
+        school.setSurname(contactPersonSurname);
         school.setPostalCode(postalCode);
 
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
-        entity.setContactPersonName(contactPersonName);
+        entity.setContactPerson(contactPerson);
 
         final UUID userId = UUID.randomUUID();
         
@@ -255,16 +282,18 @@ class SchoolServiceTest {
         final UUID schoolId = UUID.randomUUID();
         final String name = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
         final String postalCode = RandomStringUtils.randomAlphabetic(6);
-        
+
         final UUID userId = UUID.randomUUID();
 
         final School school = new School();
         school.setId(schoolId);
         school.setName(name);
         school.setAddress(address);
-        school.setContactPersonName(contactPersonName);
+        school.setFirstName(contactPersonFirstName);
+        school.setSurname(contactPersonSurname);
         school.setPostalCode(postalCode);
 
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
@@ -302,19 +331,25 @@ class SchoolServiceTest {
         final UUID schoolId = UUID.randomUUID();
         final String newName = RandomStringUtils.randomAlphabetic(10);
         final String name = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonName = RandomStringUtils.randomAlphabetic(10);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
+        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+
+        final ContactPersonEntity contactPerson = new ContactPersonEntity();
+        contactPerson.setFirstName(contactPersonFirstName);
+        contactPerson.setSurname(contactPersonSurname);
 
         final School school = new School();
         school.setId(schoolId);
         school.setName(newName);
-        school.setContactPersonName(contactPersonName);
+        school.setFirstName(contactPersonFirstName);
+        school.setSurname(contactPersonSurname);
         school.setAddress(address);
         school.setPostalCode(postalCode);
 
         final SchoolEntity entity = createSchoolEntity(schoolId, name); 
-        entity.setContactPersonName(contactPersonName);
+        entity.setContactPerson(contactPerson);
         LocationEntity locationEntity = new LocationEntity();
         locationEntity.setAddress(address);
         locationEntity.setPostalCode(postalCode);
@@ -323,7 +358,8 @@ class SchoolServiceTest {
         final School updatedSchool = new School();
         updatedSchool.setId(entity.getId());
         updatedSchool.setName(newName);
-        updatedSchool.setContactPersonName(entity.getContactPersonName());
+        updatedSchool.setFirstName(entity.getContactPerson().getFirstName());
+        updatedSchool.setSurname(entity.getContactPerson().getSurname());
         updatedSchool.setAddress(entity.getLocation().getAddress());
         updatedSchool.setPostalCode(entity.getLocation().getPostalCode());
 
