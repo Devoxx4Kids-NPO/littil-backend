@@ -1,6 +1,7 @@
 package org.littil.api.guestTeacher.repository;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity(name = "GuestTeacher")
 @Table(name = "guest_teacher")
 public class GuestTeacherEntity extends AbstractAuditableEntity {
@@ -33,6 +35,9 @@ public class GuestTeacherEntity extends AbstractAuditableEntity {
     @NotEmpty(message = "{GuestTeacher.surname.required}")
     @Column(name = "surname")
     private String surname;
+
+    @Column(name = "prefix")
+    private String prefix;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location", referencedColumnName = "location_id")

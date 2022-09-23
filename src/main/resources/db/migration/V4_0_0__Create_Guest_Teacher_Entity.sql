@@ -3,6 +3,7 @@ CREATE TABLE guest_teacher
     guest_teacher_id   BINARY(16)   NOT NULL,
     first_name         VARCHAR(255) NOT NULL,
     surname            VARCHAR(255) NOT NULL,
+    prefix             VARCHAR(255),
     location           BINARY(16)   NOT NULL,
     user               BINARY(16)   NOT NULL,
     created_by         BINARY(16),
