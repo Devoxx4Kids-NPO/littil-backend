@@ -4,18 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
+import org.littil.api.contactPerson.repository.ContactPersonEntity;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.user.repository.UserEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data
@@ -34,17 +29,16 @@ public class SchoolEntity extends AbstractAuditableEntity {
     @Column(name = "school_name")
     private String name;
 
-    @NotEmpty(message = "{School.contactPersonName.required}")
-    @Column(name = "contact_person_name")
-    private String contactPersonName;
-
-    // todo create validation
-//    @NotEmpty(message = "{School.location.required}")
-    @OneToOne(fetch = FetchType.LAZY)
+    @NotNull(message = "{School.location.required}")
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "location", referencedColumnName = "location_id")
     private LocationEntity location;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "contact_person", referencedColumnName = "contact_person_id")
+    private ContactPersonEntity contactPerson;
+
+    @OneToOne
     @JoinColumn(name = "user", referencedColumnName = "user_id")
     private UserEntity user;
 }

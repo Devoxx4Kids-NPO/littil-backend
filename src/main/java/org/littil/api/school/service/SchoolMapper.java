@@ -14,21 +14,32 @@ public interface SchoolMapper {
 
     @Mapping(source = "location.address", target = "address")
     @Mapping(source = "location.postalCode", target = "postalCode")
+    @Mapping(source = "contactPerson.firstName", target = "firstName")
+    @Mapping(source = "contactPerson.prefix", target = "prefix")
+    @Mapping(source = "contactPerson.surname", target = "surname")
     School toDomain(SchoolEntity schoolEntity);
 
     @InheritInverseConfiguration(name = "toDomain")
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "location.address", source = "address")
     @Mapping(target = "location.postalCode", source = "postalCode")
+    @Mapping(target = "contactPerson.firstName", source = "firstName")
+    @Mapping(target = "contactPerson.prefix", source = "prefix")
+    @Mapping(target = "contactPerson.surname", source = "surname")
     SchoolEntity toEntity(School school);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "location.address", source = "address")
     @Mapping(target = "location.postalCode", source = "postalCode")
+    @Mapping(target = "contactPerson.firstName", source = "firstName")
+    @Mapping(target = "contactPerson.prefix", source = "prefix")
+    @Mapping(target = "contactPerson.surname", source = "surname")
     void updateEntityFromDomain(School domain, @MappingTarget SchoolEntity entity);
-
 
     @Mapping(source = "location.address", target = "address")
     @Mapping(source = "location.postalCode", target = "postalCode")
+    @Mapping(source = "contactPerson.firstName", target = "firstName")
+    @Mapping(source = "contactPerson.prefix", target = "prefix")
+    @Mapping(source = "contactPerson.surname", target = "surname")
     School updateDomainFromEntity(SchoolEntity entity, @MappingTarget School domain);
 }

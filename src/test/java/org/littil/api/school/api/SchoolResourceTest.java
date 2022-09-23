@@ -311,7 +311,8 @@ class SchoolResourceTest {
         school.setName(RandomStringUtils.randomAlphabetic(10));
         school.setAddress(RandomStringUtils.randomAlphabetic(10));
         school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
-        school.setContactPersonName(RandomStringUtils.randomAlphabetic(10));
+        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        school.setSurname(RandomStringUtils.randomAlphabetic(10));
 
         return school;
     }
