@@ -81,15 +81,11 @@ class SchoolResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetSchoolById_thenShouldReturnSuccessfully() {
 
-        UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
-     
-
         User user = new User();
         user.setEmailAddress("email@adres.nl");
-        user.setId(userId);
-        user.setProvider(Provider.AUTH0);
-        user.setProviderId(UUID.randomUUID().toString());
-        doReturn(Optional.ofNullable(user)).when(userService).getUserById(any(UUID.class)); 
+        User createdUser = userService.createUser(user);
+        
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class)); 
         
         Coordinates coordinates = Coordinates.builder() //
                 .lat(0.0) //
@@ -97,21 +93,17 @@ class SchoolResourceTest {
                 .build();
         doReturn(coordinates).when(coordinatesService).getCoordinates(any(), any());
         
-        
         doNothing().when(authenticationService).addAuthorization(any(),any(), any());
-        
-        
+          
         School school = createSchool();
         School saved = given()
                 .contentType(ContentType.JSON)
                 .body(school)
-                
                 .put()
                 .then()
-                .statusCode(201)
+                .statusCode(200)
                 .extract().as(School.class);
-        //Caused by: java.sql.SQLIntegrityConstraintViolationException: (conn=4) Cannot add or update a child row: a foreign key constraint fails (`quarkus`.`school`, CONSTRAINT `fk_school_user` FOREIGN KEY (`user`) REFERENCES `user` (`user_id`))
-
+  
         School got = given()
                 .when()
                 .get("/{id}", saved.getId())

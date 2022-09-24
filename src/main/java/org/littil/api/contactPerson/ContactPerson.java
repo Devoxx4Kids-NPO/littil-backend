@@ -11,9 +11,6 @@ import java.util.UUID;
 @Data
 public class ContactPerson {
     
-    @Id
-    @GeneratedValue
-    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     @NotEmpty(message = "{ContactPerson.firstName.required}")
