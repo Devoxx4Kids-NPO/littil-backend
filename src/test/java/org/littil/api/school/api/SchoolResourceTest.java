@@ -16,6 +16,7 @@ import org.littil.api.coordinates.service.Coordinates;
 import org.littil.api.coordinates.service.CoordinatesService;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.school.service.School;
+import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
@@ -27,6 +28,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
+
+import javax.inject.Inject;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,9 +43,6 @@ import static org.mockito.Mockito.doReturn;
 class SchoolResourceTest {
     
     @InjectSpy
-    UserRepository userRepository;
-    
-    @InjectSpy
     UserService userService;
     
     @InjectMock
@@ -50,6 +50,7 @@ class SchoolResourceTest {
     
     @InjectMock
     AuthenticationService authenticationService;
+    
     
     @Test
     void givenFindAllUnauthorized_thenShouldReturnForbidden() {
