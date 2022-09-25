@@ -10,14 +10,11 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
-import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.coordinates.service.Coordinates;
 import org.littil.api.coordinates.service.CoordinatesService;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.school.service.School;
-import org.littil.api.user.repository.UserEntity;
-import org.littil.api.user.repository.UserRepository;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
@@ -28,8 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
-
-import javax.inject.Inject;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -235,41 +230,38 @@ class SchoolResourceTest {
                 );
     }
 
-//    @Test
-//    @TestSecurity(user = "littil", roles = "viewer, school")
-//    @OidcSecurity(claims = {
-//            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-//    void givenDeleteNonExistingSchoolById_thenShouldReturnNotFound() {
-//        given()
-//                .contentType(ContentType.JSON)
-//                .delete("/{id}", UUID.randomUUID())
-//                .then()
-//                .statusCode(404);
-//    }
-//
-//    @Test
-//    void givenDeleteSchoolById_thenShouldDeleteSuccessfully() {
-//        School school = createSchool();
-//        School saved = given()
-//                .contentType(ContentType.JSON)
-//                .body(school)
-//                .post()
-//                .then()
-//                .statusCode(201)
-//                .extract().as(School.class);
-//
-//        given()
-//                .contentType(ContentType.JSON)
-//                .delete("/{id}", saved.getId())
-//                .then()
-//                .statusCode(200);
-//
-//        given()
-//                .contentType(ContentType.JSON)
-//                .get("/{id}", saved.getId())
-//                .then()
-//                .statusCode(404);
-//    }
+    @Test
+    @TestSecurity(user = "littil", roles = "schools")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenDeleteNonExistingSchoolById_thenShouldReturnNotFound() {
+        given()
+                .contentType(ContentType.JSON)
+                .delete("/{id}", UUID.randomUUID())
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "schools")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenDeleteSchoolById_thenShouldDeleteSuccessfully() {
+        School school = getDefaultSchool();
+        School savedSchool = saveSchool(school);
+
+        given()
+                .contentType(ContentType.JSON)
+                .delete("/{id}", savedSchool.getId())
+                .then()
+                .statusCode(200);
+
+        given()
+                .contentType(ContentType.JSON)
+                .get("/{id}", savedSchool.getId())
+                .then()
+                .statusCode(404);
+    }
 
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
