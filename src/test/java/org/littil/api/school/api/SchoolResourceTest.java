@@ -76,7 +76,7 @@ class SchoolResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetSchoolById_thenShouldReturnSuccessfully() {
 
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         School saved = saveSchool(school);
   
         School got = given()
@@ -108,8 +108,9 @@ class SchoolResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetSchoolByName_thenShouldReturnSuccessfully() {
 
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         School saved = saveSchool(school);
+        
         String validName = saved.getName();
         
         List<School> got = given()
@@ -140,7 +141,7 @@ class SchoolResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenCreateNewSchool_thenShouldBeCreatedSuccessfully() {       
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         School savedSchool = saveSchool(school);
         assertThat(savedSchool.getId()).isNotNull();
     }
@@ -150,7 +151,7 @@ class SchoolResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenCreateNewSchoolWithoutRequiredName_thenShouldReturnWithAnErrorResponse() {
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         school.setName(null);
 
         User createdUser = createAndSaveUser();
@@ -177,7 +178,7 @@ class SchoolResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenCreateNewSchoolWithRequiredNameBlank_thenShouldReturnWithAnErrorResponse() {
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         school.setName("");
 
         User createdUser = createAndSaveUser();
@@ -203,7 +204,7 @@ class SchoolResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenCreateNewSchoolWithoutRequiredNameAndAddressAndInvalidContactPersonEmail_thenShouldReturnWithAnErrorResponse() {
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         school.setName(null);
         school.setAddress(null);
 
@@ -247,7 +248,7 @@ class SchoolResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenDeleteSchoolById_thenShouldDeleteSuccessfully() {
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         School savedSchool = saveSchool(school);
 
         given()
@@ -268,7 +269,7 @@ class SchoolResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenUpdatingNameOfSchool_thenShouldUpdateSuccessfully() {
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         String newName = RandomStringUtils.randomAlphabetic(10);
 
         School saved = saveSchool(school);
@@ -292,7 +293,7 @@ class SchoolResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenUpdatingUnknownSchool_thenShouldReturnWithErrorResponse() {
-        School school = getDefaultSchool();
+        SchoolPostResource school = getDefaultSchool();
         school.setId(UUID.randomUUID());
 
         given()
@@ -303,7 +304,7 @@ class SchoolResourceTest {
                 .statusCode(404);
     }
 
-    private School saveSchool(School school) {
+    private School saveSchool(SchoolPostResource school) {
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class)); 
         
@@ -325,8 +326,8 @@ class SchoolResourceTest {
         return saved;
     }
 
-    private School getDefaultSchool() {
-        School school = new School();
+    private SchoolPostResource getDefaultSchool() {
+        SchoolPostResource school = new SchoolPostResource();
         school.setName(RandomStringUtils.randomAlphabetic(10));
         school.setAddress(RandomStringUtils.randomAlphabetic(10));
         school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
@@ -335,7 +336,6 @@ class SchoolResourceTest {
 
         return school;
     }
-
 
     private User createAndSaveUser() {
         String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@adres.nl";
