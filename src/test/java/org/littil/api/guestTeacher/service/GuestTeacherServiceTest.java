@@ -6,6 +6,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
+import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
 import org.littil.api.location.repository.LocationEntity;
@@ -16,16 +17,10 @@ import org.littil.api.user.service.UserService;
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
 import javax.ws.rs.NotFoundException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
@@ -145,6 +140,58 @@ class GuestTeacherServiceTest {
     }
 
     @Test
+    void givenSaveTeacher_thenShouldReturnTeacher() {
+        final UUID teacherId = UUID.randomUUID();
+        final String surname = RandomStringUtils.randomAlphabetic(10);
+        final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final String prefix = RandomStringUtils.randomAlphabetic(10);
+        final String address = RandomStringUtils.randomAlphabetic(10);
+        final String locale = RandomStringUtils.randomAlphabetic(2);
+        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+
+        final GuestTeacher guestTeacher = new GuestTeacher();
+        guestTeacher.setFirstName(firstName);
+        guestTeacher.setSurname(surname);
+        guestTeacher.setPrefix(prefix);
+        guestTeacher.setAddress(address);
+        guestTeacher.setPostalCode(postalCode);
+        guestTeacher.setLocale(locale);
+
+        final LocationEntity location = new LocationEntity();
+        location.setAddress(address);
+        location.setPostalCode(postalCode);
+
+        final GuestTeacherEntity entity = new GuestTeacherEntity();
+        entity.setId(teacherId);
+        entity.setFirstName(firstName);
+        entity.setPrefix(prefix);
+        entity.setSurname(surname);
+        entity.setLocation(location);
+
+        final GuestTeacher expectedGuestTeacher = new GuestTeacher();
+        expectedGuestTeacher.setId(entity.getId());
+        expectedGuestTeacher.setFirstName(entity.getFirstName());
+        expectedGuestTeacher.setPrefix(entity.getPrefix());
+        expectedGuestTeacher.setSurname(entity.getSurname());
+        expectedGuestTeacher.setAddress(entity.getLocation().getAddress());
+        expectedGuestTeacher.setPostalCode(entity.getLocation().getPostalCode());
+
+        final UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setId(userId);
+
+        doReturn(entity).when(mapper).toEntity(guestTeacher);
+        doReturn(Optional.of(user)).when(userService).getUserById(userId);
+        doReturn(true).when(repository).isPersistent(entity);
+        doNothing().when(locationRepository).persist(any(LocationEntity.class));
+        doReturn(expectedGuestTeacher).when(mapper).updateDomainFromEntity(any(GuestTeacherEntity.class), any(GuestTeacher.class));
+
+        GuestTeacher savedTeacher = service.saveOrUpdate(guestTeacher, userId);
+        assertNotNull(savedTeacher);
+        assertEquals(expectedGuestTeacher, savedTeacher);
+    }
+
+    @Test
     void givenSaveTeacherUnknownErrorOccurred_thenShouldThrowPersistenceException() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
@@ -168,6 +215,25 @@ class GuestTeacherServiceTest {
         doReturn(false).when(repository).isPersistent(entity);
 
         assertThrows(PersistenceException.class, () -> service.saveOrUpdate(guestTeacher, userId));
+    }
+    @Test
+    void givenSaveTeacherForUnknownUser_thenShouldThrowServiceException() {
+        final UUID teacherId = UUID.randomUUID();
+        final String surname = RandomStringUtils.randomAlphabetic(10);
+        final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final String address = RandomStringUtils.randomAlphabetic(10);
+        final String locale = RandomStringUtils.randomAlphabetic(2);
+        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+
+        final GuestTeacher guestTeacher = createGuestTeacher(null, firstName, surname, address, postalCode, locale);
+        final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
+
+        final UUID userId = UUID.randomUUID();
+
+        doReturn(entity).when(mapper).toEntity(guestTeacher);
+        doReturn(Optional.empty()).when(userService).getUserById(userId);
+
+        assertThrows(ServiceException.class, () -> service.saveOrUpdate(guestTeacher, UUID.randomUUID()));
     }
 
 
@@ -207,6 +273,11 @@ class GuestTeacherServiceTest {
     }
 
     @Test
+    void givenDeleteNullTeacher_thenShouldThrowNullPointer() {
+        assertThrows(NullPointerException.class, () -> service.deleteTeacher(null, null));
+    }
+
+    @Test
     void givenUpdateTeacher_thenShouldSuccessfullyUpdateTeacher() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
@@ -241,6 +312,22 @@ class GuestTeacherServiceTest {
         assertThat(persisted).usingRecursiveComparison()
                 .ignoringFields("surname")
                 .isEqualTo(guestTeacher);
+    }
+
+    @Test
+    void givenUpdateTeacherWithoutUserId_thenShouldThrowServiceException() {
+        final UUID teacherId = UUID.randomUUID();
+        final String surname = RandomStringUtils.randomAlphabetic(10);
+        final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final String address = RandomStringUtils.randomAlphabetic(10);
+        final String locale = RandomStringUtils.randomAlphabetic(2);
+        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final GuestTeacher guestTeacher = createGuestTeacher(teacherId, firstName, surname, address, postalCode, locale);
+
+        then(repository).shouldHaveNoInteractions();
+        then(mapper).shouldHaveNoInteractions();
+
+        assertThrows(NotFoundException.class, () -> service.saveOrUpdate(guestTeacher,null));
     }
 
     @Test
