@@ -127,6 +127,10 @@ public class GuestTeacherResource {
             )
     )
     @APIResponse(
+            responseCode = "404",
+            description = "No Teacher found for id provided"
+    )
+    @APIResponse(
             responseCode = "500",
             description = "Persistence error occurred. Failed to persist teacher.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)

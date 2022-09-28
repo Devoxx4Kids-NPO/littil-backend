@@ -26,7 +26,6 @@ public class GuestTeacherPostResource {
     @NotEmpty(message = "{GuestTeacher.postalCode.required}")
     private String postalCode;
 
-    @NotEmpty(message = "{GuestTeacher.locale.required}")
     private String locale;
 
     private EnumSet<DayOfWeek> availability;
