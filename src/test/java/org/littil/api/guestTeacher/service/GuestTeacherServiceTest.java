@@ -204,11 +204,6 @@ class GuestTeacherServiceTest {
         final GuestTeacher guestTeacher = createGuestTeacher(null, firstName, surname, address, postalCode, locale);
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
 
-        final GuestTeacher expectedGuestTeacher = new GuestTeacher();
-        expectedGuestTeacher.setId(entity.getId());
-        expectedGuestTeacher.setSurname(entity.getSurname());
-        expectedGuestTeacher.setFirstName(entity.getFirstName());
-
         doReturn(Optional.of(new User())).when(userService).getUserById(userId);
         doReturn(entity).when(mapper).toEntity(guestTeacher);
         doNothing().when(locationRepository).persist(entity.getLocation());
