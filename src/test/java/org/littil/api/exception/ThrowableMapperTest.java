@@ -3,7 +3,9 @@ package org.littil.api.exception;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
-import org.junit.jupiter.api.Disabled;
+import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.oidc.Claim;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import org.junit.jupiter.api.Test;
 import org.littil.api.guestTeacher.api.GuestTeacherResource;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
@@ -16,13 +18,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @QuarkusTest
 @TestHTTPEndpoint(GuestTeacherResource.class)
-@Disabled("Disabled, needs a lot of refactoring")
 class ThrowableMapperTest {
 
     @InjectMock
     GuestTeacherService teacherService;
 
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")
+    })
     void throwUnexpectedRuntimeException() {
         Mockito.when(teacherService.findAll()).thenThrow(new RuntimeException("Completely Unexpected"));
         ErrorResponse errorResponse = given()
