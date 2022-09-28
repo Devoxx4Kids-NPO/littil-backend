@@ -2,11 +2,15 @@ package org.littil.api.contactPerson;
 
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
 import java.util.UUID;
 
 @Data
 public class ContactPerson {
+    
     private UUID id;
 
     @NotEmpty(message = "{ContactPerson.firstName.required}")

@@ -1,46 +1,85 @@
 package org.littil.api.school.api;
 
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.junit.mockito.InjectSpy;
+import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.coordinates.service.Coordinates;
+import org.littil.api.coordinates.service.CoordinatesService;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.school.service.School;
+import org.littil.api.user.service.User;
+import org.littil.api.user.service.UserService;
+import org.littil.mock.auth0.APIManagementMock;
+
+import io.quarkus.test.security.oidc.Claim;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 
 @QuarkusTest
 @TestHTTPEndpoint(SchoolResource.class)
-@Disabled("Disabled, needs a lot of refactoring")
+@QuarkusTestResource(APIManagementMock.class)
 class SchoolResourceTest {
-
+    
+    @InjectSpy
+    UserService userService;
+    
+    @InjectMock
+    CoordinatesService coordinatesService;
+    
+    @InjectMock
+    AuthenticationService authenticationService;
+    
+    
     @Test
-    void givenFindAll_thenShouldReturnMultipleSchools() {
-        given()
-                .when()
-                .get()
-                .then()
-                .statusCode(200);
+    void givenFindAllUnauthorized_thenShouldReturnForbidden() {
+        given() //
+                .when() //
+                .get() //
+                .then() //
+                .statusCode(401);
     }
 
     @Test
-    void givenGetSchoolById_thenShouldReturnSuccessfully() {
-        School school = createSchool();
-        School saved = given()
-                .contentType(ContentType.JSON)
-                .body(school)
-                .post()
-                .then()
-                .statusCode(201)
-                .extract().as(School.class);
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenFindAll_thenShouldReturnMultipleSchools() {
+        given() //
+                .when() //
+                .get() //
+                .then() //
 
+                .statusCode(200);
+    }
+ 
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetSchoolById_thenShouldReturnSuccessfully() {
+
+        SchoolPostResource school = getDefaultSchool();
+        School saved = saveSchool(school);
+  
         School got = given()
                 .when()
                 .get("/{id}", saved.getId())
@@ -51,7 +90,11 @@ class SchoolResourceTest {
         assertThat(saved).isEqualTo(got);
     }
 
+
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetSchoolByUnknownId_thenShouldReturnNotFound() {
         given()
                 .when()
@@ -61,19 +104,16 @@ class SchoolResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetSchoolByName_thenShouldReturnSuccessfully() {
-        String validName = RandomStringUtils.randomAlphabetic(10);
-        School school = createSchool();
-        school.setName(validName);
 
-        School saved = given()
-                .contentType(ContentType.JSON)
-                .body(school)
-                .post()
-                .then()
-                .statusCode(201)
-                .extract().as(School.class);
-
+        SchoolPostResource school = getDefaultSchool();
+        School saved = saveSchool(school);
+        
+        String validName = saved.getName();
+        
         List<School> got = given()
                 .when()
                 .get("/name/{name}", validName)
@@ -86,6 +126,9 @@ class SchoolResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetSchoolByUnknownName_thenShouldReturnNotFound() {
         given()
                 .when()
@@ -95,28 +138,31 @@ class SchoolResourceTest {
     }
 
     @Test
-    void givenCreateNewSchool_thenShouldBeCreatedSuccessfully() {
-        School school = createSchool();
-        School saved = given()
-                .contentType(ContentType.JSON)
-                .body(school)
-                .post()
-                .then()
-                .statusCode(201)
-                .extract().as(School.class);
-
-        assertThat(saved.getId()).isNotNull();
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenCreateNewSchool_thenShouldBeCreatedSuccessfully() {       
+        SchoolPostResource school = getDefaultSchool();
+        School savedSchool = saveSchool(school);
+        assertThat(savedSchool.getId()).isNotNull();
     }
 
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenCreateNewSchoolWithoutRequiredName_thenShouldReturnWithAnErrorResponse() {
-        School school = createSchool();
+        SchoolPostResource school = getDefaultSchool();
         school.setName(null);
 
+        User createdUser = createAndSaveUser();
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class)); 
+        doNothing().when(authenticationService).addAuthorization(any(),any(), any());
+
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
                 .body(school)
-                .post()
+                .put()
                 .then()
                 .statusCode(400)
                 .extract().as(ErrorResponse.class);
@@ -125,18 +171,25 @@ class SchoolResourceTest {
         assertThat(errorResponse.getErrors())
                 .isNotNull()
                 .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("create.school.name", getErrorMessage("School.name.required")));
+                .contains(new ErrorResponse.ErrorMessage("createOrUpdate.school.name", getErrorMessage("School.name.required")));
     }
 
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenCreateNewSchoolWithRequiredNameBlank_thenShouldReturnWithAnErrorResponse() {
-        School school = createSchool();
+        SchoolPostResource school = getDefaultSchool();
         school.setName("");
 
+        User createdUser = createAndSaveUser();
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class)); 
+        doNothing().when(authenticationService).addAuthorization(any(),any(), any());
+
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
                 .body(school)
-                .post()
+                .put()
                 .then()
                 .statusCode(400)
                 .extract().as(ErrorResponse.class);
@@ -145,19 +198,25 @@ class SchoolResourceTest {
         assertThat(errorResponse.getErrors())
                 .isNotNull()
                 .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("create.school.name", getErrorMessage("School.name.required")));
+                .contains(new ErrorResponse.ErrorMessage("createOrUpdate.school.name", getErrorMessage("School.name.required")));
     }
-
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenCreateNewSchoolWithoutRequiredNameAndAddressAndInvalidContactPersonEmail_thenShouldReturnWithAnErrorResponse() {
-        School school = createSchool();
+        SchoolPostResource school = getDefaultSchool();
         school.setName(null);
         school.setAddress(null);
 
+        User createdUser = createAndSaveUser();
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class)); 
+        doNothing().when(authenticationService).addAuthorization(any(),any(), any());
+
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
                 .body(school)
-                .post()
+                .put()
                 .then()
                 .statusCode(400)
                 .extract()
@@ -166,66 +225,63 @@ class SchoolResourceTest {
         assertThat(errorResponse.getErrorId()).isNull();
         assertThat(errorResponse.getErrors())
                 .isNotNull()
-                .hasSize(3)
+                .hasSize(2)
                 .contains(
-                        new ErrorResponse.ErrorMessage("create.school.name", getErrorMessage("School.name.required")),
-                        new ErrorResponse.ErrorMessage("create.school.address", getErrorMessage("School.address.required")),
-                        new ErrorResponse.ErrorMessage("create.school.contactPersonEmail", getErrorMessage("School.contactPersonEmail.invalid"))
+                        new ErrorResponse.ErrorMessage("createOrUpdate.school.name", getErrorMessage("School.name.required")),
+                        new ErrorResponse.ErrorMessage("createOrUpdate.school.address", getErrorMessage("School.address.required"))
                 );
     }
 
     @Test
+    @TestSecurity(user = "littil", roles = "schools")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenDeleteNonExistingSchoolById_thenShouldReturnNotFound() {
         given()
                 .contentType(ContentType.JSON)
                 .delete("/{id}", UUID.randomUUID())
                 .then()
-                .statusCode(404);
+                .statusCode(401);
     }
 
     @Test
+    @TestSecurity(user = "littil", roles = "schools")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    @Disabled("tokenHelper.getCustomClaim() returns null in AbstractSecurityInterceptor")
     void givenDeleteSchoolById_thenShouldDeleteSuccessfully() {
-        School school = createSchool();
-        School saved = given()
-                .contentType(ContentType.JSON)
-                .body(school)
-                .post()
-                .then()
-                .statusCode(201)
-                .extract().as(School.class);
+        SchoolPostResource school = getDefaultSchool();
+        School savedSchool = saveSchool(school);
 
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{id}", saved.getId())
+                .delete("/{id}", savedSchool.getId())
                 .then()
                 .statusCode(200);
 
         given()
                 .contentType(ContentType.JSON)
-                .get("/{id}", saved.getId())
+                .get("/{id}", savedSchool.getId())
                 .then()
                 .statusCode(404);
     }
 
     @Test
-    void givenUpdatingNameOfSchoolById_thenShouldUpdateSuccessfully() {
-        School school = createSchool();
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenUpdatingNameOfSchool_thenShouldUpdateSuccessfully() {
+        SchoolPostResource school = getDefaultSchool();
         String newName = RandomStringUtils.randomAlphabetic(10);
 
-        School saved = given()
-                .contentType(ContentType.JSON)
-                .body(school)
-                .post()
-                .then()
-                .statusCode(201)
-                .extract().as(School.class);
-
+        School saved = saveSchool(school);
         saved.setName(newName);
+        assertNotNull(saved.getId());
 
         School updated = given()
                 .contentType(ContentType.JSON)
                 .body(saved)
-                .put("/{id}", saved.getId())
+                .put()
                 .then()
                 .statusCode(200)
                 .extract().as(School.class);
@@ -235,79 +291,45 @@ class SchoolResourceTest {
     }
 
     @Test
-    void givenUpdatingIdOfSchoolById_thenShouldReturnWithErrorResponse() {
-        School school = createSchool();
-        UUID schoolId = UUID.randomUUID();
-        UUID newSchoolId = UUID.randomUUID();
-
-        school.setId(newSchoolId);
-
-        ErrorResponse errorResponse = given()
-                .contentType(ContentType.JSON)
-                .body(school)
-                .put("/{id}", schoolId)
-                .then()
-                .statusCode(500)
-                .extract().as(ErrorResponse.class);
-
-        assertThat(errorResponse.getErrors())
-                .isNotNull()
-                .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match School.id"));
-    }
-
-    @Test
-    void givenUpdatingUnknownSchoolById_thenShouldReturnWithErrorResponse() {
-        School school = createSchool();
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenUpdatingUnknownSchool_thenShouldReturnWithErrorResponse() {
+        SchoolPostResource school = getDefaultSchool();
         school.setId(UUID.randomUUID());
 
         given()
                 .contentType(ContentType.JSON)
                 .body(school)
-                .put("/{id}", school.getId())
+                .put()
                 .then()
                 .statusCode(404);
     }
 
-    @Test
-    void givenUpdatingByIdWherePayloadIdDeviatesFromPathId_thenShouldReturnWithErrorResponse() {
-        School school = createSchool();
-        school.setId(UUID.randomUUID());
-
-        ErrorResponse errorResponse = given()
+    private School saveSchool(SchoolPostResource school) {
+        User createdUser = createAndSaveUser();
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class)); 
+        
+        Coordinates coordinates = Coordinates.builder() //
+                .lat(0.0) //
+                .lon(0.0) //
+                .build();
+        doReturn(coordinates).when(coordinatesService).getCoordinates(any(), any());
+        
+        doNothing().when(authenticationService).addAuthorization(any(),any(), any());
+          
+        School saved = given()
                 .contentType(ContentType.JSON)
                 .body(school)
-                .put("/{id}", UUID.randomUUID())
+                .put()
                 .then()
-                .statusCode(500)
-                .extract().as(ErrorResponse.class);
-
-        assertThat(errorResponse.getErrors())
-                .isNotNull()
-                .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match School.id"));
+                .statusCode(200)
+                .extract().as(School.class);
+        return saved;
     }
 
-    @Test
-    void givenSchoolByIdWithoutIdInPayload_thenShouldReturnWithErrorResponse() {
-        School school = createSchool();
-
-        ErrorResponse errorResponse = given()
-                .contentType(ContentType.JSON)
-                .body(school)
-                .put("/{id}", UUID.randomUUID())
-                .then()
-                .statusCode(500)
-                .extract().as(ErrorResponse.class);
-
-        assertThat(errorResponse.getErrors())
-                .isNotNull()
-                .hasSize(1)
-                .contains(new ErrorResponse.ErrorMessage("Path variable id does not match School.id"));
-    }
-
-    private School createSchool() {
-        School school = new School();
+    private SchoolPostResource getDefaultSchool() {
+        SchoolPostResource school = new SchoolPostResource();
         school.setName(RandomStringUtils.randomAlphabetic(10));
         school.setAddress(RandomStringUtils.randomAlphabetic(10));
         school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
@@ -315,6 +337,15 @@ class SchoolResourceTest {
         school.setSurname(RandomStringUtils.randomAlphabetic(10));
 
         return school;
+    }
+
+    private User createAndSaveUser() {
+        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@adres.nl";
+        User user = new User();
+        user.setEmailAddress(emailAdress);
+        User createdUser = userService.createUser(user);
+
+        return createdUser;
     }
 
     private String getErrorMessage(String key) {
