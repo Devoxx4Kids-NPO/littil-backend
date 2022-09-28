@@ -18,7 +18,6 @@ import org.littil.api.user.service.UserService;
 
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
-import javax.validation.Validator;
 import javax.ws.rs.NotFoundException;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +34,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -386,9 +384,6 @@ class SchoolServiceTest {
         school.setSurname(RandomStringUtils.randomAlphabetic(10));
         school.setAddress(RandomStringUtils.randomAlphabetic(10));
         school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
-
-        Validator validator = spy(Validator.class);
-        doReturn(Collections.emptySet()).when(validator).validate(school, School.class);
 
         then(repository).shouldHaveNoInteractions();
         then(mapper).shouldHaveNoInteractions();
