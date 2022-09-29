@@ -1,5 +1,6 @@
 package org.littil.api.coordinates.service;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
@@ -17,7 +18,7 @@ public class CoordinatesService {
     @RestClient
     private SearchService coordinatesService;
 
-    public Coordinates getCoordinates(String postalCode, String address) {
+    public Coordinates getCoordinates(@NonNull String postalCode, @NonNull String address) {
         if(postalCode.isBlank() || address.isBlank()) {
             throwException(postalCode, address);
         }
