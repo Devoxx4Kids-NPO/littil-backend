@@ -8,7 +8,7 @@ import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.PasswordService;
 import org.littil.api.auth.service.ProviderService;
 import org.littil.api.mail.MailService;
-import org.littil.api.user.UserAlreadyExistsException;
+import org.littil.api.exception.EntityAlreadyExistsException;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
@@ -52,7 +52,7 @@ public class UserService {
 
         if(alreadyExistingUser.isPresent()) {
             log.warn("Failed to create user due to the fact an user already exists with the same emailAddress.");
-            throw new UserAlreadyExistsException();
+            throw new EntityAlreadyExistsException();
         }
 
         //save user locally
