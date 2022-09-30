@@ -11,6 +11,8 @@ import org.mapstruct.MappingTarget;
 public interface GuestTeacherMapper {
     GuestTeacher toDomain(GuestTeacherPostResource guestTeacherPostResource);
 
+    GuestTeacherPublic toPublicDomain(GuestTeacherEntity guestTeacherEntity);
+
     @Mapping(source = "location.address", target = "address")
     @Mapping(source = "location.postalCode", target = "postalCode")
     GuestTeacher toDomain(GuestTeacherEntity guestTeacherEntity);

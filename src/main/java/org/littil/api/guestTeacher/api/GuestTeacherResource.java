@@ -13,6 +13,7 @@ import org.littil.api.auth.authz.GuestTeacherSecured;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.guestTeacher.service.GuestTeacherMapper;
+import org.littil.api.guestTeacher.service.GuestTeacherPublic;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
 
 import javax.enterprise.context.RequestScoped;
@@ -61,7 +62,7 @@ public class GuestTeacherResource {
             )
     )
     public Response list() {
-        List<GuestTeacher> guestTeachers = guestTeacherService.findAll();
+        List<GuestTeacherPublic> guestTeachers = guestTeacherService.findAll();
 
         return Response.ok(guestTeachers).build();
     }

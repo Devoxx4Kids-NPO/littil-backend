@@ -45,8 +45,8 @@ public class GuestTeacherService {
         return repository.findByIdOptional(id).map(mapper::toDomain);
     }
 
-    public List<GuestTeacher> findAll() {
-        return repository.listAll().stream().map(mapper::toDomain).toList();
+    public List<GuestTeacherPublic> findAll() {
+        return repository.listAll().stream().map(mapper::toPublicDomain).toList();
     }
 
     @Transactional

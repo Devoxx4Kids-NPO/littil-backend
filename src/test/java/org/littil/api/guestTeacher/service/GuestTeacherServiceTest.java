@@ -117,11 +117,11 @@ class GuestTeacherServiceTest {
     @Test
     void giveFindAll_thenShouldReturnTeacherList() {
         final List<GuestTeacherEntity> expectedTeacherEntities = Collections.nCopies(3, new GuestTeacherEntity());
-        final List<GuestTeacher> expectedGuestTeachers = expectedTeacherEntities.stream().map(mapper::toDomain).toList();
+        final List<GuestTeacherPublic> expectedGuestTeachers = expectedTeacherEntities.stream().map(mapper::toPublicDomain).toList();
 
         doReturn(expectedTeacherEntities).when(repository).listAll();
 
-        List<GuestTeacher> guestTeachers = service.findAll();
+        List<GuestTeacherPublic> guestTeachers = service.findAll();
 
         assertEquals(3, guestTeachers.size());
         assertEquals(expectedGuestTeachers, guestTeachers);
@@ -133,7 +133,7 @@ class GuestTeacherServiceTest {
 
         doReturn(expectedTeacherEntities).when(repository).listAll();
 
-        List<GuestTeacher> guestTeachers = service.findAll();
+        List<GuestTeacherPublic> guestTeachers = service.findAll();
 
         assertThat(guestTeachers).isEmpty();
         then(mapper).shouldHaveNoInteractions();
