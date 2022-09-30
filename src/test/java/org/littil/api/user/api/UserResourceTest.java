@@ -151,7 +151,7 @@ class UserResourceTest {
 
     private UserPostResource getDefaultUser() {
         UserPostResource user = new UserPostResource();
-        user.setEmailAddress(RandomStringUtils.randomAlphabetic(10) + "@adres.nl");
+        user.setEmailAddress(RandomStringUtils.randomAlphabetic(10) + "@littil.org");
         return user;
     }
 

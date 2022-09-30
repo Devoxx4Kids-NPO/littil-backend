@@ -21,7 +21,7 @@ class UserRepositoryTest {
 
     @Test
     void givenFindExistingUserByEmailAddress_thenShouldReturnSuccessfully() {
-        String email = RandomStringUtils.randomAlphabetic(10) + "@adres.nl";
+        String email = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
         final Optional<UserEntity> userEntityOptional
                 = getDefaultUser(RandomStringUtils.randomAlphabetic(10), email);
 
@@ -36,7 +36,7 @@ class UserRepositoryTest {
 
     @Test
     void givenFindNonExistingUserByEmailAddress_thenShouldReturnEmptyOptional() {
-        String email = RandomStringUtils.randomAlphabetic(10) + "@adres.nl";
+        String email = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("email_address", email);
@@ -52,7 +52,7 @@ class UserRepositoryTest {
         String providerId = RandomStringUtils.randomAlphabetic(10);
 
         final Optional<UserEntity> userEntityOptional
-                = getDefaultUser(providerId, RandomStringUtils.randomAlphabetic(10) + "@adres.nl");
+                = getDefaultUser(providerId, RandomStringUtils.randomAlphabetic(10) + "@littil.org");
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("provider_id", providerId);
