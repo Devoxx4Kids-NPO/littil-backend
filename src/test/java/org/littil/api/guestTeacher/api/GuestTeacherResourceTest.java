@@ -22,7 +22,10 @@ import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 
 import java.time.DayOfWeek;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -297,7 +300,7 @@ class GuestTeacherResourceTest {
                 .lat(0.0)
                 .lon(0.0)
                 .build();
-        doReturn(coordinates).when(coordinatesService).getCoordinates(any(), any());
+        doReturn(Optional.of(coordinates)).when(coordinatesService).getCoordinates(any(), any());
 
         doNothing().when(authenticationService).addAuthorization(any(),any(), any());
 

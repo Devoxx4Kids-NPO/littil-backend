@@ -1,53 +1,53 @@
 package org.littil.api.coordinates.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import javax.inject.Inject;
-
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 import org.littil.mock.coordinates.service.WireMockSearchService;
 
-import io.quarkus.test.common.QuarkusTestResource;
-import io.quarkus.test.junit.QuarkusTest;
+import javax.inject.Inject;
+import javax.validation.ConstraintViolationException;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @QuarkusTest
 @QuarkusTestResource(WireMockSearchService.class)
 class CoordinatesServiceTest {
-    
-    private static final String NOT_FOUND = WireMockSearchService.NOT_FOUND;
-    
+
     @Inject
     CoordinatesService service;
-    
-    @Test 
-    void givenGetCoordinates__thenShouldReturnCoordinates() {
-        Coordinates coordinates = service.getCoordinates("1234AB", "Address");
-        assertNotNull(coordinates);
-    }
- 
-    @Test 
-    void givenGetCoordinatesNotFound__thenShouldReturnIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> service.getCoordinates("1234AB" , NOT_FOUND));
-    }
-    
+
     @Test
-    void givenGetCoordinatesWithNullPostalCode__thenShouldReturnNullPointerException() {
-        assertThrows(NullPointerException.class, () -> service.getCoordinates(null , "adress"));
+    void givenGetCoordinates_thenShouldReturnCoordinates() {
+        Optional<Coordinates> coordinates = service.getCoordinates("1234AB", "Address");
+        assertThat(coordinates).isPresent();
     }
 
     @Test
-    void givenGetCoordinatesWithBlankPostalCode__thenShouldReturnIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> service.getCoordinates("" , "adress"));
+    void givenGetCoordinatesNotFound_thenShouldNotBreakPersistenceFlow() {
+        Optional<Coordinates> coordinates = service.getCoordinates("1234AB", WireMockSearchService.NOT_FOUND);
+        assertThat(coordinates).isNotNull();
     }
 
     @Test
-    void givenGetCoordinatesWithBlankAddress__thenShouldReturnIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> service.getCoordinates("1234AB" , ""));
+    void givenGetCoordinatesWithNullPostalCode_thenShouldThrowNullPointerException() {
+        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates(null, "address"));
     }
 
     @Test
-    void givenGetCoordinatesWithNullAddress__thenShouldReturnIllegalArgumentException() {
-        assertThrows(NullPointerException.class, () -> service.getCoordinates("1234AB" , null));
+    void givenGetCoordinatesWithBlankPostalCode_thenShouldThrowConstraintViolationException() {
+        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates("", "address"));
     }
 
+    @Test
+    void givenGetCoordinatesWithBlankAddress_thenShouldThrowConstraintViolationException() {
+        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates("1234AB", ""));
+    }
+
+    @Test
+    void givenGetCoordinatesWithNullAddress_thenShouldThrowConstraintViolationException() {
+        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates("1234AB", null));
+    }
 }
