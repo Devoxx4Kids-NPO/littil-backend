@@ -338,7 +338,7 @@ class SchoolResourceTest {
     }
 
     private User createAndSaveUser() {
-        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@adres.nl";
+        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
         User user = new User();
         user.setEmailAddress(emailAdress);
         User createdUser = userService.createUser(user);
