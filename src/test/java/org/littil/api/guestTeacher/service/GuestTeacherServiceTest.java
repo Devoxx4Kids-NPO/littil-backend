@@ -4,6 +4,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
@@ -11,6 +12,7 @@ import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
+import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 
@@ -44,19 +46,27 @@ class GuestTeacherServiceTest {
     @InjectMock
     GuestTeacherMapper mapper;
 
+    @InjectMock
+    TokenHelper tokenHelper;
+
     @Test
     void givenGetTeacherByName_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
+        final UserEntity user = new UserEntity();
+        user.setId(userId);
         expectedTeacher.setId(teacherId);
         expectedTeacher.setSurname(surname);
+        expectedTeacher.setUser(user);
         final GuestTeacher mappedGuestTeacher = new GuestTeacher();
         mappedGuestTeacher.setId(teacherId);
         mappedGuestTeacher.setSurname(surname);
 
         doReturn(List.of(expectedTeacher)).when(repository).findBySurnameLike(surname);
         doReturn(mappedGuestTeacher).when(mapper).toDomain(expectedTeacher);
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
 
         List<GuestTeacher> guestTeacher = service.getTeacherByName(surname);
 
@@ -84,10 +94,15 @@ class GuestTeacherServiceTest {
     void givenGetTeacherById_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
         final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
+        final UUID userId = UUID.randomUUID();
+        final UserEntity user = new UserEntity();
+        user.setId(userId);
         expectedTeacher.setId(teacherId);
+        expectedTeacher.setUser(user);
         final GuestTeacher mappedGuestTeacher = new GuestTeacher();
         mappedGuestTeacher.setId(teacherId);
 
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
         doReturn(Optional.of(expectedTeacher)).when(repository).findByIdOptional(teacherId);
         doReturn(mappedGuestTeacher).when(mapper).toDomain(expectedTeacher);
 

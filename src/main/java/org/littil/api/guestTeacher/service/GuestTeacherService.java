@@ -1,8 +1,10 @@
 package org.littil.api.guestTeacher.service;
 
+import io.quarkus.security.UnauthorizedException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
@@ -35,14 +37,21 @@ public class GuestTeacherService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final AuthenticationService authenticationService;
+    private final TokenHelper tokenHelper;
 
 
     public List<GuestTeacher> getTeacherByName(@NonNull final String name) {
-        return repository.findBySurnameLike(name).stream().map(mapper::toDomain).toList();
+        UUID userId = tokenHelper.getCurrentUserId();
+        return repository.findBySurnameLike(name).stream()
+                .filter(t -> t.getUser().getId().equals(userId))
+                .map(mapper::toDomain).toList();
     }
 
     public Optional<GuestTeacher> getTeacherById(@NonNull final UUID id) {
-        return repository.findByIdOptional(id).map(mapper::toDomain);
+        UUID userId = tokenHelper.getCurrentUserId();
+        return repository.findByIdOptional(id).stream()
+                .filter(t -> t.getUser().getId().equals(userId))
+                .map(mapper::toDomain).findAny();
     }
 
     public List<GuestTeacherPublic> findAll() {
@@ -85,9 +94,13 @@ public class GuestTeacherService {
     }
 
     private GuestTeacher update(@Valid GuestTeacher guestTeacher) {
+        UUID userId = tokenHelper.getCurrentUserId();
         GuestTeacherEntity entity = repository.findByIdOptional(guestTeacher.getId())
                 .orElseThrow(() -> new NotFoundException("No Teacher found for Id"));
 
+        if (entity.getUser() != null && !entity.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException("Update not allowed, user is not the owner of this entity.");
+        }
         mapper.updateEntityFromDomain(guestTeacher, entity);
         repository.persist(entity);
         return mapper.updateDomainFromEntity(entity, guestTeacher);
