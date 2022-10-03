@@ -6,6 +6,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.quarkus.test.security.TestSecurity;
+import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -19,8 +20,6 @@ import org.littil.api.school.service.School;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
-
-import io.quarkus.test.security.oidc.Claim;
 
 import java.util.List;
 import java.util.Optional;
@@ -308,24 +307,23 @@ class SchoolResourceTest {
 
     private School saveSchool(SchoolPostResource school) {
         User createdUser = createAndSaveUser();
-        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class)); 
-        
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
+
         Coordinates coordinates = Coordinates.builder() //
                 .lat(0.0) //
                 .lon(0.0) //
                 .build();
-        doReturn(coordinates).when(coordinatesService).getCoordinates(any(), any());
-        
-        doNothing().when(authenticationService).addAuthorization(any(),any(), any());
-          
-        School saved = given()
+        doReturn(Optional.of(coordinates)).when(coordinatesService).getCoordinates(any(), any());
+
+        doNothing().when(authenticationService).addAuthorization(any(), any(), any());
+
+        return given()
                 .contentType(ContentType.JSON)
                 .body(school)
                 .put()
                 .then()
                 .statusCode(200)
                 .extract().as(School.class);
-        return saved;
     }
 
     private SchoolPostResource getDefaultSchool() {
@@ -340,7 +338,7 @@ class SchoolResourceTest {
     }
 
     private User createAndSaveUser() {
-        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@adres.nl";
+        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
         User user = new User();
         user.setEmailAddress(emailAdress);
         User createdUser = userService.createUser(user);
