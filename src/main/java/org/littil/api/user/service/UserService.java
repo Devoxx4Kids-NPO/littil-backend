@@ -51,7 +51,8 @@ public class UserService {
         Optional<UserEntity> alreadyExistingUser = repository.findByEmailAddress(user.getEmailAddress());
 
         if(alreadyExistingUser.isPresent()) {
-            log.warn("Failed to create user due to the fact an user already exists with the same emailAddress.");
+            log.warn("Failed to create user due to the fact that user with id " + user.getId()
+                    +  " already has the same emailAddress.");
             throw new EntityAlreadyExistsException();
         }
 
