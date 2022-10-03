@@ -12,15 +12,19 @@ import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.coordinates.service.Coordinates;
 import org.littil.api.coordinates.service.CoordinatesService;
 import org.littil.api.exception.ErrorResponse;
+import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
+import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 
+import javax.inject.Inject;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
 import java.util.List;
@@ -48,6 +52,12 @@ class GuestTeacherResourceTest {
 
     @InjectMock
     AuthenticationService authenticationService;
+
+    @InjectMock
+    TokenHelper tokenHelper;
+
+    @Inject
+    GuestTeacherRepository guestTeacherRepository;
 
     @Test
     void givenFindAllUnauthorized_thenShouldReturnForbidden() {
@@ -77,6 +87,8 @@ class GuestTeacherResourceTest {
     void givenGetTeacherById_thenShouldReturnSuccessfully() {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
+
+        mockGetCurrentUserId(saved.getId());
 
         GuestTeacher got = given()
                 .when()
@@ -109,6 +121,8 @@ class GuestTeacherResourceTest {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         teacher.setSurname(validSurname);
         GuestTeacher saved = saveTeacher(teacher);
+
+        mockGetCurrentUserId(saved.getId());
 
         List<GuestTeacher> got = given()
                 .when()
@@ -245,6 +259,8 @@ class GuestTeacherResourceTest {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
 
+        mockGetCurrentUserId(saved.getId());
+
         saved.setFirstName(newName);
         assertNotNull(saved.getId());
 
@@ -258,6 +274,13 @@ class GuestTeacherResourceTest {
 
         assertThat(updated.getFirstName()).isEqualTo(newName);
         assertThat(updated).isEqualTo(saved);
+    }
+
+    private void mockGetCurrentUserId(UUID guestTeacherId) {
+        Optional<GuestTeacherEntity> entity = guestTeacherRepository.findByIdOptional(guestTeacherId);
+        assertThat(entity).isPresent();
+        UUID userId = entity.get().getUser().getId();
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
     }
 
     @Test
@@ -293,6 +316,7 @@ class GuestTeacherResourceTest {
     }
 
     private GuestTeacher saveTeacher(GuestTeacherPostResource teacher) {
+        doReturn(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf")).when(tokenHelper).getCurrentUserId();
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
 
