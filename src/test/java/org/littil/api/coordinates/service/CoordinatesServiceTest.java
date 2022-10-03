@@ -32,7 +32,7 @@ class CoordinatesServiceTest {
     }
 
     @Test
-    void givenGetCoordinatesWithNullPostalCode_thenShouldThrowNullPointerException() {
+    void givenGetCoordinatesWithNullPostalCode_thenShouldThrowConstraintViolationException() {
         assertThrows(ConstraintViolationException.class, () -> service.getCoordinates(null, "address"));
     }
 
