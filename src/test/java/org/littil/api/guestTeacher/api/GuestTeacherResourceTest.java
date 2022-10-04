@@ -276,13 +276,6 @@ class GuestTeacherResourceTest {
         assertThat(updated).isEqualTo(saved);
     }
 
-    private void mockGetCurrentUserId(UUID guestTeacherId) {
-        Optional<GuestTeacherEntity> entity = guestTeacherRepository.findByIdOptional(guestTeacherId);
-        assertThat(entity).isPresent();
-        UUID userId = entity.get().getUser().getId();
-        doReturn(userId).when(tokenHelper).getCurrentUserId();
-    }
-
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
@@ -353,5 +346,12 @@ class GuestTeacherResourceTest {
         User user = new User();
         user.setEmailAddress(emailAdress);
         return userService.createUser(user);
+    }
+
+    private void mockGetCurrentUserId(UUID guestTeacherId) {
+        Optional<GuestTeacherEntity> entity = guestTeacherRepository.findByIdOptional(guestTeacherId);
+        assertThat(entity).isPresent();
+        UUID userId = entity.get().getUser().getId();
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
     }
 }

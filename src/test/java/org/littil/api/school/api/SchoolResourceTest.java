@@ -12,15 +12,19 @@ import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.coordinates.service.Coordinates;
 import org.littil.api.coordinates.service.CoordinatesService;
 import org.littil.api.exception.ErrorResponse;
+import org.littil.api.school.repository.SchoolEntity;
+import org.littil.api.school.repository.SchoolRepository;
 import org.littil.api.school.service.School;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -46,6 +50,12 @@ class SchoolResourceTest {
     
     @InjectMock
     AuthenticationService authenticationService;
+
+    @InjectMock
+    TokenHelper tokenHelper;
+
+    @Inject
+    SchoolRepository schoolRepository;
     
     
     @Test
@@ -274,6 +284,12 @@ class SchoolResourceTest {
         String newName = RandomStringUtils.randomAlphabetic(10);
 
         School saved = saveSchool(school);
+
+        Optional<SchoolEntity> entity = schoolRepository.findByIdOptional(saved.getId());
+        assertThat(entity).isPresent();
+        UUID userId = entity.get().getUser().getId();
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+
         saved.setName(newName);
         assertNotNull(saved.getId());
 
@@ -306,6 +322,7 @@ class SchoolResourceTest {
     }
 
     private School saveSchool(SchoolPostResource school) {
+        doReturn(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf")).when(tokenHelper).getCurrentUserId();// Todo: Duplicate
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
 
@@ -341,9 +358,8 @@ class SchoolResourceTest {
         String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
         User user = new User();
         user.setEmailAddress(emailAdress);
-        User createdUser = userService.createUser(user);
 
-        return createdUser;
+        return userService.createUser(user);
     }
 
     private String getErrorMessage(String key) {
