@@ -1,5 +1,6 @@
 package org.littil.api.guestTeacher.service;
 
+import io.quarkus.security.UnauthorizedException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -91,6 +92,34 @@ class GuestTeacherServiceTest {
     }
 
     @Test
+    void givenGetTeacherByName_thenShouldOnlyReturnTeachersOwnedByUser() {
+        final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final String surname = RandomStringUtils.randomAlphabetic(10);
+
+        final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
+        final UserEntity user = new UserEntity();
+        user.setId(userId);
+        expectedTeacher.setId(teacherId);
+        expectedTeacher.setSurname(surname);
+        expectedTeacher.setUser(user);
+
+        final GuestTeacherEntity expectedTeacher2 = new GuestTeacherEntity();
+        final UserEntity user2 = new UserEntity();
+        user2.setId(UUID.randomUUID());
+        expectedTeacher2.setId(teacherId);
+        expectedTeacher2.setSurname(surname);
+        expectedTeacher2.setUser(user2);
+
+        doReturn(List.of(expectedTeacher, expectedTeacher2)).when(repository).findBySurnameLike(surname);
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+
+        List<GuestTeacher> guestTeacher = service.getTeacherByName(surname);
+
+        assertEquals(1, guestTeacher.size());
+    }
+
+    @Test
     void givenGetTeacherById_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
         final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
@@ -127,6 +156,23 @@ class GuestTeacherServiceTest {
         assertInstanceOf(Optional.class, teacher);
         assertTrue(teacher.isEmpty());
         verifyNoMoreInteractions(mapper);
+    }
+
+    @Test
+    void givenGetNotOwnedTeacherById_thenShouldReturnEmptyOptional() {
+        final UUID teacherId = UUID.randomUUID();
+        final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
+        final UUID userId = UUID.randomUUID();
+        final UserEntity user = new UserEntity();
+        user.setId(userId);
+        expectedTeacher.setId(teacherId);
+        expectedTeacher.setUser(user);
+
+        doReturn(Optional.of(expectedTeacher)).when(repository).findByIdOptional(teacherId);
+
+        Optional<GuestTeacher> teacher = service.getTeacherById(teacherId);
+
+        assertTrue(teacher.isEmpty());
     }
 
     @Test
@@ -357,6 +403,31 @@ class GuestTeacherServiceTest {
         then(mapper).shouldHaveNoInteractions();
 
         assertThrows(NotFoundException.class, () -> service.saveOrUpdate(guestTeacher, userId));
+    }
+
+    @Test
+    void givenUpdateNotOwnedTeacher_thenShouldThrowUnauthorizedException() {
+        final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final String surname = RandomStringUtils.randomAlphabetic(10);
+        final String firstName = RandomStringUtils.randomAlphabetic(10);
+
+        final GuestTeacher guestTeacher = new GuestTeacher();
+        guestTeacher.setId(teacherId);
+        guestTeacher.setFirstName(firstName);
+        guestTeacher.setSurname(surname);
+        guestTeacher.setAddress(RandomStringUtils.randomAlphabetic(10));
+        guestTeacher.setPostalCode(RandomStringUtils.randomAlphabetic(6));
+
+        final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
+        final UserEntity user = new UserEntity();
+        user.setId(userId);
+        entity.setUser(user);
+
+        doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
+        doReturn(UUID.randomUUID()).when(tokenHelper).getCurrentUserId();
+
+        assertThrows(UnauthorizedException.class, () -> service.saveOrUpdate(guestTeacher, userId));
     }
 
     private GuestTeacher createGuestTeacher(UUID id, String firstName, String surname, String address, String postalCode, String locale) {
