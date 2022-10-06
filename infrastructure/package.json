@@ -10,9 +10,9 @@
     "test": "jest",
     "cdk": "cdk",
     "cdk:list": "cdk ls",
-    "cdk:synth:acc": "cdk synth --context environment=acc",
-    "cdk:deploy:acc": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack --profile=littil-cdk-acc-backend --require-approval=never --context environment=acc",
-    "cdk:deploy:acc:ci": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack --require-approval=never --context environment=acc"
+    "cdk:synth:staging": "cdk synth --context environment=acc",
+    "cdk:deploy:staging": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack --profile=littil-cdk-staging-backend --require-approval=never --context environment=acc",
+    "cdk:deploy:staging:ci": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack --require-approval=never --context environment=acc"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",

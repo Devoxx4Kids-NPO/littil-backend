@@ -10,7 +10,7 @@ export class CertificateStack extends cdk.Stack {
         super(scope, id, props);
 
         const certificateProps = {
-            domainName: 'api.acc.littil.org',
+            domainName: 'api.staging.littil.org',
             validation: CertificateValidation.fromDns(),
         };
         this.certificate = new Certificate(this, 'ApiCertificate', certificateProps);
