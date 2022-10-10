@@ -40,14 +40,15 @@ public class GuestTeacherService {
     private final TokenHelper tokenHelper;
 
 
-    public List<GuestTeacher> getTeacherByName(@NonNull final String name) {
-        UUID userId = tokenHelper.getCurrentUserId();
-        return repository.findBySurnameLike(name).stream()
-                .filter(t -> t.getUser().getId().equals(userId))
-                .map(mapper::toDomain).toList();
+    public List<GuestTeacherPublic> getTeacherByName(@NonNull final String name) {
+        return repository.findBySurnameLike(name).stream().map(mapper::toPublicDomain).toList();
     }
 
-    public Optional<GuestTeacher> getTeacherById(@NonNull final UUID id) {
+    public Optional<GuestTeacherPublic> getTeacherById(@NonNull final UUID id) {
+        return repository.findByIdOptional(id).map(mapper::toPublicDomain);
+    }
+
+    public Optional<GuestTeacher> getUserOwnedTeacherById(@NonNull final UUID id) {
         UUID userId = tokenHelper.getCurrentUserId();
         return repository.findByIdOptional(id).stream()
                 .filter(t -> t.getUser().getId().equals(userId))

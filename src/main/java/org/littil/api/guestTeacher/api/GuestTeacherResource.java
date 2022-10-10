@@ -20,13 +20,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -83,7 +77,29 @@ public class GuestTeacherResource {
             description = "Teacher with specific Id was not found."
     )
     public Response get(@Parameter(name = "id", required = true) @PathParam("id") final UUID id) {
-        Optional<GuestTeacher> teacher = guestTeacherService.getTeacherById(id);
+        Optional<GuestTeacherPublic> teacher = guestTeacherService.getTeacherById(id);
+
+        return teacher.map(r -> Response.ok(r).build())
+                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
+    }
+
+    @GET
+    @Path("/owned/{id}")
+    @Operation(summary = "Fetch a specific teacher by Id which is owned by the user")
+    @APIResponse(
+            responseCode = "200",
+            description = "Teacher with Id found.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = GuestTeacher.class)
+            )
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "Teacher with specific Id was not found."
+    )
+    public Response getTeacherOwnedByUser(@Parameter(name = "id", required = true) @PathParam("id") final UUID id) {
+        Optional<GuestTeacher> teacher = guestTeacherService.getUserOwnedTeacherById(id);
 
         return teacher.map(r -> Response.ok(r).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
@@ -105,7 +121,7 @@ public class GuestTeacherResource {
             description = "Teacher with specific name was not found."
     )
     public Response getByName(@Parameter(name = "name", required = true) @PathParam("name") final String name) {
-        List<GuestTeacher> guestTeachers = guestTeacherService.getTeacherByName(name);
+        List<GuestTeacherPublic> guestTeachers = guestTeacherService.getTeacherByName(name);
         return Response.ok(guestTeachers).build();
     }
 
