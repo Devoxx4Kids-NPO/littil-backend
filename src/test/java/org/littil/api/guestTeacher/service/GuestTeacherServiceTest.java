@@ -5,7 +5,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
-import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
@@ -47,9 +46,6 @@ class GuestTeacherServiceTest {
     @InjectMock
     GuestTeacherMapper mapper;
 
-    @InjectMock
-    TokenHelper tokenHelper;
-
     @Test
     void givenGetTeacherByName_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
@@ -67,7 +63,6 @@ class GuestTeacherServiceTest {
 
         doReturn(List.of(expectedTeacher)).when(repository).findBySurnameLike(surname);
         doReturn(mappedGuestTeacher).when(mapper).toPublicDomain(expectedTeacher);
-        doReturn(userId).when(tokenHelper).getCurrentUserId();
 
         List<GuestTeacherPublic> guestTeacher = service.getTeacherByName(surname);
 
@@ -103,7 +98,6 @@ class GuestTeacherServiceTest {
         final GuestTeacherPublic mappedGuestTeacher = new GuestTeacherPublic();
         mappedGuestTeacher.setId(teacherId);
 
-        doReturn(userId).when(tokenHelper).getCurrentUserId();
         doReturn(Optional.of(expectedTeacher)).when(repository).findByIdOptional(teacherId);
         doReturn(mappedGuestTeacher).when(mapper).toPublicDomain(expectedTeacher);
 
@@ -142,11 +136,10 @@ class GuestTeacherServiceTest {
         final GuestTeacher mappedGuestTeacher = new GuestTeacher();
         mappedGuestTeacher.setId(teacherId);
 
-        doReturn(userId).when(tokenHelper).getCurrentUserId();
         doReturn(Optional.of(expectedTeacher)).when(repository).findByIdOptional(teacherId);
         doReturn(mappedGuestTeacher).when(mapper).toDomain(expectedTeacher);
 
-        Optional<GuestTeacher> teacher = service.getUserOwnedTeacherById(teacherId);
+        Optional<GuestTeacher> teacher = service.getUserOwnedTeacherById(teacherId, userId);
 
         assertEquals(Optional.of(mappedGuestTeacher), teacher);
     }
@@ -163,7 +156,7 @@ class GuestTeacherServiceTest {
 
         doReturn(Optional.of(expectedTeacher)).when(repository).findByIdOptional(teacherId);
 
-        Optional<GuestTeacher> teacher = service.getUserOwnedTeacherById(teacherId);
+        Optional<GuestTeacher> teacher = service.getUserOwnedTeacherById(teacherId, UUID.randomUUID());
 
         assertTrue(teacher.isEmpty());
     }
@@ -401,7 +394,6 @@ class GuestTeacherServiceTest {
     @Test
     void givenUpdateNotOwnedTeacher_thenShouldThrowUnauthorizedException() {
         final UUID teacherId = UUID.randomUUID();
-        final UUID userId = UUID.randomUUID();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
 
@@ -414,13 +406,12 @@ class GuestTeacherServiceTest {
 
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
         final UserEntity user = new UserEntity();
-        user.setId(userId);
+        user.setId(UUID.randomUUID());
         entity.setUser(user);
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
-        doReturn(UUID.randomUUID()).when(tokenHelper).getCurrentUserId();
 
-        assertThrows(UnauthorizedException.class, () -> service.saveOrUpdate(guestTeacher, userId));
+        assertThrows(UnauthorizedException.class, () -> service.saveOrUpdate(guestTeacher, UUID.randomUUID()));
     }
 
     private GuestTeacher createGuestTeacher(UUID id, String firstName, String surname, String address, String postalCode, String locale) {

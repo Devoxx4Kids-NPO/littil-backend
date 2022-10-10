@@ -99,7 +99,7 @@ public class GuestTeacherResource {
             description = "Teacher with specific Id was not found."
     )
     public Response getTeacherOwnedByUser(@Parameter(name = "id", required = true) @PathParam("id") final UUID id) {
-        Optional<GuestTeacher> teacher = guestTeacherService.getUserOwnedTeacherById(id);
+        Optional<GuestTeacher> teacher = guestTeacherService.getUserOwnedTeacherById(id, tokenHelper.getCurrentUserId());
 
         return teacher.map(r -> Response.ok(r).build())
                 .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());

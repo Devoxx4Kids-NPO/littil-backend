@@ -37,7 +37,6 @@ public class GuestTeacherService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final AuthenticationService authenticationService;
-    private final TokenHelper tokenHelper;
 
 
     public List<GuestTeacherPublic> getTeacherByName(@NonNull final String name) {
@@ -48,8 +47,7 @@ public class GuestTeacherService {
         return repository.findByIdOptional(id).map(mapper::toPublicDomain);
     }
 
-    public Optional<GuestTeacher> getUserOwnedTeacherById(@NonNull final UUID id) {
-        UUID userId = tokenHelper.getCurrentUserId();
+    public Optional<GuestTeacher> getUserOwnedTeacherById(@NonNull final UUID id, @NonNull UUID userId) {
         return repository.findByIdOptional(id).stream()
                 .filter(t -> t.getUser().getId().equals(userId))
                 .map(mapper::toDomain).findAny();
@@ -61,7 +59,7 @@ public class GuestTeacherService {
 
     @Transactional
     public GuestTeacher saveOrUpdate(@Valid GuestTeacher guestTeacher, UUID userId) {
-        return Objects.isNull(guestTeacher.getId()) ? saveTeacher(guestTeacher, userId) : update(guestTeacher);
+        return Objects.isNull(guestTeacher.getId()) ? saveTeacher(guestTeacher, userId) : update(guestTeacher, userId);
     }
 
     private GuestTeacher saveTeacher(@Valid GuestTeacher guestTeacher, UUID userId) {
@@ -94,8 +92,7 @@ public class GuestTeacherService {
         authenticationService.removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, id);
     }
 
-    private GuestTeacher update(@Valid GuestTeacher guestTeacher) {
-        UUID userId = tokenHelper.getCurrentUserId();
+    private GuestTeacher update(@Valid GuestTeacher guestTeacher, UUID userId) {
         GuestTeacherEntity entity = repository.findByIdOptional(guestTeacher.getId())
                 .orElseThrow(() -> new NotFoundException("No Teacher found for Id"));
 
