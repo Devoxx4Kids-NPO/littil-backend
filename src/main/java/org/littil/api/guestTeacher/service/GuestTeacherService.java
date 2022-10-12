@@ -4,7 +4,6 @@ import io.quarkus.security.UnauthorizedException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
@@ -20,6 +19,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Objects;
@@ -45,12 +45,6 @@ public class GuestTeacherService {
 
     public Optional<GuestTeacherPublic> getTeacherById(@NonNull final UUID id) {
         return repository.findByIdOptional(id).map(mapper::toPublicDomain);
-    }
-
-    public Optional<GuestTeacher> getUserOwnedTeacherById(@NonNull final UUID id, @NonNull UUID userId) {
-        return repository.findByIdOptional(id).stream()
-                .filter(t -> t.getUser().getId().equals(userId))
-                .map(mapper::toDomain).findAny();
     }
 
     public List<GuestTeacherPublic> findAll() {
@@ -103,4 +97,17 @@ public class GuestTeacherService {
         repository.persist(entity);
         return mapper.updateDomainFromEntity(entity, guestTeacher);
     }
+
+    public UUID getUserIdByTeacherId(@NonNull final UUID teacherId) {
+        Optional<GuestTeacherEntity> teacherOptional = repository.findByIdOptional(teacherId);
+        if(teacherOptional.isEmpty()) {
+            throw new NotFoundException();
+        }
+        UserEntity user = teacherOptional.get().getUser();
+        if(Objects.isNull(user)) {
+            throw new InternalServerErrorException("No user found for GuestTeacherEntity with id:" + teacherId);
+        }
+        return user.getId();
+    }
+
 }

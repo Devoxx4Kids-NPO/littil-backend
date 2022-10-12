@@ -19,5 +19,11 @@ public class GuestTeacherPublic {
 
     private String prefix;
 
+    private String address;
+
+    private String postalCode;
+
+    private String locale;
+
     private EnumSet<DayOfWeek> availability;
 }
