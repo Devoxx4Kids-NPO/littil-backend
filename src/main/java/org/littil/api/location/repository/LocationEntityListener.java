@@ -18,7 +18,7 @@ public class LocationEntityListener {
     @PrePersist
     @PreUpdate
     public void prePersistOrUpdate(final LocationEntity location) {
-        final Optional<Coordinates> coordinates = coordinatesService.getCoordinates(location.getPostalCode(), location.getAddress());
+        final Optional<Coordinates> coordinates = coordinatesService.getCoordinates(location.getPostalCode());
         coordinates.ifPresent(c -> {
             location.setLatitude(c.getLat());
             location.setLongitude(c.getLon());

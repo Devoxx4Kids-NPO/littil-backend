@@ -13,13 +13,12 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auth.service.AuthenticationService;
-import org.littil.api.coordinates.service.Coordinates;
-import org.littil.api.coordinates.service.CoordinatesService;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
+import org.littil.mock.coordinates.service.WireMockSearchService;
 
 import java.time.DayOfWeek;
 import java.util.EnumSet;
@@ -38,13 +37,11 @@ import static org.mockito.Mockito.doReturn;
 @QuarkusTest
 @TestHTTPEndpoint(GuestTeacherResource.class)
 @QuarkusTestResource(APIManagementMock.class)
+@QuarkusTestResource(WireMockSearchService.class)
 class GuestTeacherResourceTest {
 
     @InjectSpy
     UserService userService;
-
-    @InjectMock
-    CoordinatesService coordinatesService;
 
     @InjectMock
     AuthenticationService authenticationService;
@@ -295,12 +292,6 @@ class GuestTeacherResourceTest {
     private GuestTeacher saveTeacher(GuestTeacherPostResource teacher) {
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
-
-        Coordinates coordinates = Coordinates.builder()
-                .lat(0.0)
-                .lon(0.0)
-                .build();
-        doReturn(Optional.of(coordinates)).when(coordinatesService).getCoordinates(any(), any());
 
         doNothing().when(authenticationService).addAuthorization(any(),any(), any());
 

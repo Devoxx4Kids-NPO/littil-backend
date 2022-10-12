@@ -17,12 +17,12 @@ public class CoordinatesService {
     @RestClient
     SearchService coordinatesService;
 
-    public Optional<Coordinates> getCoordinates(@NotEmpty final String postalCode, @NotEmpty final String address) {
-        final Set<Coordinates> coordinatesSet = coordinatesService.getCoordinatesByAddress(postalCode, address, "json");
-
+    public Optional<Coordinates> getCoordinates(@NotEmpty final String postalCode) {
+        final Set<Coordinates> coordinatesSet = coordinatesService.getCoordinatesByAddress(postalCode, "json");
+        
         if (coordinatesSet.isEmpty()) {
-            log.warn(String.format("Coordinates could not be fetched with postal code: %s and address: %s." +
-                    "This implies this address will not be found when searching within a radius.", postalCode, address));
+            log.warn(String.format("Coordinates could not be fetched with postal code: %s." +
+                    "This implies this address will not be found when searching within a radius.", postalCode));
         }
 
         return coordinatesSet.stream().findFirst();
