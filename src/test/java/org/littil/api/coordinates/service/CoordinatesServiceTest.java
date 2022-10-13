@@ -21,33 +21,24 @@ class CoordinatesServiceTest {
 
     @Test
     void givenGetCoordinates_thenShouldReturnCoordinates() {
-        Optional<Coordinates> coordinates = service.getCoordinates("1234AB", "Address");
+        Optional<Coordinates> coordinates = service.getCoordinates("1234AB");
         assertThat(coordinates).isPresent();
     }
 
     @Test
     void givenGetCoordinatesNotFound_thenShouldNotBreakPersistenceFlow() {
-        Optional<Coordinates> coordinates = service.getCoordinates("1234AB", WireMockSearchService.NOT_FOUND);
+        Optional<Coordinates> coordinates = service.getCoordinates(WireMockSearchService.NOT_FOUND);
         assertThat(coordinates).isNotNull();
     }
 
     @Test
     void givenGetCoordinatesWithNullPostalCode_thenShouldThrowConstraintViolationException() {
-        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates(null, "address"));
+        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates(null));
     }
 
     @Test
     void givenGetCoordinatesWithBlankPostalCode_thenShouldThrowConstraintViolationException() {
-        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates("", "address"));
+        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates(""));
     }
 
-    @Test
-    void givenGetCoordinatesWithBlankAddress_thenShouldThrowConstraintViolationException() {
-        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates("1234AB", ""));
-    }
-
-    @Test
-    void givenGetCoordinatesWithNullAddress_thenShouldThrowConstraintViolationException() {
-        assertThrows(ConstraintViolationException.class, () -> service.getCoordinates("1234AB", null));
-    }
 }
