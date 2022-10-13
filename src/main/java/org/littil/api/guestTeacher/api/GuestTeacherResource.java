@@ -13,7 +13,6 @@ import org.littil.api.auth.authz.GuestTeacherSecured;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.guestTeacher.service.GuestTeacherMapper;
-import org.littil.api.guestTeacher.service.GuestTeacherPublic;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
 
 import javax.enterprise.context.RequestScoped;
@@ -56,7 +55,7 @@ public class GuestTeacherResource {
             )
     )
     public Response list() {
-        List<GuestTeacherPublic> guestTeachers = guestTeacherService.findAll();
+        List<GuestTeacher> guestTeachers = guestTeacherService.findAll();
 
         return Response.ok(guestTeachers).build();
     }
@@ -77,15 +76,15 @@ public class GuestTeacherResource {
             description = "Teacher with specific Id was not found."
     )
     public Response get(@Parameter(name = "id", required = true) @PathParam("id") final UUID teacherId) {
-        Optional<GuestTeacherPublic> teacher = guestTeacherService.getTeacherById(teacherId);
+        Optional<GuestTeacher> teacher = guestTeacherService.getTeacherById(teacherId);
         UUID userId =  guestTeacherService.getUserIdByTeacherId(teacherId);
 
         if(teacher.isEmpty()) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        if(tokenHelper.getCurrentUserId() != userId) {
-            teacher = Optional.of(mapper.toPurgedPublicDomain(teacher.get()));
+        if(!tokenHelper.getCurrentUserId().equals(userId)) {
+            teacher = Optional.of(mapper.toPurgedDomain(teacher.get()));
         }
         return Response.ok(teacher).build();
     }

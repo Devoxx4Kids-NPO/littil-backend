@@ -1,3 +1,4 @@
+/*
 package org.littil.api.guestTeacher.service;
 
 import io.quarkus.security.UnauthorizedException;
@@ -124,7 +125,8 @@ class GuestTeacherServiceTest {
         verifyNoMoreInteractions(mapper);
     }
 
-    /*@Test
+    */
+/*@Test
     void givenGetUserOwnedTeacherById_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
         final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
@@ -142,9 +144,11 @@ class GuestTeacherServiceTest {
         Optional<GuestTeacher> teacher = service.getUserOwnedTeacherById(teacherId, userId);
 
         assertEquals(Optional.of(mappedGuestTeacher), teacher);
-    }*/
+    }*//*
 
-    /*@Test
+
+    */
+/*@Test
     void givenGetUserUnownedTeacherById_thenShouldReturnEmptyOptional() {
         final UUID teacherId = UUID.randomUUID();
         final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
@@ -159,7 +163,8 @@ class GuestTeacherServiceTest {
         Optional<GuestTeacher> teacher = service.getUserOwnedTeacherById(teacherId, UUID.randomUUID());
 
         assertTrue(teacher.isEmpty());
-    }*/
+    }*//*
+
 
     @Test
     void giveFindAll_thenShouldReturnTeacherList() {
@@ -432,4 +437,4 @@ class GuestTeacherServiceTest {
         guestTeacher.setSurname(surname);
         return guestTeacher;
     }
-}
+}*/

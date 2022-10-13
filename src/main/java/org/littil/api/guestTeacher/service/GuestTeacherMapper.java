@@ -14,9 +14,9 @@ public interface GuestTeacherMapper {
     @Mapping(target = "address", ignore = true)
     @Mapping(target = "postalCode", ignore = true)
     @Mapping(target = "locale", ignore = true)
-    GuestTeacherPublic toPurgedPublicDomain(GuestTeacherPublic guestTeacher);
+    GuestTeacher toPurgedDomain(GuestTeacher guestTeacher);
 
-    GuestTeacherPublic toPublicDomain(GuestTeacherEntity guestTeacherEntity);
+    GuestTeacher toPurgedDomain(GuestTeacherEntity guestTeacherEntity);
 
     @Mapping(source = "location.address", target = "address")
     @Mapping(source = "location.postalCode", target = "postalCode")

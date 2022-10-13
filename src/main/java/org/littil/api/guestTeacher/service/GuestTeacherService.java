@@ -38,17 +38,12 @@ public class GuestTeacherService {
     private final UserMapper userMapper;
     private final AuthenticationService authenticationService;
 
-
-    public List<GuestTeacherPublic> getTeacherByName(@NonNull final String name) {
-        return repository.findBySurnameLike(name).stream().map(mapper::toPublicDomain).toList();
+    public Optional<GuestTeacher> getTeacherById(@NonNull final UUID id) {
+        return repository.findByIdOptional(id).map(mapper::toDomain);
     }
 
-    public Optional<GuestTeacherPublic> getTeacherById(@NonNull final UUID id) {
-        return repository.findByIdOptional(id).map(mapper::toPublicDomain);
-    }
-
-    public List<GuestTeacherPublic> findAll() {
-        return repository.listAll().stream().map(mapper::toPublicDomain).toList();
+    public List<GuestTeacher> findAll() {
+        return repository.listAll().stream().map(mapper::toPurgedDomain).toList();
     }
 
     @Transactional
