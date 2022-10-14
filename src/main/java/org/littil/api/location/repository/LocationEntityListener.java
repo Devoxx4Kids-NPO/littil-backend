@@ -2,6 +2,7 @@ package org.littil.api.location.repository;
 
 import org.littil.api.coordinates.service.Coordinates;
 import org.littil.api.coordinates.service.CoordinatesService;
+import org.littil.api.location.LocationConstants;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -20,8 +21,12 @@ public class LocationEntityListener {
     public void prePersistOrUpdate(final LocationEntity location) {
         final Optional<Coordinates> coordinates = coordinatesService.getCoordinates(location.getPostalCode(), location.getAddress());
         coordinates.ifPresent(c -> {
-            location.setLatitude(c.getLat());
-            location.setLongitude(c.getLon());
+            location.setLatitude(convertToIntForAlgorithm(c.getLat()));
+            location.setLongitude(convertToIntForAlgorithm(c.getLon()));
         });
+    }
+
+    private int convertToIntForAlgorithm(double coordinate) {
+        return (int) (coordinate * LocationConstants.CONVERT_COORDINATE_RATIO);
     }
 }

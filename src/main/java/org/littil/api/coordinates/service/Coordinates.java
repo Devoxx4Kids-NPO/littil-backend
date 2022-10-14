@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class Coordinates {
-    private Double lat;
-    private Double lon;
+    private double lat;
+    private double lon;
     private String display_name;
 }

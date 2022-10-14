@@ -7,6 +7,7 @@ import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.contactPerson.repository.ContactPersonRepository;
 import org.littil.api.exception.ServiceException;
+import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
@@ -44,6 +45,11 @@ public class SchoolService {
 
     public Optional<School> getSchoolById(@NonNull final UUID id) {
         return repository.findByIdOptional(id).map(mapper::toDomain);
+    }
+
+    public Optional<School> getSchoolByLocation(@NonNull final UUID locationId) {
+        LocationEntity location = locationRepository.findById(locationId);
+        return repository.findByLocation(location).map(mapper::toDomain);
     }
 
     public List<School> findAll() {
