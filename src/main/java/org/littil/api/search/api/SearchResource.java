@@ -59,7 +59,7 @@ public class SearchResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        List<SearchResult> searchResults = searchService.getSearchResultsBySearch(latitude, longitude,
+        List<SearchResult> searchResults = searchService.getSearchResults(latitude, longitude,
                 expectedUserType.get());
 
         return Response.ok(searchResults).build();

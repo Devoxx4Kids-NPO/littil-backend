@@ -27,8 +27,8 @@ public class SearchService {
     private static final int MAX_DISTANCE = 10000;
     private static final int LIMIT = 100;
 
-    public List<SearchResult> getSearchResultsBySearch(final double latitude, final double longitude,
-                                                       UserType expectedUserType) {
+    public List<SearchResult> getSearchResults(final double latitude, final double longitude,
+                                               UserType expectedUserType) {
         String condition = getCondition(expectedUserType);
 
         List<LocationSearchResult> searchResults = searchRepository.findLocationsOrderedByDistance(
