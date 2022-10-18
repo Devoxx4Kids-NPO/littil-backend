@@ -7,6 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
+import java.util.Optional;
 
 @ApplicationScoped
 public class LocationEntityListener {
@@ -16,9 +17,11 @@ public class LocationEntityListener {
 
     @PrePersist
     @PreUpdate
-    public void prePersistOrUpdate(LocationEntity location) {
-        Coordinates coordinates = coordinatesService.getCoordinates(location.getPostalCode(), location.getAddress());
-        location.setLatitude(coordinates.getLat());
-        location.setLongitude(coordinates.getLon());
+    public void prePersistOrUpdate(final LocationEntity location) {
+        final Optional<Coordinates> coordinates = coordinatesService.getCoordinates(location.getPostalCode());
+        coordinates.ifPresent(c -> {
+            location.setLatitude(c.getLat());
+            location.setLongitude(c.getLon());
+        });
     }
 }
