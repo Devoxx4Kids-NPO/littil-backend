@@ -1,9 +1,8 @@
-/*
 package org.littil.api.guestTeacher.service;
 
-import io.quarkus.security.UnauthorizedException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.junit.mockito.InjectSpy;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auth.service.AuthenticationService;
@@ -19,8 +18,12 @@ import org.littil.api.user.service.UserService;
 
 import javax.inject.Inject;
 import javax.persistence.PersistenceException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,65 +47,21 @@ class GuestTeacherServiceTest {
     @InjectMock
     AuthenticationService authenticationService;
 
-    @InjectMock
+    @InjectSpy
     GuestTeacherMapper mapper;
-
-    @Test
-    void givenGetTeacherByName_thenShouldReturnTeacher() {
-        final UUID teacherId = UUID.randomUUID();
-        final UUID userId = UUID.randomUUID();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
-        final UserEntity user = new UserEntity();
-        user.setId(userId);
-        expectedTeacher.setId(teacherId);
-        expectedTeacher.setSurname(surname);
-        expectedTeacher.setUser(user);
-        final GuestTeacherPublic mappedGuestTeacher = new GuestTeacherPublic();
-        mappedGuestTeacher.setId(teacherId);
-        mappedGuestTeacher.setSurname(surname);
-
-        doReturn(List.of(expectedTeacher)).when(repository).findBySurnameLike(surname);
-        doReturn(mappedGuestTeacher).when(mapper).toPublicDomain(expectedTeacher);
-
-        List<GuestTeacherPublic> guestTeacher = service.getTeacherByName(surname);
-
-        assertEquals(List.of(mappedGuestTeacher), guestTeacher);
-    }
-
-    @Test
-    void givenGetTeacherByNullName_thenShouldThrowNullPointer() {
-        assertThrows(NullPointerException.class, () -> service.getTeacherByName(null));
-    }
-
-    @Test
-    void givenGetTeacherByUnknownName_thenShouldReturnEmptyList() {
-        final String unknownName = RandomStringUtils.randomAlphabetic(10);
-
-        doReturn(Collections.emptyList()).when(repository).findBySurnameLike(unknownName);
-
-        final List<GuestTeacherPublic> guestTeacher = service.getTeacherByName(unknownName);
-
-        assertTrue(guestTeacher.isEmpty());
-        verifyNoMoreInteractions(mapper);
-    }
 
     @Test
     void givenGetTeacherById_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
         final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
-        final UUID userId = UUID.randomUUID();
-        final UserEntity user = new UserEntity();
-        user.setId(userId);
         expectedTeacher.setId(teacherId);
-        expectedTeacher.setUser(user);
-        final GuestTeacherPublic mappedGuestTeacher = new GuestTeacherPublic();
+        final GuestTeacher mappedGuestTeacher = new GuestTeacher();
         mappedGuestTeacher.setId(teacherId);
 
         doReturn(Optional.of(expectedTeacher)).when(repository).findByIdOptional(teacherId);
-        doReturn(mappedGuestTeacher).when(mapper).toPublicDomain(expectedTeacher);
+        doReturn(mappedGuestTeacher).when(mapper).toDomain(expectedTeacher);
 
-        Optional<GuestTeacherPublic> teacher = service.getTeacherById(teacherId);
+        Optional<GuestTeacher> teacher = service.getTeacherById(teacherId);
 
         assertEquals(Optional.of(mappedGuestTeacher), teacher);
     }
@@ -118,65 +77,57 @@ class GuestTeacherServiceTest {
 
         doReturn(Optional.empty()).when(repository).findByIdOptional(unknownId);
 
-        final Optional<GuestTeacherPublic> teacher = service.getTeacherById(unknownId);
+        final Optional<GuestTeacher> teacher = service.getTeacherById(unknownId);
 
         assertInstanceOf(Optional.class, teacher);
         assertTrue(teacher.isEmpty());
         verifyNoMoreInteractions(mapper);
     }
 
-    */
-/*@Test
-    void givenGetUserOwnedTeacherById_thenShouldReturnTeacher() {
-        final UUID teacherId = UUID.randomUUID();
-        final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
-        final UUID userId = UUID.randomUUID();
-        final UserEntity user = new UserEntity();
-        user.setId(userId);
-        expectedTeacher.setId(teacherId);
-        expectedTeacher.setUser(user);
-        final GuestTeacher mappedGuestTeacher = new GuestTeacher();
-        mappedGuestTeacher.setId(teacherId);
-
-        doReturn(Optional.of(expectedTeacher)).when(repository).findByIdOptional(teacherId);
-        doReturn(mappedGuestTeacher).when(mapper).toDomain(expectedTeacher);
-
-        Optional<GuestTeacher> teacher = service.getUserOwnedTeacherById(teacherId, userId);
-
-        assertEquals(Optional.of(mappedGuestTeacher), teacher);
-    }*//*
-
-
-    */
-/*@Test
-    void givenGetUserUnownedTeacherById_thenShouldReturnEmptyOptional() {
-        final UUID teacherId = UUID.randomUUID();
-        final GuestTeacherEntity expectedTeacher = new GuestTeacherEntity();
-        final UUID userId = UUID.randomUUID();
-        final UserEntity user = new UserEntity();
-        user.setId(userId);
-        expectedTeacher.setId(teacherId);
-        expectedTeacher.setUser(user);
-
-        doReturn(Optional.of(expectedTeacher)).when(repository).findByIdOptional(teacherId);
-
-        Optional<GuestTeacher> teacher = service.getUserOwnedTeacherById(teacherId, UUID.randomUUID());
-
-        assertTrue(teacher.isEmpty());
-    }*//*
-
-
     @Test
     void giveFindAll_thenShouldReturnTeacherList() {
         final List<GuestTeacherEntity> expectedTeacherEntities = Collections.nCopies(3, new GuestTeacherEntity());
-        final List<GuestTeacherPublic> expectedGuestTeachers = expectedTeacherEntities.stream().map(mapper::toPublicDomain).toList();
+        final List<GuestTeacher> expectedGuestTeachers = expectedTeacherEntities.stream().map(mapper::toDomain).toList();
 
         doReturn(expectedTeacherEntities).when(repository).listAll();
 
-        List<GuestTeacherPublic> guestTeachers = service.findAll();
+        List<GuestTeacher> guestTeachers = service.findAll();
 
         assertEquals(3, guestTeachers.size());
         assertEquals(expectedGuestTeachers, guestTeachers);
+    }
+
+    @Test
+    void giveFindAll_thenShouldReturPurgedTeachers() {
+        final UUID id = UUID.randomUUID();
+        final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final String surname = RandomStringUtils.randomAlphabetic(10);
+        final String address = RandomStringUtils.randomAlphabetic(10);
+        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String country = RandomStringUtils.randomAlphabetic(10);
+
+        final GuestTeacherEntity guestTeacherEntity = createGuestTeacherEntity(id, firstName, surname );
+        final LocationEntity location = new LocationEntity();
+        location.setAddress(address);
+        location.setPostalCode(postalCode);
+        location.setCountry(country);
+        guestTeacherEntity.setLocation(location);
+
+        final List<GuestTeacherEntity> expectedTeacherEntities = List.of(guestTeacherEntity);
+        final List<GuestTeacher> expectedGuestTeachers = expectedTeacherEntities.stream().map(mapper::toPurgedDomain).toList();
+
+        doReturn(expectedTeacherEntities).when(repository).listAll();
+
+        List<GuestTeacher> guestTeachers = service.findAll();
+
+        assertThat(guestTeachers).isNotEmpty();
+
+        GuestTeacher guestTeacher = guestTeachers.get(0);
+
+        assertEquals(expectedGuestTeachers, guestTeachers);
+        assertNull(guestTeacher.getAddress());
+        assertNull(guestTeacher.getPostalCode());
+        assertNull(guestTeacher.getLocale());
     }
 
     @Test
@@ -185,7 +136,7 @@ class GuestTeacherServiceTest {
 
         doReturn(expectedTeacherEntities).when(repository).listAll();
 
-        List<GuestTeacherPublic> guestTeachers = service.findAll();
+        List<GuestTeacher> guestTeachers = service.findAll();
 
         assertThat(guestTeachers).isEmpty();
         then(mapper).shouldHaveNoInteractions();
@@ -397,26 +348,45 @@ class GuestTeacherServiceTest {
     }
 
     @Test
-    void givenUpdateNotOwnedTeacher_thenShouldThrowUnauthorizedException() {
+    void givenGetUserIdByTeacherId_thenShouldReturnTeacherId() {
         final UUID teacherId = UUID.randomUUID();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final UUID userId = UUID.randomUUID();
 
-        final GuestTeacher guestTeacher = new GuestTeacher();
-        guestTeacher.setId(teacherId);
-        guestTeacher.setFirstName(firstName);
-        guestTeacher.setSurname(surname);
-        guestTeacher.setAddress(RandomStringUtils.randomAlphabetic(10));
-        guestTeacher.setPostalCode(RandomStringUtils.randomAlphabetic(6));
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
 
-        final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
-        final UserEntity user = new UserEntity();
-        user.setId(UUID.randomUUID());
-        entity.setUser(user);
+        GuestTeacherEntity guestTeacherEntity = new GuestTeacherEntity();
+        guestTeacherEntity.setId(teacherId);
+        guestTeacherEntity.setUser(userEntity);
 
-        doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
+        doReturn(Optional.of(guestTeacherEntity)).when(repository).findByIdOptional(teacherId);
 
-        assertThrows(UnauthorizedException.class, () -> service.saveOrUpdate(guestTeacher, UUID.randomUUID()));
+        UUID foundTeacherId = service.getUserIdByTeacherId(teacherId);
+
+        assertThat(foundTeacherId).isEqualTo(userId);
+    }
+
+    @Test
+    void givenGetUserIdByUnknownTeacherId_thenShouldThrowNotFoundException() {
+        UUID teacherId = UUID.randomUUID();
+
+        doReturn(Optional.empty()).when(repository).findByIdOptional(teacherId);
+
+        assertThrows(NotFoundException.class, () -> service.getUserIdByTeacherId(teacherId));
+    }
+
+    @Test
+    void givenGetUnknownUserByTeacherId_thenShouldThrowInternalServerErrorException() {
+        final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(userId);
+        GuestTeacherEntity guestTeacherEntity = new GuestTeacherEntity();
+        guestTeacherEntity.setId(teacherId);
+
+        doReturn(Optional.of(guestTeacherEntity)).when(repository).findByIdOptional(teacherId);
+
+        assertThrows(InternalServerErrorException.class, () -> service.getUserIdByTeacherId(teacherId));
     }
 
     private GuestTeacher createGuestTeacher(UUID id, String firstName, String surname, String address, String postalCode, String locale) {
@@ -437,4 +407,4 @@ class GuestTeacherServiceTest {
         guestTeacher.setSurname(surname);
         return guestTeacher;
     }
-}*/
+}

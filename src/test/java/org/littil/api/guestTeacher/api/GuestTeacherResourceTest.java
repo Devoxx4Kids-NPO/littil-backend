@@ -1,4 +1,3 @@
-/*
 package org.littil.api.guestTeacher.api;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -21,15 +20,14 @@ import org.littil.api.exception.ErrorResponse;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
 import org.littil.api.guestTeacher.service.GuestTeacher;
-import org.littil.api.guestTeacher.service.GuestTeacherPublic;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
+import org.littil.mock.coordinates.service.WireMockSearchService;
 
 import javax.inject.Inject;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +42,7 @@ import static org.mockito.Mockito.doReturn;
 @QuarkusTest
 @TestHTTPEndpoint(GuestTeacherResource.class)
 @QuarkusTestResource(APIManagementMock.class)
+@QuarkusTestResource(WireMockSearchService.class)
 class GuestTeacherResourceTest {
 
     @InjectSpy
@@ -90,12 +89,13 @@ class GuestTeacherResourceTest {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
 
-        GuestTeacherPublic got = given()
+        GuestTeacher got = given()
                 .when()
                 .get("/{id}", saved.getId())
                 .then()
                 .statusCode(200)
-                .extract().as(GuestTeacherPublic.class);
+                .extract().as(GuestTeacher.class);
+
         assertThat(saved).usingRecursiveComparison()
                 .ignoringFields("address", "postalCode", "locale")
                 .isEqualTo(got);
@@ -111,71 +111,6 @@ class GuestTeacherResourceTest {
                 .get("/{id}", UUID.randomUUID())
                 .then()
                 .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(user = "littil", roles = "viewer")
-    @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenGetUserOwnedTeacherById_thenShouldReturnSuccessfully() {
-        GuestTeacherPostResource teacher = getGuestTeacherPostResource();
-        GuestTeacher saved = saveTeacher(teacher);
-
-        mockGetCurrentUserId(saved.getId());
-
-        GuestTeacher got = given()
-                .when()
-                .get("/owned/{id}", saved.getId())
-                .then()
-                .statusCode(200)
-                .extract().as(GuestTeacher.class);
-        assertThat(saved).isEqualTo(got);
-    }
-
-    @Test
-    @TestSecurity(user = "littil", roles = "viewer")
-    @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenGetUserUnownedTeacherById_thenShouldReturnNotFound() {
-        GuestTeacherPostResource teacher = getGuestTeacherPostResource();
-        GuestTeacher saved = saveTeacher(teacher);
-
-        given()
-                .when()
-                .get("/{id}", saved.getId())
-                .then()
-                .statusCode(200)
-                .extract().as(GuestTeacherPublic.class);
-
-        given()
-                .when()
-                .get("/owned/{id}", saved.getId())
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(user = "littil", roles = "viewer")
-    @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenGetTeacherByName_thenShouldReturnSuccessfully() {
-        String validSurname = RandomStringUtils.randomAlphabetic(10);
-        GuestTeacherPostResource teacher = getGuestTeacherPostResource();
-        teacher.setSurname(validSurname);
-        GuestTeacher saved = saveTeacher(teacher);
-
-        List<GuestTeacherPublic> got = given()
-                .when()
-                .get("/name/{name}", validSurname)
-                .then()
-                .statusCode(200)
-                .extract()
-                .jsonPath().getList(".", GuestTeacherPublic.class);
-
-        assertThat(got).isNotEmpty();
-        assertThat(saved).usingRecursiveComparison()
-                .ignoringFields("address", "postalCode", "locale")
-                .isEqualTo(got.get(0));
     }
 
     @Test
@@ -397,4 +332,4 @@ class GuestTeacherResourceTest {
         UUID userId = entity.get().getUser().getId();
         doReturn(userId).when(tokenHelper).getCurrentUserId();
     }
-}*/
+}
