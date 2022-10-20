@@ -41,6 +41,7 @@ jobs:
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/maven@master
         env:
+          JAVA_HOME : ""  # snyk runs with included java version
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: false
         with:
