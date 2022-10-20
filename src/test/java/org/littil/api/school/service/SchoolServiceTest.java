@@ -1,10 +1,12 @@
 package org.littil.api.school.service;
 
+import io.quarkus.security.UnauthorizedException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auditing.repository.AuditableEntityListener;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.contactPerson.repository.ContactPersonEntity;
@@ -13,6 +15,7 @@ import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
+import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 
@@ -61,6 +64,9 @@ class SchoolServiceTest {
     @InjectMock
     //TODO refoctor this. Should not need to mock this
     AuditableEntityListener auditableEntityListener;
+
+    @InjectMock
+    TokenHelper tokenHelper;
 
 
     @Test
@@ -407,6 +413,30 @@ class SchoolServiceTest {
         then(mapper).shouldHaveNoInteractions();
 
         assertThrows(NotFoundException.class, () -> schoolService.saveOrUpdate(school, null));
+    }
+
+    @Test
+    void givenUpdateNotOwnedSchool_thenShouldThrowUnauthorizedException() {
+        final UUID schoolId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final String name = RandomStringUtils.randomAlphabetic(10);
+
+        final School school = createSchool(schoolId, name);
+        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        school.setSurname(RandomStringUtils.randomAlphabetic(10));
+        school.setAddress(RandomStringUtils.randomAlphabetic(10));
+        school.setPostalCode(RandomStringUtils.randomAlphabetic(10));
+
+        final SchoolEntity entity = createSchoolEntity(schoolId, name);
+
+        final UserEntity user = new UserEntity();
+        user.setId(userId);
+        entity.setUser(user);
+
+        doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
+        doReturn(UUID.randomUUID()).when(tokenHelper).getCurrentUserId();
+
+        assertThrows(UnauthorizedException.class, () -> schoolService.saveOrUpdate(school, userId));
     }
 
     private SchoolEntity createSchoolEntity(UUID schoolId, String schoolName) {

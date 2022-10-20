@@ -11,6 +11,13 @@ import org.mapstruct.MappingTarget;
 public interface GuestTeacherMapper {
     GuestTeacher toDomain(GuestTeacherPostResource guestTeacherPostResource);
 
+    @Mapping(target = "address", ignore = true)
+    @Mapping(target = "postalCode", ignore = true)
+    @Mapping(target = "locale", ignore = true)
+    GuestTeacher toPurgedDomain(GuestTeacher guestTeacher);
+
+    GuestTeacher toPurgedDomain(GuestTeacherEntity guestTeacherEntity);
+
     @Mapping(source = "location.address", target = "address")
     @Mapping(source = "location.postalCode", target = "postalCode")
     GuestTeacher toDomain(GuestTeacherEntity guestTeacherEntity);

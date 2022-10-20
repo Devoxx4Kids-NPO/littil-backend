@@ -19,13 +19,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -81,31 +75,18 @@ public class GuestTeacherResource {
             responseCode = "404",
             description = "Teacher with specific Id was not found."
     )
-    public Response get(@Parameter(name = "id", required = true) @PathParam("id") final UUID id) {
-        Optional<GuestTeacher> teacher = guestTeacherService.getTeacherById(id);
+    public Response get(@Parameter(name = "id", required = true) @PathParam("id") final UUID teacherId) {
+        Optional<GuestTeacher> teacher = guestTeacherService.getTeacherById(teacherId);
+        UUID userId =  guestTeacherService.getUserIdByTeacherId(teacherId);
 
-        return teacher.map(r -> Response.ok(r).build())
-                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
-    }
+        if(teacher.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
 
-    @GET
-    @Path("/name/{name}")
-    @Operation(summary = "Fetch teachers via name")
-    @APIResponse(
-            responseCode = "200",
-            description = "Teachers with name found.",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.ARRAY, implementation = GuestTeacher.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "404",
-            description = "Teacher with specific name was not found."
-    )
-    public Response getByName(@Parameter(name = "name", required = true) @PathParam("name") final String name) {
-        List<GuestTeacher> guestTeachers = guestTeacherService.getTeacherByName(name);
-        return Response.ok(guestTeachers).build();
+        if(!tokenHelper.getCurrentUserId().equals(userId)) {
+            teacher = Optional.of(mapper.toPurgedDomain(teacher.get()));
+        }
+        return Response.ok(teacher).build();
     }
 
     @PUT

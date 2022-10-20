@@ -37,7 +37,9 @@ public abstract class AbstractSecurityInterceptor implements ContainerRequestFil
     public void filter(ContainerRequestContext ctx) throws IOException {
         if (ctx.getMethod().equals("GET") || ctx.getMethod().equals("PUT")) {
             // GET methods are public, so always allowed
-            // PUT methods are used to create new instances that attached to the current user. Allowed for now.
+            // PUT methods are used to create or update an instance.
+            // For update actions the service class checks if the user
+            // is the owner of the instance.
             return;
         }
 
