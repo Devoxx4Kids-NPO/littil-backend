@@ -23,7 +23,7 @@
       <assertj.version>3.23.1</assertj.version>
       <archunit.version>1.0.0</archunit.version>
       <jacoco.version>0.8.8</jacoco.version>
-      <auth0.version>1.44.0</auth0.version>
+      <auth0.version>1.44.1</auth0.version>
       <wiremock.version>2.34.0</wiremock.version>
   </properties>
   <dependencyManagement>
