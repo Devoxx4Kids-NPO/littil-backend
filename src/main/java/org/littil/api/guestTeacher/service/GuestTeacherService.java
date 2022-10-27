@@ -8,6 +8,7 @@ import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
+import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
@@ -43,6 +44,11 @@ public class GuestTeacherService {
 
     public Optional<GuestTeacher> getTeacherById(@NonNull final UUID id) {
         return repository.findByIdOptional(id).map(mapper::toDomain);
+    }
+
+    public Optional<GuestTeacher> getTeacherByLocation(@NonNull final UUID locationId) {
+        LocationEntity location = locationRepository.findById(locationId);
+        return repository.findByLocation(location).map(mapper::toDomain);
     }
 
     public List<GuestTeacher> findAll() {

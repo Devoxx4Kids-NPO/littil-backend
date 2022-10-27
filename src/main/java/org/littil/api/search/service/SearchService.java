@@ -2,7 +2,8 @@ package org.littil.api.search.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
+import org.littil.api.guestTeacher.service.GuestTeacher;
+import org.littil.api.guestTeacher.service.GuestTeacherService;
 import org.littil.api.school.service.School;
 import org.littil.api.school.service.SchoolService;
 import org.littil.api.search.api.UserType;
@@ -19,7 +20,7 @@ import java.util.Optional;
 @Slf4j
 public class SearchService {
 
-    private final GuestTeacherRepository teacherRepository;
+    private final GuestTeacherService teacherService;
     private final SchoolService schoolService;
     private final SearchRepository searchRepository;
     private final SearchMapper searchMapper;
@@ -63,8 +64,14 @@ public class SearchService {
     }
 
     private List<SearchResult> mapLocationResultToTeacherSearchResult(List<LocationSearchResult> locationSearchResults) {
-        //Todo: Finish implementation for GuestTeacher
-        return new ArrayList<>();
+        List<SearchResult> searchResults = new ArrayList<>();
+
+        for(LocationSearchResult location : locationSearchResults) {
+            Optional<GuestTeacher> teacher = teacherService.getTeacherByLocation(location.getId());
+            if(teacher.isEmpty()) break;
+            searchResults.add(searchMapper.toGuestTeacherDomain(location, teacher.get(), UserType.SCHOOL));
+        }
+        return searchResults;
     }
 
 }
