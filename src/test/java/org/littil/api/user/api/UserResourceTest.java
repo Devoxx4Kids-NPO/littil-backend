@@ -4,20 +4,24 @@ import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.junit.mockito.InjectSpy;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.user.service.User;
+import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 
 @QuarkusTest
 @TestHTTPEndpoint(UserResource.class)
@@ -26,6 +30,12 @@ class UserResourceTest {
 
     @InjectMock
     AuthenticationService authenticationService;
+
+    @InjectSpy
+    UserService userService;
+
+    @InjectMock
+    TokenHelper tokenHelper;
 
     @Test
     void givenFindAllUnauthorized_thenShouldReturnForbidden() {
@@ -73,6 +83,62 @@ class UserResourceTest {
         given()
                 .when()
                 .get("/user/{id}", UUID.randomUUID())
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetUserByProviderId_thenShouldReturnSuccessfully() {
+        String providerId = RandomStringUtils.randomAlphabetic(10);
+        User saved = createAndSaveUser(providerId);
+
+        doReturn(saved.getId()).when(tokenHelper).getCurrentUserId();
+
+        User got = given()
+                .when()
+                .get("/user/provider/{id}", providerId)
+                .then()
+                .statusCode(200)
+                .extract().as(User.class);
+
+        assertThat(saved).isEqualTo(got);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetUnownedUserByProviderId_thenShouldReturnForbidden() {
+        String providerId = RandomStringUtils.randomAlphabetic(10);
+        UUID otherUserId = UUID.randomUUID();
+        createAndSaveUser(providerId);
+
+        doReturn(otherUserId).when(tokenHelper).getCurrentUserId();
+
+        given()
+                .when()
+                .get("/user/provider/{id}", providerId)
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetUserByUnknownProviderId_thenShouldReturnNotFound() {
+        String providerId = RandomStringUtils.randomAlphabetic(10);
+        String otherProviderId = RandomStringUtils.randomAlphabetic(10);
+        User saved = createAndSaveUser(providerId);
+
+        doReturn(saved.getId()).when(tokenHelper).getCurrentUserId();
+
+        given()
+                .when()
+                .get("/user/provider/{id}", otherProviderId)
                 .then()
                 .statusCode(404);
     }
@@ -163,5 +229,13 @@ class UserResourceTest {
                 .then()
                 .statusCode(201)
                 .extract().as(User.class);
+    }
+
+    private User createAndSaveUser(String providerId) {
+        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
+        User user = new User();
+        user.setEmailAddress(emailAdress);
+        user.setProviderId(providerId);
+        return userService.createUser(user);
     }
 }
