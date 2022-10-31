@@ -1,5 +1,6 @@
 package org.littil.api.user.api;
 
+import io.quarkus.security.Authenticated;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -7,6 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
@@ -42,6 +44,8 @@ public class UserResource {
     UserService userService;
     @Inject
     UserMapper userMapper;
+    @Inject
+    TokenHelper tokenHelper;
 
     @GET
     @Path("user")
@@ -82,6 +86,37 @@ public class UserResource {
             return Response.ok(user).build();
         }
         return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    @GET
+    @Path("user/provider/{id}")
+    @Authenticated
+    @Operation(summary = "Fetch a specific user by provider Id")
+    @APIResponse(
+            responseCode = "200",
+            description = "User with provider Id found.",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)
+            )
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "User with specific provider Id was not found."
+    )
+    @APIResponse(
+            responseCode = "403",
+            description = "Access is not granted to retrieve this user."
+    )
+    public Response get(@Parameter(name = "id", required = true) @PathParam("id") final String providerId) {
+        Optional<User> user = userService.getUserByProviderId(providerId);
+        if (user.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        if(!tokenHelper.getCurrentUserId().equals(user.get().getId())) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        return Response.ok(user).build();
     }
 
     @POST
