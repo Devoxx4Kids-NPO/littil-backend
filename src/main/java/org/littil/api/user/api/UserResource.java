@@ -106,7 +106,7 @@ public class UserResource {
     )
     @APIResponse(
             responseCode = "403",
-            description = "The provider Id is not correct."
+            description = "Access is not granted to retrieve this user."
     )
     public Response get(@Parameter(name = "id", required = true) @PathParam("id") final String providerId) {
         Optional<User> user = userService.getUserByProviderId(providerId);
