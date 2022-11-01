@@ -40,7 +40,7 @@ public class SearchResource {
             description = "Fetch a list of teachers or school ordered by distance",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = SearchResult.class)
+                    schema = @Schema(type = SchemaType.ARRAY, implementation = SearchResult.class)
             )
     )
     @APIResponse(
