@@ -11,23 +11,21 @@ import java.util.UUID;
 @Builder
 public class SearchResult {
 
-    //Todo: Add messages to properties
-
-    @NotEmpty(message = "The id is required")
+    @NotEmpty(message = "{SearchResult.id.required}")
     private UUID id;
 
-    @NotEmpty(message = "The name is required")
+    @NotEmpty(message = "{SearchResult.name.required}")
     private String name;
 
-    @NotEmpty(message = "The latitude is required")
+    @NotEmpty(message = "{SearchResult.latitude.required}")
     private double latitude;
 
-    @NotEmpty(message = "The longitude is required")
+    @NotEmpty(message = "{SearchResult.longitude.required}")
     private double longitude;
 
-    @NotEmpty(message = "The distance is required")
+    @NotEmpty(message = "{SearchResult.distance.required}")
     private double distance;
 
-    @NotEmpty(message = "The userType is required")
+    @NotEmpty(message = "{SearchResult.userType.required}")
     private UserType userType;
 }
