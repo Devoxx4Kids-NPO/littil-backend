@@ -1,5 +1,6 @@
 package org.littil.api.guestTeacher.repository;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 
@@ -12,9 +13,11 @@ import org.littil.api.user.repository.UserEntity;
 
 import java.time.DayOfWeek;
 import java.util.*;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 class GuestTeacherRepositoryTest {
@@ -66,4 +69,23 @@ class GuestTeacherRepositoryTest {
 
         assertThat(expectedTeacher).usingRecursiveComparison().isEqualTo(foundTeacher);
     }
+
+    @Test
+    void givenFindByLocation_thenShouldReturnSuccessfully() {
+        String firstName = RandomStringUtils.randomAlphabetic(10);
+        String surname = RandomStringUtils.randomAlphabetic(10);
+        Optional<GuestTeacherEntity> teacher = Optional.of(new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, null, null, null, null));
+
+        LocationEntity location = new LocationEntity();
+
+        PanacheQuery<GuestTeacherEntity> query = Mockito.mock(PanacheQuery.class);
+        when(query.page(Mockito.any())).thenReturn(query);
+        when(query.firstResultOptional()).thenReturn(teacher);
+        when(repository.find("location", location)).thenReturn(query);
+
+        Optional<GuestTeacherEntity> foundTeacher = repository.findByLocation(location);
+
+        assertThat(teacher).isEqualTo(foundTeacher);
+    }
+
 }
