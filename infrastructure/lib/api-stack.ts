@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { CfnOutput } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
-import { InstanceClass, InstanceSize, InstanceType, Peer, Port, SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
+import { InstanceClass, InstanceSize, InstanceType, Port, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
@@ -9,7 +9,6 @@ import { Credentials, DatabaseInstance, DatabaseInstanceEngine, MariaDbEngineVer
 import { DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
-import { data } from "aws-cdk/lib/logging";
 
 export interface ApiStackProps extends cdk.StackProps {
     ecrRepository: Repository;
@@ -63,6 +62,7 @@ export class ApiStack extends cdk.Stack {
                     DATASOURCE_HOST: database.instanceEndpoint.hostname,
                     DATASOURCE_PORT: String(database.instanceEndpoint.port),
                     DATASOURCE_DATABASE: databaseName,
+                    QUARKUS_HTTP_CORS_ORIGINS: 'https://staging.littil.org',
                 },
                 secrets: {
                     DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
