@@ -9,6 +9,7 @@ import { Credentials, DatabaseInstance, DatabaseInstanceEngine, MariaDbEngineVer
 import { DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
+import { Effect, Policy, PolicyStatement, User } from "aws-cdk-lib/aws-iam";
 
 export interface ApiStackProps extends cdk.StackProps {
     ecrRepository: Repository;
@@ -55,6 +56,7 @@ export class ApiStack extends cdk.Stack {
             memoryLimitMiB: 512,
             desiredCount: 1,
             cpu: 256,
+            enableExecuteCommand: true,
             taskImageOptions: {
                 image: ContainerImage.fromEcrRepository(props.ecrRepository, '0.0.1-SNAPSHOT-1'),
                 containerPort: 8080,
@@ -80,9 +82,37 @@ export class ApiStack extends cdk.Stack {
             certificate: props.certificate,
         });
 
-        const fargateSecurityGroup = fargateService.service.connections.securityGroups[0];
+        /* ECS Exec. */
+        const ecsExecStatement = new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+                'ecs:ExecuteCommand',
+            ],
+            resources: [
+                fargateService.cluster.clusterArn,
+                'arn:aws:ecs:' + this.region + ':' + this.account + ':task/*/*',
+            ],
+        });
+        const ecsDescribeTasksStatement = new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+                'ecs:DescribeTasks',
+            ],
+            resources: [
+                'arn:aws:ecs:' + this.region + ':' + this.account + ':task/*/*',
+            ],
+        });
+        const ecsExecPolicy = new Policy(this, 'LITTIL-NL-staging-littil-api-ECSExec-Policy');
+        ecsExecPolicy.addStatements(ecsExecStatement, ecsDescribeTasksStatement);
+
+        /* ECS Exec users. */
+        const ecsExecUserName = 'LITTIL-NL-staging-littil-api-ECSExec-User';
+        const ecsExecUser = new User(this, ecsExecUserName, {userName: ecsExecUserName});
+        ecsExecPolicy.attachToUser(ecsExecUser);
 
         /* Database access. */
+        const fargateSecurityGroup = fargateService.service.connections.securityGroups[0];
+
         const databaseSecurityGroup = database.connections.securityGroups[0];
         databaseSecurityGroup.connections.allowFrom(fargateSecurityGroup, Port.allTcp());
     }
