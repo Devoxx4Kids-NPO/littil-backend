@@ -25,7 +25,7 @@ quarkus:
     database:
       generation: none
   log:
-    level: INFO
+    level: DEBUG
   swagger-ui:
     oauth-client-id: ${OIDC_CLIENT_ID:oidc_client_id}
   smallrye-openapi:
@@ -45,7 +45,9 @@ quarkus:
       jwt:
         audience: ${org.littil.auth.tenant_uri}/api/v2/
     token:
-      audience: ${org.littil.auth.tenant_uri}/api/v2/
+      audience:
+        - ${org.littil.auth.tenant_uri}/api/v2/
+        - "littil-backend"
     introspection-path: .well-known/openid-configuration
     jwks-path: .well-known/jwks.json
   mailer:
