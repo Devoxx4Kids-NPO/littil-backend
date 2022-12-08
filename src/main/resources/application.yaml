@@ -45,7 +45,9 @@ quarkus:
       jwt:
         audience: ${org.littil.auth.tenant_uri}/api/v2/
     token:
-      audience: ${org.littil.auth.tenant_uri}/api/v2/
+      audience:
+        - ${org.littil.auth.tenant_uri}/api/v2/
+        - ${OIDC_TOKEN_AUDIENCE:littil-backend}
     introspection-path: .well-known/openid-configuration
     jwks-path: .well-known/jwks.json
   mailer:
