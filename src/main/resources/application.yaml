@@ -17,6 +17,8 @@ org:
           id: ${M2M_CLIENT_ID:m2m_client_id}
           secret: ${M2M_CLIENT_SECRET:m2m_client_secret}
 quarkus:
+  http:
+    cors: true
   datasource:
     db-kind: mariadb
   hibernate-orm:
@@ -43,7 +45,9 @@ quarkus:
       jwt:
         audience: ${org.littil.auth.tenant_uri}/api/v2/
     token:
-      audience: ${org.littil.auth.tenant_uri}/api/v2/
+      audience:
+        - ${org.littil.auth.tenant_uri}/api/v2/
+        - ${OIDC_TOKEN_AUDIENCE:littil-backend}
     introspection-path: .well-known/openid-configuration
     jwks-path: .well-known/jwks.json
   mailer:
@@ -61,6 +65,9 @@ quarkus:
       devservices:
         devdata: true
   quarkus:
+    http:
+      cors:
+        origins: http://localhost:4200,http://localhost:8080
     datasource:
       devservices:
         port: 61052

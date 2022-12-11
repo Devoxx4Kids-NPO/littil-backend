@@ -49,8 +49,8 @@ public class LocationEntity extends AbstractAuditableEntity {
     private String postalCode;
 
     @Column(name = "latitude")
-    private Double latitude;
+    private int latitude;
 
     @Column(name = "longitude")
-    private Double longitude;
+    private int longitude;
 }

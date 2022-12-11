@@ -1,5 +1,6 @@
 package org.littil.api.guestTeacher.service;
 
+import io.quarkus.security.UnauthorizedException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
+import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
@@ -18,6 +20,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Objects;
@@ -36,22 +39,22 @@ public class GuestTeacherService {
     private final UserMapper userMapper;
     private final AuthenticationService authenticationService;
 
-
-    public List<GuestTeacher> getTeacherByName(@NonNull final String name) {
-        return repository.findBySurnameLike(name).stream().map(mapper::toDomain).toList();
-    }
-
     public Optional<GuestTeacher> getTeacherById(@NonNull final UUID id) {
         return repository.findByIdOptional(id).map(mapper::toDomain);
     }
 
+    public Optional<GuestTeacher> getTeacherByLocation(@NonNull final UUID locationId) {
+        LocationEntity location = locationRepository.findById(locationId);
+        return repository.findByLocation(location).map(mapper::toDomain);
+    }
+
     public List<GuestTeacher> findAll() {
-        return repository.listAll().stream().map(mapper::toDomain).toList();
+        return repository.listAll().stream().map(mapper::toPurgedDomain).toList();
     }
 
     @Transactional
     public GuestTeacher saveOrUpdate(@Valid GuestTeacher guestTeacher, UUID userId) {
-        return Objects.isNull(guestTeacher.getId()) ? saveTeacher(guestTeacher, userId) : update(guestTeacher);
+        return Objects.isNull(guestTeacher.getId()) ? saveTeacher(guestTeacher, userId) : update(guestTeacher, userId);
     }
 
     private GuestTeacher saveTeacher(@Valid GuestTeacher guestTeacher, UUID userId) {
@@ -84,12 +87,28 @@ public class GuestTeacherService {
         authenticationService.removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, id);
     }
 
-    private GuestTeacher update(@Valid GuestTeacher guestTeacher) {
+    private GuestTeacher update(@Valid GuestTeacher guestTeacher, UUID userId) {
         GuestTeacherEntity entity = repository.findByIdOptional(guestTeacher.getId())
                 .orElseThrow(() -> new NotFoundException("No Teacher found for Id"));
 
+        if (entity.getUser() != null && !entity.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException("Update not allowed, user is not the owner of this entity.");
+        }
         mapper.updateEntityFromDomain(guestTeacher, entity);
         repository.persist(entity);
         return mapper.updateDomainFromEntity(entity, guestTeacher);
     }
+
+    public UUID getUserIdByTeacherId(@NonNull final UUID teacherId) {
+        Optional<GuestTeacherEntity> teacherOptional = repository.findByIdOptional(teacherId);
+        if(teacherOptional.isEmpty()) {
+            throw new NotFoundException();
+        }
+        UserEntity user = teacherOptional.get().getUser();
+        if(Objects.isNull(user)) {
+            throw new InternalServerErrorException("No user found for GuestTeacherEntity with id:" + teacherId);
+        }
+        return user.getId();
+    }
+
 }

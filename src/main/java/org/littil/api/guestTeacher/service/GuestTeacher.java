@@ -19,10 +19,8 @@ public class GuestTeacher {
 
     private String prefix;
 
-    @NotEmpty(message = "{GuestTeacher.address.required}")
     private String address;
 
-    @NotEmpty(message = "{GuestTeacher.postalCode.required}")
     private String postalCode;
 
     private String locale;

@@ -12,17 +12,20 @@ import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.exception.ErrorResponse;
+import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
+import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 import org.littil.mock.coordinates.service.WireMockSearchService;
 
+import javax.inject.Inject;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,6 +48,12 @@ class GuestTeacherResourceTest {
 
     @InjectMock
     AuthenticationService authenticationService;
+
+    @InjectMock
+    TokenHelper tokenHelper;
+
+    @Inject
+    GuestTeacherRepository guestTeacherRepository;
 
     @Test
     void givenFindAllUnauthorized_thenShouldReturnForbidden() {
@@ -82,7 +91,9 @@ class GuestTeacherResourceTest {
                 .statusCode(200)
                 .extract().as(GuestTeacher.class);
 
-        assertThat(saved).isEqualTo(got);
+        assertThat(saved).usingRecursiveComparison()
+                .ignoringFields("address", "postalCode", "locale")
+                .isEqualTo(got);
     }
 
     @Test
@@ -95,27 +106,6 @@ class GuestTeacherResourceTest {
                 .get("/{id}", UUID.randomUUID())
                 .then()
                 .statusCode(404);
-    }
-
-    @Test
-    @TestSecurity(user = "littil", roles = "viewer")
-    @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenGetTeacherByName_thenShouldReturnSuccessfully() {
-        String validSurname = RandomStringUtils.randomAlphabetic(10);
-        GuestTeacherPostResource teacher = getGuestTeacherPostResource();
-        teacher.setSurname(validSurname);
-        GuestTeacher saved = saveTeacher(teacher);
-
-        List<GuestTeacher> got = given()
-                .when()
-                .get("/name/{name}", validSurname)
-                .then()
-                .statusCode(200)
-                .extract()
-                .jsonPath().getList(".", GuestTeacher.class);
-
-        assertThat(saved).isIn(got);
     }
 
     @Test
@@ -242,6 +232,8 @@ class GuestTeacherResourceTest {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
 
+        mockGetCurrentUserId(saved.getId());
+
         saved.setFirstName(newName);
         assertNotNull(saved.getId());
 
@@ -290,6 +282,7 @@ class GuestTeacherResourceTest {
     }
 
     private GuestTeacher saveTeacher(GuestTeacherPostResource teacher) {
+        doReturn(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf")).when(tokenHelper).getCurrentUserId();
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
 
@@ -320,5 +313,12 @@ class GuestTeacherResourceTest {
         User user = new User();
         user.setEmailAddress(emailAdress);
         return userService.createUser(user);
+    }
+
+    private void mockGetCurrentUserId(UUID guestTeacherId) {
+        Optional<GuestTeacherEntity> entity = guestTeacherRepository.findByIdOptional(guestTeacherId);
+        assertThat(entity).isPresent();
+        UUID userId = entity.get().getUser().getId();
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
     }
 }

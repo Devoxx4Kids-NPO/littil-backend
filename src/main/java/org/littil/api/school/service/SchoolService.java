@@ -1,12 +1,15 @@
 package org.littil.api.school.service;
 
+import io.quarkus.security.UnauthorizedException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.contactPerson.repository.ContactPersonRepository;
 import org.littil.api.exception.ServiceException;
+import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
@@ -37,6 +40,7 @@ public class SchoolService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final AuthenticationService authenticationService;
+    private final TokenHelper tokenHelper;
 
     public List<School> getSchoolByName(@NonNull final String name) {
         return repository.findBySchoolNameLike(name).stream().map(mapper::toDomain).toList();
@@ -44,6 +48,11 @@ public class SchoolService {
 
     public Optional<School> getSchoolById(@NonNull final UUID id) {
         return repository.findByIdOptional(id).map(mapper::toDomain);
+    }
+
+    public Optional<School> getSchoolByLocation(@NonNull final UUID locationId) {
+        LocationEntity location = locationRepository.findById(locationId);
+        return repository.findByLocation(location).map(mapper::toDomain);
     }
 
     public List<School> findAll() {
@@ -87,9 +96,13 @@ public class SchoolService {
     }
 
     private School update(@Valid School school) {
+        UUID userId = tokenHelper.getCurrentUserId();
         SchoolEntity entity = repository.findByIdOptional(school.getId())
                 .orElseThrow(() -> new NotFoundException("No School found for Id"));
 
+        if (entity.getUser() != null && !entity.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException("Update not allowed, user is not the owner of this entity.");
+        }
         mapper.updateEntityFromDomain(school, entity);
         repository.persist(entity);
         return mapper.updateDomainFromEntity(entity, school);
