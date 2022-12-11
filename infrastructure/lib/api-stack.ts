@@ -5,11 +5,11 @@ import { InstanceClass, InstanceSize, InstanceType, Port, Vpc } from 'aws-cdk-li
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
+import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
 import { Credentials, DatabaseInstance, DatabaseInstanceEngine, MariaDbEngineVersion, } from 'aws-cdk-lib/aws-rds';
 import { DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
-import { Effect, Policy, PolicyStatement, User } from "aws-cdk-lib/aws-iam";
 
 export interface ApiStackProps extends cdk.StackProps {
     ecrRepository: Repository;
@@ -82,6 +82,29 @@ export class ApiStack extends cdk.Stack {
             certificate: props.certificate,
         });
 
+        /* Database access container. */
+        const mysqlFargateService = new ApplicationLoadBalancedFargateService(this, 'LittilMySQLClient', {
+            vpc,
+            memoryLimitMiB: 512,
+            desiredCount: 1,
+            cpu: 256,
+            enableExecuteCommand: true,
+            taskImageOptions: {
+                image: ContainerImage.fromRegistry('mysql:latest'),
+                environment: {
+                    DATASOURCE_HOST: database.instanceEndpoint.hostname,
+                    DATASOURCE_PORT: String(database.instanceEndpoint.port),
+                    DATASOURCE_DATABASE: databaseName,
+                    MYSQL_ROOT_PASSWORD: 'mysql-staging-root',
+                },
+                secrets: {
+                    DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
+                    DATASOURCE_PASSWORD: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'password'),
+                },
+            },
+            certificate: props.certificate,
+        });
+
         /* ECS Exec. */
         const ecsExecStatement = new PolicyStatement({
             effect: Effect.ALLOW,
@@ -93,6 +116,7 @@ export class ApiStack extends cdk.Stack {
                 'arn:aws:ecs:' + this.region + ':' + this.account + ':task/*/*',
             ],
         });
+
         const ecsDescribeTasksStatement = new PolicyStatement({
             effect: Effect.ALLOW,
             actions: [
@@ -102,6 +126,7 @@ export class ApiStack extends cdk.Stack {
                 'arn:aws:ecs:' + this.region + ':' + this.account + ':task/*/*',
             ],
         });
+
         const ecsExecPolicy = new Policy(this, 'LITTIL-NL-staging-littil-api-ECSExec-Policy');
         ecsExecPolicy.addStatements(ecsExecStatement, ecsDescribeTasksStatement);
 
@@ -111,9 +136,12 @@ export class ApiStack extends cdk.Stack {
         ecsExecPolicy.attachToUser(ecsExecUser);
 
         /* Database access. */
-        const fargateSecurityGroup = fargateService.service.connections.securityGroups[0];
-
         const databaseSecurityGroup = database.connections.securityGroups[0];
+
+        const fargateSecurityGroup = fargateService.service.connections.securityGroups[0];
         databaseSecurityGroup.connections.allowFrom(fargateSecurityGroup, Port.allTcp());
+
+        const fargateMySQLSecurityGroup = mysqlFargateService.service.connections.securityGroups[0];
+        databaseSecurityGroup.connections.allowFrom(fargateMySQLSecurityGroup, Port.allTcp());
     }
 }
