@@ -14,6 +14,7 @@ import { Construct } from 'constructs';
 export interface ApiStackProps extends cdk.StackProps {
     ecrRepository: Repository;
     certificate: Certificate;
+    deployMySqlContainer: boolean;
 }
 
 export class ApiStack extends cdk.Stack {
@@ -82,29 +83,6 @@ export class ApiStack extends cdk.Stack {
             certificate: props.certificate,
         });
 
-        /* Database access container. */
-        const mysqlFargateService = new ApplicationLoadBalancedFargateService(this, 'LittilMySQLClient', {
-            vpc,
-            memoryLimitMiB: 512,
-            desiredCount: 1,
-            cpu: 256,
-            enableExecuteCommand: true,
-            taskImageOptions: {
-                image: ContainerImage.fromRegistry('mysql:latest'),
-                environment: {
-                    DATASOURCE_HOST: database.instanceEndpoint.hostname,
-                    DATASOURCE_PORT: String(database.instanceEndpoint.port),
-                    DATASOURCE_DATABASE: databaseName,
-                    MYSQL_ROOT_PASSWORD: 'mysql-staging-root',
-                },
-                secrets: {
-                    DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
-                    DATASOURCE_PASSWORD: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'password'),
-                },
-            },
-            certificate: props.certificate,
-        });
-
         /* ECS Exec. */
         const ecsExecStatement = new PolicyStatement({
             effect: Effect.ALLOW,
@@ -141,7 +119,32 @@ export class ApiStack extends cdk.Stack {
         const fargateSecurityGroup = fargateService.service.connections.securityGroups[0];
         databaseSecurityGroup.connections.allowFrom(fargateSecurityGroup, Port.allTcp());
 
-        const fargateMySQLSecurityGroup = mysqlFargateService.service.connections.securityGroups[0];
-        databaseSecurityGroup.connections.allowFrom(fargateMySQLSecurityGroup, Port.allTcp());
+        /* Database access container. */
+        if (props.deployMySqlContainer) {
+            const mysqlFargateService = new ApplicationLoadBalancedFargateService(this, 'LittilMySQLClient', {
+                vpc,
+                memoryLimitMiB: 512,
+                desiredCount: 1,
+                cpu: 256,
+                enableExecuteCommand: true,
+                taskImageOptions: {
+                    image: ContainerImage.fromRegistry('mysql:latest'),
+                    environment: {
+                        DATASOURCE_HOST: database.instanceEndpoint.hostname,
+                        DATASOURCE_PORT: String(database.instanceEndpoint.port),
+                        DATASOURCE_DATABASE: databaseName,
+                        MYSQL_ROOT_PASSWORD: 'mysql-staging-root',
+                    },
+                    secrets: {
+                        DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
+                        DATASOURCE_PASSWORD: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'password'),
+                    },
+                },
+                certificate: props.certificate,
+            });
+
+            const fargateMySQLSecurityGroup = mysqlFargateService.service.connections.securityGroups[0];
+            databaseSecurityGroup.connections.allowFrom(fargateMySQLSecurityGroup, Port.allTcp());
+        }
     }
 }

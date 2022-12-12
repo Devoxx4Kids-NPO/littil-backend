@@ -19,7 +19,7 @@ const ecrProps = {
         region: 'eu-west-1',
     },
 };
-const ecrStack = new EcrStack(app, 'ApiEcrStack', ecrProps)
+const ecrStack = new EcrStack(app, 'ApiEcrStack', ecrProps);
 
 const apiStackProps: ApiStackProps = {
     env: {
@@ -27,5 +27,6 @@ const apiStackProps: ApiStackProps = {
     },
     ecrRepository: ecrStack.ecrRepository,
     certificate: certificateStack.certificate,
+    deployMySqlContainer: false,
 };
 new ApiStack(app, 'ApiStack', apiStackProps);
