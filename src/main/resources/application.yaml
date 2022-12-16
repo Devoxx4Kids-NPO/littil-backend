@@ -58,6 +58,10 @@ quarkus:
     username: ${SMTP_USERNAME:user}
     password: ${SMTP_PASSWORD:pwd}
     mock: true #Mock SMTP server when running in development mode. See: http://localhost:8080/mail for incoming mail
+  flyway:
+    migrate-at-start: true
+    locations: db/migration
+    validate-on-migrate: false
 
 "%dev":
   org:

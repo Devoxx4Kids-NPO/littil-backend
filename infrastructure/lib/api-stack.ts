@@ -61,6 +61,7 @@ export class ApiStack extends cdk.Stack {
             taskImageOptions: {
                 image: ContainerImage.fromEcrRepository(props.ecrRepository, '0.0.1-SNAPSHOT-1'),
                 containerPort: 8080,
+                containerName: 'api',
                 environment: {
                     DATASOURCE_HOST: database.instanceEndpoint.hostname,
                     DATASOURCE_PORT: String(database.instanceEndpoint.port),
@@ -128,7 +129,8 @@ export class ApiStack extends cdk.Stack {
                 cpu: 256,
                 enableExecuteCommand: true,
                 taskImageOptions: {
-                    image: ContainerImage.fromRegistry('mysql:latest'),
+                    image: ContainerImage.fromEcrRepository(props.ecrRepository, 'mysql-8.0.31-oracle'),
+                    containerName: 'mysql',
                     environment: {
                         DATASOURCE_HOST: database.instanceEndpoint.hostname,
                         DATASOURCE_PORT: String(database.instanceEndpoint.port),
