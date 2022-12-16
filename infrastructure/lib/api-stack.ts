@@ -6,7 +6,13 @@ import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
 import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
-import { Credentials, DatabaseInstance, DatabaseInstanceEngine, MariaDbEngineVersion, } from 'aws-cdk-lib/aws-rds';
+import {
+    Credentials,
+    DatabaseInstance,
+    DatabaseInstanceEngine,
+    MariaDbEngineVersion,
+    ParameterGroup,
+} from 'aws-cdk-lib/aws-rds';
 import { DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
@@ -32,14 +38,24 @@ export class ApiStack extends cdk.Stack {
         const littilDatabaseSecretName = 'littil/backend/databaseCredentials';
         const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
 
+        const rdsEngine = DatabaseInstanceEngine.mariaDb({
+            version: MariaDbEngineVersion.VER_10_6_8,
+        });
+
+        const rdsParameterGroup = new ParameterGroup(this, 'littil-rds-parametergroup', {
+            engine: rdsEngine,
+            parameters: {
+                log_bin_trust_function_creators: '1',
+            }
+        });
+
         const databaseProperties: DatabaseInstanceProps = {
             databaseName,
             credentials: Credentials.fromSecret(littilBackendDatabaseSecret),
             publiclyAccessible: false,
             vpc,
-            engine: DatabaseInstanceEngine.mariaDb({
-                version: MariaDbEngineVersion.VER_10_6_8,
-            }),
+            engine: rdsEngine,
+            parameterGroup: rdsParameterGroup,
             instanceType: InstanceType.of(
                 InstanceClass.T4G,
                 InstanceSize.MICRO,
@@ -59,7 +75,7 @@ export class ApiStack extends cdk.Stack {
             cpu: 256,
             enableExecuteCommand: true,
             taskImageOptions: {
-                image: ContainerImage.fromEcrRepository(props.ecrRepository, '0.0.1-SNAPSHOT-1'),
+                image: ContainerImage.fromEcrRepository(props.ecrRepository, '0.0.1-SNAPSHOT-4'),
                 containerPort: 8080,
                 containerName: 'api',
                 environment: {
@@ -135,7 +151,7 @@ export class ApiStack extends cdk.Stack {
                         DATASOURCE_HOST: database.instanceEndpoint.hostname,
                         DATASOURCE_PORT: String(database.instanceEndpoint.port),
                         DATASOURCE_DATABASE: databaseName,
-                        MYSQL_ROOT_PASSWORD: 'mysql-staging-root',
+                        MYSQL_ROOT_PASSWORD: 'mysqlstagingroot',
                     },
                     secrets: {
                         DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),

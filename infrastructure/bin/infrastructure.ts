@@ -27,6 +27,6 @@ const apiStackProps: ApiStackProps = {
     },
     ecrRepository: ecrStack.ecrRepository,
     certificate: certificateStack.certificate,
-    deployMySqlContainer: false,
+    deployMySqlContainer: true,
 };
 new ApiStack(app, 'ApiStack', apiStackProps);
