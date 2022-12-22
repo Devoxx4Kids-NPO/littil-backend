@@ -1,21 +1,19 @@
 package org.littil.api.search.repository;
 
-import org.hibernate.Session;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import java.util.List;
 
 @ApplicationScoped
 public class SearchRepository {
 
     @Inject
-    Session session;
+    EntityManager entityManager;
 
-    public List<LocationSearchResult> findLocationsOrderedByDistance(double latitude, double longitude, int  startDistance, int maxDistance, int limit, String condition) {
-        String sql = "CALL FindNearest(:latitude, :longitude, :startDistance, :maxDistance, :limit, :condition);";
-
-        List<LocationSearchResult> result = session.createNativeQuery(sql, "LocationSearchResultMapping")
+    public List<LocationSearchResult> findLocationsOrderedByDistance(double latitude, double longitude, int startDistance, int maxDistance, int limit, String condition) {
+        @SuppressWarnings("unchecked")
+        List<LocationSearchResult> result = entityManager.createNamedStoredProcedureQuery("FindWithinRadius")
                 .setParameter("latitude", latitude)
                 .setParameter("longitude", longitude)
                 .setParameter("startDistance", startDistance)

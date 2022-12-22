@@ -59,7 +59,7 @@ public class SchoolService {
         return repository.listAll().stream().map(mapper::toDomain).toList();
     }
 
-    private School saveSchool(@Valid School school, UUID userId) {
+    School saveSchool(@Valid School school, UUID userId) {
         SchoolEntity entity = mapper.toEntity(school);
         // todo I don't like having to inject the user mapper and user service for this usecase.
         Optional<User> user = userService.getUserById(userId);
@@ -95,7 +95,7 @@ public class SchoolService {
         authenticationService.removeAuthorization(userId, AuthorizationType.SCHOOL, id);
     }
 
-    private School update(@Valid School school) {
+    School update(@Valid School school) {
         UUID userId = tokenHelper.getCurrentUserId();
         SchoolEntity entity = repository.findByIdOptional(school.getId())
                 .orElseThrow(() -> new NotFoundException("No School found for Id"));

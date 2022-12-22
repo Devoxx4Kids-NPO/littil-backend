@@ -34,7 +34,6 @@ quarkus:
     oidc-open-id-connect-url: ${org.littil.auth.tenant_uri}/authorize
     security-scheme-name: Auth0
     security-scheme: oauth2-implicit
-    oauth-scopes: [openid, email, profile]
   oidc:
     tenant-id: "dev-g60bne29"
     authorization-path: /authorize?audience=${org.littil.auth.tenant_uri}/api/v2/
@@ -58,6 +57,10 @@ quarkus:
     username: ${SMTP_USERNAME:user}
     password: ${SMTP_PASSWORD:pwd}
     mock: true #Mock SMTP server when running in development mode. See: http://localhost:8080/mail for incoming mail
+  flyway:
+    migrate-at-start: true
+    locations: db/migration
+    validate-on-migrate: true
 
 "%dev":
   org:
