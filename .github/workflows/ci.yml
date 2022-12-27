@@ -28,7 +28,7 @@ jobs:
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: madrapps/jacoco-report@v1.3
         with:
-          path: ${{ github.workspace }}/target/jacoco-report/jacoco.xml
+          paths: ${{ github.workspace }}/target/jacoco-report/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 1
           min-coverage-changed-files: 0
