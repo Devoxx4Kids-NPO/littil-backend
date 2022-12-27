@@ -26,11 +26,11 @@ jobs:
           java-version: '17'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: s4u/setup-maven-action@v1.4.0
+      - uses: s4u/setup-maven-action@v1.6.0
         with:
           java-version: 17
           java-distribution: temurin
-          maven-version: 3.6.3
+          maven-version: 3.8.6
       - name: Verify project
         run: mvn verify --batch-mode
       - name: Analyze build code
@@ -70,5 +70,5 @@ jobs:
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+          # docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          # docker push $IMAGE_ID:$VERSION
