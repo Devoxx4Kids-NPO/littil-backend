@@ -4,6 +4,7 @@ import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatem
 import { Construct } from 'constructs';
 
 export class CertificateStack extends cdk.Stack {
+    // TODO: Replace with CfnOutputs
     public readonly certificate: Certificate;
 
     constructor(scope: Construct, id: string, props: cdk.StackProps) {

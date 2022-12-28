@@ -3,7 +3,7 @@ import { CfnOutput } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { InstanceClass, InstanceSize, InstanceType, Port, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
+import { Compatibility, ContainerImage, FargateService, Secret, TaskDefinition } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
 import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
 import {
@@ -18,9 +18,14 @@ import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 export interface ApiStackProps extends cdk.StackProps {
-    ecrRepository: Repository;
-    certificate: Certificate;
-    deployMySqlContainer: boolean;
+    apiEcrRepository: Repository;
+    apiCertificate: Certificate;
+    mysqlSupportContainer: {
+        enable: boolean;
+        ecrRepositoryArn: string;
+        ecrRepositoryName: string;
+        imageTag: string;
+    };
 }
 
 export class ApiStack extends cdk.Stack {
@@ -75,7 +80,7 @@ export class ApiStack extends cdk.Stack {
             cpu: 256,
             enableExecuteCommand: true,
             taskImageOptions: {
-                image: ContainerImage.fromEcrRepository(props.ecrRepository, '0.0.1-SNAPSHOT-4'),
+                image: ContainerImage.fromEcrRepository(props.apiEcrRepository, '0.0.1-SNAPSHOT-4'),
                 containerPort: 8080,
                 containerName: 'api',
                 environment: {
@@ -97,7 +102,7 @@ export class ApiStack extends cdk.Stack {
                     SMTP_PASSWORD: Secret.fromSecretsManager(littilBackendSecret, 'smtpPassword'),
                 },
             },
-            certificate: props.certificate,
+            certificate: props.apiCertificate,
         });
 
         /* ECS Exec. */
@@ -137,31 +142,38 @@ export class ApiStack extends cdk.Stack {
         databaseSecurityGroup.connections.allowFrom(fargateSecurityGroup, Port.allTcp());
 
         /* Database access container. */
-        if (props.deployMySqlContainer) {
-            const mysqlFargateService = new ApplicationLoadBalancedFargateService(this, 'LittilMySQLClient', {
-                vpc,
-                memoryLimitMiB: 512,
-                desiredCount: 1,
+        if (props.mysqlSupportContainer.enable) {
+            const mysqlEcrRepository = Repository.fromRepositoryAttributes(this, 'MySQLContainerRepository', {
+                repositoryName: props.mysqlSupportContainer.ecrRepositoryName,
+                repositoryArn: props.mysqlSupportContainer.ecrRepositoryArn,
+            });
+            const mysqlContainerImage = ContainerImage.fromEcrRepository(mysqlEcrRepository, props.mysqlSupportContainer.imageTag);
+
+            const mysqlTaskDefinition = new TaskDefinition(this, 'LittilMysqlClientTask', {
+                compatibility: Compatibility.FARGATE,
+                cpu: '256',
+                memoryMiB: '512',
+            });
+            mysqlTaskDefinition.addContainer('MySqlContainer', {
+                image: mysqlContainerImage,
                 cpu: 256,
-                enableExecuteCommand: true,
-                taskImageOptions: {
-                    image: ContainerImage.fromEcrRepository(props.ecrRepository, 'mysql-8.0.31-oracle'),
-                    containerName: 'mysql',
-                    environment: {
-                        DATASOURCE_HOST: database.instanceEndpoint.hostname,
-                        DATASOURCE_PORT: String(database.instanceEndpoint.port),
-                        DATASOURCE_DATABASE: databaseName,
-                        MYSQL_ROOT_PASSWORD: 'mysqlstagingroot',
-                    },
-                    secrets: {
-                        DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
-                        DATASOURCE_PASSWORD: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'password'),
-                    },
-                },
-                certificate: props.certificate,
+                memoryLimitMiB: 512,
+                environment: {
+                    DATASOURCE_HOST: database.instanceEndpoint.hostname,
+                    DATASOURCE_PORT: String(database.instanceEndpoint.port),
+                    DATASOURCE_DATABASE: databaseName,
+                    MYSQL_ROOT_PASSWORD: 'mysqlstagingroot',
+                }
             });
 
-            const fargateMySQLSecurityGroup = mysqlFargateService.service.connections.securityGroups[0];
+            const mysqlFargateService = new FargateService(this, 'BackendMySqlClient', {
+                cluster: fargateService.cluster,
+                taskDefinition: mysqlTaskDefinition,
+                assignPublicIp: false,
+                enableExecuteCommand: true,
+            });
+
+            const fargateMySQLSecurityGroup = mysqlFargateService.connections.securityGroups[0];
             databaseSecurityGroup.connections.allowFrom(fargateMySQLSecurityGroup, Port.allTcp());
         }
     }

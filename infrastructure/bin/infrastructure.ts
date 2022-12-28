@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
+import { Fn } from 'aws-cdk-lib';
 import 'source-map-support/register';
-import { ApiStackProps, ApiStack } from '../lib/api-stack';
+import { ApiStack, ApiStackProps } from '../lib/api-stack';
 import { CertificateStack } from '../lib/certificate-stack';
 import { EcrStack } from '../lib/ecr-stack';
+import { SupportEcrStack } from '../lib/support-ecr-stack';
 
 const app = new cdk.App();
 
@@ -14,19 +16,31 @@ const certificateStackProps = {
 };
 const certificateStack = new CertificateStack(app, 'ApiCertificatesStack', certificateStackProps);
 
-const ecrProps = {
+const apiEcrProps = {
     env: {
         region: 'eu-west-1',
     },
 };
-const ecrStack = new EcrStack(app, 'ApiEcrStack', ecrProps);
+const apiEcrStack = new EcrStack(app, 'ApiEcrStack', apiEcrProps);
+
+const supportEcrProps = {
+    env: {
+        region: 'eu-west-1',
+    },
+};
+const supportEcrStack = new SupportEcrStack(app, 'SupportEcrStack', supportEcrProps);
 
 const apiStackProps: ApiStackProps = {
     env: {
         region: 'eu-west-1',
     },
-    ecrRepository: ecrStack.ecrRepository,
-    certificate: certificateStack.certificate,
-    deployMySqlContainer: true,
+    apiEcrRepository: apiEcrStack.ecrRepository,
+    apiCertificate: certificateStack.certificate,
+    mysqlSupportContainer: {
+        enable: false,
+        ecrRepositoryArn: Fn.importValue('mysqlRepositoryArnOutput'),
+        ecrRepositoryName: Fn.importValue('mysqlRepositoryNameOutput'),
+        imageTag: '8.0.31-oracle',
+    }
 };
 new ApiStack(app, 'ApiStack', apiStackProps);

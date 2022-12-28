@@ -1,21 +1,28 @@
 import * as cdk from 'aws-cdk-lib';
+import { CfnOutput } from 'aws-cdk-lib';
 import { Repository, TagMutability } from 'aws-cdk-lib/aws-ecr';
 import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
-export class EcrStack extends cdk.Stack {
-    // TODO: Replace with CfnOutputs
-    public readonly ecrRepository: Repository;
-
+export class SupportEcrStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props: cdk.StackProps) {
         super(scope, id, props);
-        this.ecrRepository = new Repository(this, 'LittilBackendRepository', {
-            repositoryName: 'littil-backend',
+        const ecrRepository = new Repository(this, 'MySQLRepository', {
+            repositoryName: 'mysql',
             imageTagMutability: TagMutability.IMMUTABLE,
         });
 
-        const pushPullPolicy = new Policy(this, 'EcrPushPullPolicy', {
-            policyName: 'BackendEcrPushPullPolicy',
+        new CfnOutput(this, 'MysqlRepositoryArnOutput', {
+            exportName: 'mysqlRepositoryArnOutput',
+            value: ecrRepository.repositoryArn,
+        });
+        new CfnOutput(this, 'MysqlRepositoryNameOutput', {
+            exportName: 'mysqlRepositoryNameOutput',
+            value: ecrRepository.repositoryName
+        });
+
+        const pushPullPolicy = new Policy(this, 'MySQLEcrPushPullPolicy', {
+            policyName: 'MySQLEcrPushPullPolicy',
             statements: [
                 new PolicyStatement({
                     effect: Effect.ALLOW,
@@ -29,13 +36,13 @@ export class EcrStack extends cdk.Stack {
                         'ecr:UploadLayerPart',
                     ],
                     resources: [
-                        this.ecrRepository.repositoryArn,
+                        ecrRepository.repositoryArn,
                     ],
                 }),
             ],
         });
 
-        const loginToEcrPolicy = new Policy(this, 'EcrAuthPolicy', {
+        const loginToEcrPolicy = new Policy(this, 'MySQLEcrAuthPolicy', {
             policyName: 'EcrAuthPolicy',
             statements: [
                 new PolicyStatement({
@@ -51,8 +58,7 @@ export class EcrStack extends cdk.Stack {
         });
 
         /* Push pull user for manual pushing of images. */
-        // TODO: Remove when automated from pipeline
-        const pushPullUser = new User(this, 'PushPullUser', {userName: 'Backend-Ecr-PushPull'});
+        const pushPullUser = new User(this, 'MySQLPushPullUser', {userName: 'MySQL-Ecr-PushPull'});
         pushPullPolicy.attachToUser(pushPullUser);
         loginToEcrPolicy.attachToUser(pushPullUser);
     }
