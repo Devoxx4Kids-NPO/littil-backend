@@ -1,24 +1,30 @@
-import * as cdk from 'aws-cdk-lib';
-import { CfnOutput } from 'aws-cdk-lib';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Repository, TagMutability } from 'aws-cdk-lib/aws-ecr';
 import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
-export class SupportEcrStack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props: cdk.StackProps) {
+export interface SupportEcrStackProps extends StackProps {
+    mysqlRepositoryNameExportName: string;
+    mysqlRepositoryArnExportName: string;
+}
+
+export class SupportEcrStack extends Stack {
+    constructor(scope: Construct,
+                id: string,
+                props: SupportEcrStackProps) {
         super(scope, id, props);
         const ecrRepository = new Repository(this, 'MySQLRepository', {
             repositoryName: 'mysql',
             imageTagMutability: TagMutability.IMMUTABLE,
         });
 
-        new CfnOutput(this, 'MysqlRepositoryArnOutput', {
-            exportName: 'mysqlRepositoryArnOutput',
-            value: ecrRepository.repositoryArn,
-        });
         new CfnOutput(this, 'MysqlRepositoryNameOutput', {
-            exportName: 'mysqlRepositoryNameOutput',
+            exportName: props.mysqlRepositoryNameExportName,
             value: ecrRepository.repositoryName
+        });
+        new CfnOutput(this, 'MysqlRepositoryArnOutput', {
+            exportName: props.mysqlRepositoryArnExportName,
+            value: ecrRepository.repositoryArn,
         });
 
         const pushPullPolicy = new Policy(this, 'MySQLEcrPushPullPolicy', {

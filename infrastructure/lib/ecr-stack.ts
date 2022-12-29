@@ -1,17 +1,28 @@
-import * as cdk from 'aws-cdk-lib';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Repository, TagMutability } from 'aws-cdk-lib/aws-ecr';
 import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
-export class EcrStack extends cdk.Stack {
-    // TODO: Replace with CfnOutputs
-    public readonly ecrRepository: Repository;
+export interface EcrStackProps extends StackProps {
+    apiRepositoryNameExportName: string;
+    apiRepositoryArnExportName: string;
+}
 
-    constructor(scope: Construct, id: string, props: cdk.StackProps) {
+export class EcrStack extends Stack {
+    constructor(scope: Construct, id: string, props: EcrStackProps) {
         super(scope, id, props);
-        this.ecrRepository = new Repository(this, 'LittilBackendRepository', {
+        const ecrRepository = new Repository(this, 'LittilBackendRepository', {
             repositoryName: 'littil-backend',
             imageTagMutability: TagMutability.IMMUTABLE,
+        });
+
+        new CfnOutput(this, 'ApiRepositoryNameOutput', {
+            exportName: props.apiRepositoryNameExportName,
+            value: ecrRepository.repositoryName
+        });
+        new CfnOutput(this, 'ApiRepositoryArnOutput', {
+            exportName: props.apiRepositoryArnExportName,
+            value: ecrRepository.repositoryArn,
         });
 
         const pushPullPolicy = new Policy(this, 'EcrPushPullPolicy', {
@@ -29,7 +40,7 @@ export class EcrStack extends cdk.Stack {
                         'ecr:UploadLayerPart',
                     ],
                     resources: [
-                        this.ecrRepository.repositoryArn,
+                        ecrRepository.repositoryArn,
                     ],
                 }),
             ],

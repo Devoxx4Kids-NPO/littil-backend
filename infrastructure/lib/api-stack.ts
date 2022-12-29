@@ -1,5 +1,4 @@
-import * as cdk from 'aws-cdk-lib';
-import { CfnOutput } from 'aws-cdk-lib';
+import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { InstanceClass, InstanceSize, InstanceType, Port, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
@@ -17,18 +16,19 @@ import { DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
-export interface ApiStackProps extends cdk.StackProps {
-    apiEcrRepository: Repository;
-    apiCertificate: Certificate;
+export interface ApiStackProps extends StackProps {
+    ecrRepositoryName: string;
+    ecrRepositoryArn: string;
+    apiCertificateArn: string;
     mysqlSupportContainer: {
         enable: boolean;
-        ecrRepositoryArn: string;
         ecrRepositoryName: string;
+        ecrRepositoryArn: string;
         imageTag: string;
     };
 }
 
-export class ApiStack extends cdk.Stack {
+export class ApiStack extends Stack {
     constructor(scope: Construct, id: string, props: ApiStackProps) {
         super(scope, id, props);
 
@@ -73,6 +73,13 @@ export class ApiStack extends cdk.Stack {
         /* Fargate. */
         const littilBackendSecret = SecretsManagerSecret.fromSecretCompleteArn(this, 'LittilBackendSecret', 'arn:aws:secretsmanager:eu-west-1:680278545709:secret:littil/backend/staging-Muw9Id');
 
+        const apiEcrRepository = Repository.fromRepositoryAttributes(this, 'ApiEcrContainerRepository', {
+            repositoryName: props.ecrRepositoryName,
+            repositoryArn: props.ecrRepositoryArn,
+        });
+
+        const certificate = Certificate.fromCertificateArn(this, 'ApiCertificate', props.apiCertificateArn);
+
         const fargateService = new ApplicationLoadBalancedFargateService(this, 'LittilApi', {
             vpc,
             memoryLimitMiB: 512,
@@ -80,7 +87,7 @@ export class ApiStack extends cdk.Stack {
             cpu: 256,
             enableExecuteCommand: true,
             taskImageOptions: {
-                image: ContainerImage.fromEcrRepository(props.apiEcrRepository, '0.0.1-SNAPSHOT-4'),
+                image: ContainerImage.fromEcrRepository(apiEcrRepository, '0.0.1-SNAPSHOT-4'),
                 containerPort: 8080,
                 containerName: 'api',
                 environment: {
@@ -102,7 +109,7 @@ export class ApiStack extends cdk.Stack {
                     SMTP_PASSWORD: Secret.fromSecretsManager(littilBackendSecret, 'smtpPassword'),
                 },
             },
-            certificate: props.apiCertificate,
+            certificate,
         });
 
         /* ECS Exec. */
@@ -142,6 +149,7 @@ export class ApiStack extends cdk.Stack {
         databaseSecurityGroup.connections.allowFrom(fargateSecurityGroup, Port.allTcp());
 
         /* Database access container. */
+        // TODO: Move to separate stack (expose VPC/security group)
         if (props.mysqlSupportContainer.enable) {
             const mysqlEcrRepository = Repository.fromRepositoryAttributes(this, 'MySQLContainerRepository', {
                 repositoryName: props.mysqlSupportContainer.ecrRepositoryName,
