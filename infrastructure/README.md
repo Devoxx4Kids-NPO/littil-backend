@@ -1,4 +1,4 @@
-# LITTIL back-end
+# LITTIL back-end infrastructure
 
 ## ECR, Certificate & API stacks
 
@@ -61,3 +61,22 @@ docker push 680278545709.dkr.ecr.eu-west-1.amazonaws.com/littil-backend:$TAG
 ## SES:
 
 https://docs.aws.amazon.com/ses/latest/dg/smtp-credentials.html
+
+## Deployment
+
+To manually synthesize Cloudformation templates from the CDK Typescript code:
+
+```bash
+npm run build
+npm run cdk:synth --  --context environment=<env> --context account=<account>  --profile=<profile>
+```
+
+Where `<env>` is the environment, like acc or prod, `<account>` is the numerical AWS account ID and <profile> is the
+name of the credentials profile as configured in `~/.aws/credentials`. These credentials need to be for
+a `LITTIL-<country>-<env>-littil-frontend-Cdk-User` user.
+
+To deploy:
+
+```bash
+npm run cdk:staging:deploy  --context environment=<env> --context account=<account>  --profile=<profile>
+```

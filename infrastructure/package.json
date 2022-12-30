@@ -11,9 +11,8 @@
     "cdk": "cdk",
     "cdk:list": "cdk ls",
     "cdk:diff": "cdk --profile=littil-cdk-staging-backend diff",
-    "cdk:staging:synth": "cdk synth --context environment=acc",
-    "cdk:staging:deploy": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack MaintenanceEcrStack MaintenanceServiceStack --profile=littil-cdk-staging-backend --require-approval=never --context environment=acc",
-    "cdk:staging:deploy:ci": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack MaintenanceEcrStack MaintenanceServiceStack --require-approval=never --context environment=acc"
+    "cdk:synth": "cdk synth",
+    "cdk:deploy": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack MaintenanceEcrStack MaintenanceServiceStack --require-approval=never"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",

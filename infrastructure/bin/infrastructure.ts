@@ -9,6 +9,11 @@ import { MaintenanceStack, MaintenanceStackProps } from '../lib/maintenance-stac
 
 const app = new App();
 
+const env = {
+    region: 'eu-west-1',
+    account: app.node.tryGetContext('account'),
+};
+
 const crossStackReferenceExportNames = {
     apiEcrRepositoryArn: 'apiEcrRepositoryArn',
     apiEcrRepositoryName: 'apiEcrRepositoryName',
@@ -22,35 +27,27 @@ const crossStackReferenceExportNames = {
 };
 
 const certificateStackProps = {
-    env: {
-        region: 'eu-west-1',
-    },
+    env,
     apiCertificateArnExportName: crossStackReferenceExportNames.apiCertificateArn,
 };
 new CertificateStack(app, 'ApiCertificatesStack', certificateStackProps);
 
 const apiEcrProps: EcrStackProps = {
-    env: {
-        region: 'eu-west-1',
-    },
+    env,
     apiRepositoryNameExportName: crossStackReferenceExportNames.apiEcrRepositoryName,
     apiRepositoryArnExportName: crossStackReferenceExportNames.apiEcrRepositoryArn,
 };
 new EcrStack(app, 'ApiEcrStack', apiEcrProps);
 
 const maintenanceEcrProps = {
-    env: {
-        region: 'eu-west-1',
-    },
+    env,
     maintenanceEcrRepositoryNameExportName: crossStackReferenceExportNames.maintenanceEcrRepositoryName,
     maintenanceEcrRepositoryArnExportName: crossStackReferenceExportNames.maintenanceEcrRepositoryArn,
 };
 new MaintenanceEcrStack(app, 'MaintenanceEcrStack', maintenanceEcrProps);
 
 const apiStackProps: ApiStackProps = {
-    env: {
-        region: 'eu-west-1',
-    },
+    env,
     ecrRepository: {
         name: Fn.importValue(crossStackReferenceExportNames.apiEcrRepositoryName),
         arn: Fn.importValue(crossStackReferenceExportNames.apiEcrRepositoryArn),
@@ -61,25 +58,14 @@ const apiStackProps: ApiStackProps = {
     databasePortExportName: crossStackReferenceExportNames.databasePort,
     databaseNameExportName: crossStackReferenceExportNames.databaseName,
     databaseSecurityGroupIdExportName: crossStackReferenceExportNames.databaseSecurityGroup,
-
-    maintenanceContainer: {
-        enable: false,
-        imageTag: '1.0.0',
-        ecrRepository: {
-            name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
-            arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
-        },
-    },
 };
-const apiStack = new ApiStack(app, 'ApiStack', apiStackProps);
+new ApiStack(app, 'ApiStack', apiStackProps);
 
 const maintenanceProps: MaintenanceStackProps = {
-    env: {
-        region: 'eu-west-1',
-    },
+    env,
     maintenanceContainer: {
         enable: true,
-        imageTag: '1.0.0',
+        imageTag: '1.0.1',
         ecrRepository: {
             name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
             arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
@@ -89,7 +75,7 @@ const maintenanceProps: MaintenanceStackProps = {
         host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
         port: Fn.importValue(crossStackReferenceExportNames.databasePort),
         name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-        vpc: apiStack.vpc,
+        vpcId: 'vpc-0a33a4f59226ac8a7',
         securityGroup: {
             id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
         },

@@ -1,5 +1,5 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
-import { IVpc, Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { Port, SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { Cluster, Compatibility, ContainerImage, FargateService, TaskDefinition } from 'aws-cdk-lib/aws-ecs';
 import { Policy, User } from 'aws-cdk-lib/aws-iam';
@@ -20,7 +20,7 @@ export interface MaintenanceStackProps extends StackProps {
         host: string;
         port: string;
         name: string;
-        vpc: IVpc;
+        vpcId: string;
         securityGroup: {
             id: string;
         };
@@ -67,8 +67,12 @@ export class MaintenanceStack extends Stack {
                 }
             });
 
+        const vpc = Vpc.fromLookup(this, 'TestVPC', {
+            vpcId: 'vpc-0a33a4f59226ac8a7',
+        });
+
         const ecsCluster = new Cluster(this, 'MaintenanceCluster', {
-            vpc: props.database.vpc,
+            vpc,
         });
         const maintenanceFargateService = new FargateService(this, 'BackendMaintenanceService', {
             cluster: ecsCluster,

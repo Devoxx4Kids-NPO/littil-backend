@@ -32,15 +32,12 @@ export interface ApiStackProps extends StackProps {
 }
 
 export class ApiStack extends Stack {
-    // TODO: Don't expose via field, use Outputs, VPC.fromLookup, or SSM StringParameter
-    public readonly vpc: Vpc;
-
     constructor(scope: Construct,
                 id: string,
                 props: ApiStackProps) {
         super(scope, id, props);
 
-        this.vpc = new Vpc(this, 'LittilBackendVpc', {
+        const vpc = new Vpc(this, 'LittilBackendVpc', {
             maxAzs: 2,
             natGateways: 1,
         });
@@ -66,7 +63,7 @@ export class ApiStack extends Stack {
             databaseName,
             credentials: Credentials.fromSecret(littilBackendDatabaseSecret),
             publiclyAccessible: false,
-            vpc: this.vpc,
+            vpc,
             engine: rdsEngine,
             parameterGroup: rdsParameterGroup,
             instanceType: InstanceType.of(
@@ -99,7 +96,7 @@ export class ApiStack extends Stack {
         const certificate = Certificate.fromCertificateArn(this, 'ApiCertificate', props.apiCertificateArn);
 
         const fargateService = new ApplicationLoadBalancedFargateService(this, 'LittilApi', {
-            vpc: this.vpc,
+            vpc,
             memoryLimitMiB: 512,
             desiredCount: 1,
             cpu: 256,
