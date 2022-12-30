@@ -3,7 +3,6 @@ package org.littil.api.userSetting.service;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
@@ -54,7 +53,6 @@ class UserSettingServiceTest {
     }
 
     @Test
-    @Disabled
     void givenWhenGettingUserSettingByKey_thenShouldReturnUserSetting() {
         final UUID userId = UUID.randomUUID();
         final String key = RandomStringUtils.randomAlphabetic(5);
@@ -63,7 +61,7 @@ class UserSettingServiceTest {
         final UserSettingEntity expectedUserSettingEntity = new UserSettingEntity(userId, key, value);
         final UserSetting mappedUserSetting = new UserSetting(key, value);
 
-        doReturn(expectedUserSettingEntity).when(repository).findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
+        doReturn(Optional.of(expectedUserSettingEntity)).when(repository).findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
         doReturn(mappedUserSetting).when(mapper).toDomain(expectedUserSettingEntity);
 
         final Optional<UserSetting> userSetting = service.getUserSettingByKey(key, userId);
