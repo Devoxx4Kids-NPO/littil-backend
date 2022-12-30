@@ -62,7 +62,7 @@ quarkus:
   flyway:
     migrate-at-start: true
     locations: db/migration
-    validate-on-migrate: false
+    validate-on-migrate: true
 
 "%dev":
   org:
