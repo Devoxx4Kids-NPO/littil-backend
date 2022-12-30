@@ -10,7 +10,6 @@ import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
@@ -33,6 +32,8 @@ import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.littil.Helper.getErrorMessage;
+import static org.littil.Helper.withGuestTeacherAuthorization;
+import static org.littil.Helper.withSchoolAuthorization;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -67,7 +68,7 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenFindAll_thenShouldReturnMultipleTeachers() {
         given()
                 .when()
@@ -79,7 +80,7 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenGetTeacherById_thenShouldReturnSuccessfully() {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
@@ -99,7 +100,7 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenGetTeacherByUnknownId_thenShouldReturnNotFound() {
         given()
                 .when()
@@ -111,7 +112,7 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenGetTeacherByUnknownName_thenShouldReturnNotFound() {
         given()
                 .when()
@@ -123,7 +124,7 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenCreateNewTeacher_thenShouldBeCreatedSuccessfully() {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
@@ -134,7 +135,7 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenCreateNewTeacherWithoutRequiredNames_thenShouldReturnWithAnErrorResponse() {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         teacher.setSurname(null);
@@ -142,7 +143,7 @@ class GuestTeacherResourceTest {
 
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
-        doNothing().when(authenticationService).addAuthorization(any(),any(), any());
+        doNothing().when(authenticationService).addAuthorization(any(), any(), any());
 
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
@@ -165,14 +166,14 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenCreateNewTeacherWithRequiredNameBlank_thenShouldReturnWithAnErrorResponse() {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         teacher.setFirstName("");
 
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
-        doNothing().when(authenticationService).addAuthorization(any(),any(), any());
+        doNothing().when(authenticationService).addAuthorization(any(), any(), any());
 
         ErrorResponse errorResponse = given()
                 .contentType(ContentType.JSON)
@@ -192,8 +193,9 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenDeleteNonExistingTeacherById_thenShouldReturnUnauthorized() {
+        doReturn(withSchoolAuthorization()).when(tokenHelper).getCustomClaim(any());
         given()
                 .when()
                 .delete("/{id}", UUID.randomUUID())
@@ -204,11 +206,12 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    @Disabled("tokenHelper.getCustomClaim() returns null in AbstractSecurityInterceptor")
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenDeleteTeacherById_thenShouldDeleteSuccessfully() {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
+
+        doReturn(withGuestTeacherAuthorization(saved.getId())).when(tokenHelper).getCustomClaim(any());
 
         given()
                 .contentType(ContentType.JSON)
@@ -220,13 +223,13 @@ class GuestTeacherResourceTest {
                 .contentType(ContentType.JSON)
                 .get("/{id}", saved.getId())
                 .then()
-                .statusCode(401);
+                .statusCode(404);
     }
 
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenUpdatingFirstNameOfTeacherById_thenShouldUpdateSuccessfully() {
         String newName = RandomStringUtils.randomAlphabetic(10);
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
@@ -252,7 +255,7 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenUpdatingUnknownTeacher_thenShouldReturnWithErrorResponse() {
         GuestTeacherPostResource guestTeacher = getGuestTeacherPostResource();
         guestTeacher.setId(UUID.randomUUID());
@@ -268,7 +271,7 @@ class GuestTeacherResourceTest {
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
-            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenUpdatingUnknownTeacherById_thenShouldReturnWithErrorResponse() {
         GuestTeacherPostResource guestTeacher = getGuestTeacherPostResource();
         guestTeacher.setId(UUID.randomUUID());
@@ -286,7 +289,7 @@ class GuestTeacherResourceTest {
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
 
-        doNothing().when(authenticationService).addAuthorization(any(),any(), any());
+        doNothing().when(authenticationService).addAuthorization(any(), any(), any());
 
         return given()
                 .contentType(ContentType.JSON)
