@@ -4,31 +4,31 @@ import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 export interface SupportEcrStackProps extends StackProps {
-    mysqlRepositoryNameExportName: string;
-    mysqlRepositoryArnExportName: string;
+    maintenanceEcrRepositoryNameExportName: string;
+    maintenanceEcrRepositoryArnExportName: string;
 }
 
-export class SupportEcrStack extends Stack {
+export class MaintenanceEcrStack extends Stack {
     constructor(scope: Construct,
                 id: string,
                 props: SupportEcrStackProps) {
         super(scope, id, props);
-        const ecrRepository = new Repository(this, 'MySQLRepository', {
-            repositoryName: 'mysql',
+        const ecrRepository = new Repository(this, 'MaintenanceEcrRepository', {
+            repositoryName: 'littil-backend-maintenance',
             imageTagMutability: TagMutability.IMMUTABLE,
         });
 
-        new CfnOutput(this, 'MysqlRepositoryNameOutput', {
-            exportName: props.mysqlRepositoryNameExportName,
+        new CfnOutput(this, 'MaintenanceEcrRepositoryNameOutput', {
+            exportName: props.maintenanceEcrRepositoryNameExportName,
             value: ecrRepository.repositoryName
         });
-        new CfnOutput(this, 'MysqlRepositoryArnOutput', {
-            exportName: props.mysqlRepositoryArnExportName,
+        new CfnOutput(this, 'MaintenanceEcrRepositoryArnOutput', {
+            exportName: props.maintenanceEcrRepositoryArnExportName,
             value: ecrRepository.repositoryArn,
         });
 
-        const pushPullPolicy = new Policy(this, 'MySQLEcrPushPullPolicy', {
-            policyName: 'MySQLEcrPushPullPolicy',
+        const pushPullPolicy = new Policy(this, 'MaintenanceEcrPushPullPolicy', {
+            policyName: 'MaintenanceEcrPushPullPolicy',
             statements: [
                 new PolicyStatement({
                     effect: Effect.ALLOW,
@@ -48,7 +48,7 @@ export class SupportEcrStack extends Stack {
             ],
         });
 
-        const loginToEcrPolicy = new Policy(this, 'MySQLEcrAuthPolicy', {
+        const loginToEcrPolicy = new Policy(this, 'MaintenanceEcrAuthPolicy', {
             policyName: 'EcrAuthPolicy',
             statements: [
                 new PolicyStatement({
@@ -64,7 +64,7 @@ export class SupportEcrStack extends Stack {
         });
 
         /* Push pull user for manual pushing of images. */
-        const pushPullUser = new User(this, 'MySQLPushPullUser', {userName: 'MySQL-Ecr-PushPull'});
+        const pushPullUser = new User(this, 'MaintenancePushPullUser', {userName: 'Littil-Backend-Maintenance-Ecr-PushPull'});
         pushPullPolicy.attachToUser(pushPullUser);
         loginToEcrPolicy.attachToUser(pushPullUser);
     }

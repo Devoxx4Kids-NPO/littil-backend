@@ -2,9 +2,9 @@ import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { InstanceClass, InstanceSize, InstanceType, Port, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { Compatibility, ContainerImage, FargateService, Secret, TaskDefinition } from 'aws-cdk-lib/aws-ecs';
+import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
-import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
+import { Policy, User } from 'aws-cdk-lib/aws-iam';
 import {
     Credentials,
     DatabaseInstance,
@@ -15,24 +15,32 @@ import {
 import { DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
+import { allowEcsDescribeTaskStatement } from './iam/allowEcsDescribeTaskStatement';
+import { allowEcsExecuteCommandStatement } from './iam/allowEcsExecuteCommandStatement';
 
 export interface ApiStackProps extends StackProps {
-    ecrRepositoryName: string;
-    ecrRepositoryArn: string;
-    apiCertificateArn: string;
-    mysqlSupportContainer: {
-        enable: boolean;
-        ecrRepositoryName: string;
-        ecrRepositoryArn: string;
-        imageTag: string;
+    ecrRepository: {
+        name: string;
+        arn: string;
     };
+    apiCertificateArn: string;
+
+    databaseHostExportName: string;
+    databasePortExportName: string;
+    databaseNameExportName: string;
+    databaseSecurityGroupIdExportName: string;
 }
 
 export class ApiStack extends Stack {
-    constructor(scope: Construct, id: string, props: ApiStackProps) {
+    // TODO: Don't expose via field, use Outputs, VPC.fromLookup, or SSM StringParameter
+    public readonly vpc: Vpc;
+
+    constructor(scope: Construct,
+                id: string,
+                props: ApiStackProps) {
         super(scope, id, props);
 
-        const vpc = new Vpc(this, 'LittilBackendVpc', {
+        this.vpc = new Vpc(this, 'LittilBackendVpc', {
             maxAzs: 2,
             natGateways: 1,
         });
@@ -58,7 +66,7 @@ export class ApiStack extends Stack {
             databaseName,
             credentials: Credentials.fromSecret(littilBackendDatabaseSecret),
             publiclyAccessible: false,
-            vpc,
+            vpc: this.vpc,
             engine: rdsEngine,
             parameterGroup: rdsParameterGroup,
             instanceType: InstanceType.of(
@@ -66,22 +74,32 @@ export class ApiStack extends Stack {
                 InstanceSize.MICRO,
             ),
         };
-
         const database = new DatabaseInstance(this, 'LittilApiDatabase', databaseProperties);
-        new CfnOutput(this, 'dbEndpoint', {value: database.instanceEndpoint.hostname});
+        new CfnOutput(this, 'databaseHost', {
+            value: database.instanceEndpoint.hostname,
+            exportName: props.databaseHostExportName,
+        });
+        new CfnOutput(this, 'databasePort', {
+            value: String(database.instanceEndpoint.port),
+            exportName: props.databasePortExportName,
+        });
+        new CfnOutput(this, 'databasename', {
+            value: databaseName,
+            exportName: props.databaseNameExportName,
+        });
 
         /* Fargate. */
-        const littilBackendSecret = SecretsManagerSecret.fromSecretCompleteArn(this, 'LittilBackendSecret', 'arn:aws:secretsmanager:eu-west-1:680278545709:secret:littil/backend/staging-Muw9Id');
+        const littilBackendSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendSecret', 'littil/backend/staging');
 
         const apiEcrRepository = Repository.fromRepositoryAttributes(this, 'ApiEcrContainerRepository', {
-            repositoryName: props.ecrRepositoryName,
-            repositoryArn: props.ecrRepositoryArn,
+            repositoryName: props.ecrRepository.name,
+            repositoryArn: props.ecrRepository.arn,
         });
 
         const certificate = Certificate.fromCertificateArn(this, 'ApiCertificate', props.apiCertificateArn);
 
         const fargateService = new ApplicationLoadBalancedFargateService(this, 'LittilApi', {
-            vpc,
+            vpc: this.vpc,
             memoryLimitMiB: 512,
             desiredCount: 1,
             cpu: 256,
@@ -113,29 +131,11 @@ export class ApiStack extends Stack {
         });
 
         /* ECS Exec. */
-        const ecsExecStatement = new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: [
-                'ecs:ExecuteCommand',
-            ],
-            resources: [
-                fargateService.cluster.clusterArn,
-                'arn:aws:ecs:' + this.region + ':' + this.account + ':task/*/*',
-            ],
-        });
-
-        const ecsDescribeTasksStatement = new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: [
-                'ecs:DescribeTasks',
-            ],
-            resources: [
-                'arn:aws:ecs:' + this.region + ':' + this.account + ':task/*/*',
-            ],
-        });
-
         const ecsExecPolicy = new Policy(this, 'LITTIL-NL-staging-littil-api-ECSExec-Policy');
-        ecsExecPolicy.addStatements(ecsExecStatement, ecsDescribeTasksStatement);
+        ecsExecPolicy.addStatements(
+            allowEcsExecuteCommandStatement(fargateService.cluster.clusterArn, this.region, this.account),
+            allowEcsDescribeTaskStatement(this.region, this.account),
+        );
 
         /* ECS Exec users. */
         const ecsExecUserName = 'LITTIL-NL-staging-littil-api-ECSExec-User';
@@ -144,45 +144,12 @@ export class ApiStack extends Stack {
 
         /* Database access. */
         const databaseSecurityGroup = database.connections.securityGroups[0];
+        new CfnOutput(this, 'DatabaseSecurityGroupId', {
+            value: databaseSecurityGroup.securityGroupId,
+            exportName: props.databaseSecurityGroupIdExportName,
+        });
 
         const fargateSecurityGroup = fargateService.service.connections.securityGroups[0];
         databaseSecurityGroup.connections.allowFrom(fargateSecurityGroup, Port.allTcp());
-
-        /* Database access container. */
-        // TODO: Move to separate stack (expose VPC/security group)
-        if (props.mysqlSupportContainer.enable) {
-            const mysqlEcrRepository = Repository.fromRepositoryAttributes(this, 'MySQLContainerRepository', {
-                repositoryName: props.mysqlSupportContainer.ecrRepositoryName,
-                repositoryArn: props.mysqlSupportContainer.ecrRepositoryArn,
-            });
-            const mysqlContainerImage = ContainerImage.fromEcrRepository(mysqlEcrRepository, props.mysqlSupportContainer.imageTag);
-
-            const mysqlTaskDefinition = new TaskDefinition(this, 'LittilMysqlClientTask', {
-                compatibility: Compatibility.FARGATE,
-                cpu: '256',
-                memoryMiB: '512',
-            });
-            mysqlTaskDefinition.addContainer('MySqlContainer', {
-                image: mysqlContainerImage,
-                cpu: 256,
-                memoryLimitMiB: 512,
-                environment: {
-                    DATASOURCE_HOST: database.instanceEndpoint.hostname,
-                    DATASOURCE_PORT: String(database.instanceEndpoint.port),
-                    DATASOURCE_DATABASE: databaseName,
-                    MYSQL_ROOT_PASSWORD: 'mysqlstagingroot',
-                }
-            });
-
-            const mysqlFargateService = new FargateService(this, 'BackendMySqlClient', {
-                cluster: fargateService.cluster,
-                taskDefinition: mysqlTaskDefinition,
-                assignPublicIp: false,
-                enableExecuteCommand: true,
-            });
-
-            const fargateMySQLSecurityGroup = mysqlFargateService.connections.securityGroups[0];
-            databaseSecurityGroup.connections.allowFrom(fargateMySQLSecurityGroup, Port.allTcp());
-        }
     }
 }

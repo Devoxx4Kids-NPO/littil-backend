@@ -4,7 +4,8 @@ import 'source-map-support/register';
 import { ApiStack, ApiStackProps } from '../lib/api-stack';
 import { CertificateStack } from '../lib/certificate-stack';
 import { EcrStack, EcrStackProps } from '../lib/ecr-stack';
-import { SupportEcrStack } from '../lib/support-ecr-stack';
+import { MaintenanceEcrStack } from '../lib/maintenance-ecr-stack';
+import { MaintenanceStack, MaintenanceStackProps } from '../lib/maintenance-stack';
 
 const app = new App();
 
@@ -12,8 +13,12 @@ const crossStackReferenceExportNames = {
     apiEcrRepositoryArn: 'apiEcrRepositoryArn',
     apiEcrRepositoryName: 'apiEcrRepositoryName',
     apiCertificateArn: 'apiCertificateArn',
-    mysqlRepositoryArn: 'mysqlRepositoryArn',
-    mysqlRepositoryName: 'mysqlRepositoryName',
+    maintenanceEcrRepositoryArn: 'maintenanceEcrRepositoryArn',
+    maintenanceEcrRepositoryName: 'maintenanceEcrRepositoryName',
+    databaseHost: 'databaseHost',
+    databasePort: 'databasePort',
+    databaseName: 'databaseName',
+    databaseSecurityGroup: 'databaseSecurityGroup',
 };
 
 const certificateStackProps = {
@@ -33,27 +38,61 @@ const apiEcrProps: EcrStackProps = {
 };
 new EcrStack(app, 'ApiEcrStack', apiEcrProps);
 
-const supportEcrProps = {
+const maintenanceEcrProps = {
     env: {
         region: 'eu-west-1',
     },
-    mysqlRepositoryNameExportName: crossStackReferenceExportNames.mysqlRepositoryName,
-    mysqlRepositoryArnExportName: crossStackReferenceExportNames.mysqlRepositoryArn,
+    maintenanceEcrRepositoryNameExportName: crossStackReferenceExportNames.maintenanceEcrRepositoryName,
+    maintenanceEcrRepositoryArnExportName: crossStackReferenceExportNames.maintenanceEcrRepositoryArn,
 };
-new SupportEcrStack(app, 'SupportEcrStack', supportEcrProps);
+new MaintenanceEcrStack(app, 'MaintenanceEcrStack', maintenanceEcrProps);
 
 const apiStackProps: ApiStackProps = {
     env: {
         region: 'eu-west-1',
     },
-    ecrRepositoryName: Fn.importValue(crossStackReferenceExportNames.apiEcrRepositoryName),
-    ecrRepositoryArn: Fn.importValue(crossStackReferenceExportNames.apiEcrRepositoryArn),
+    ecrRepository: {
+        name: Fn.importValue(crossStackReferenceExportNames.apiEcrRepositoryName),
+        arn: Fn.importValue(crossStackReferenceExportNames.apiEcrRepositoryArn),
+    },
     apiCertificateArn: Fn.importValue(crossStackReferenceExportNames.apiCertificateArn),
-    mysqlSupportContainer: {
+
+    databaseHostExportName: crossStackReferenceExportNames.databaseHost,
+    databasePortExportName: crossStackReferenceExportNames.databasePort,
+    databaseNameExportName: crossStackReferenceExportNames.databaseName,
+    databaseSecurityGroupIdExportName: crossStackReferenceExportNames.databaseSecurityGroup,
+
+    maintenanceContainer: {
         enable: false,
-        ecrRepositoryName: Fn.importValue(crossStackReferenceExportNames.mysqlRepositoryName),
-        ecrRepositoryArn: Fn.importValue(crossStackReferenceExportNames.mysqlRepositoryArn),
-        imageTag: '8.0.31-oracle',
+        imageTag: '1.0.0',
+        ecrRepository: {
+            name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
+            arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
+        },
     },
 };
-new ApiStack(app, 'ApiStack', apiStackProps);
+const apiStack = new ApiStack(app, 'ApiStack', apiStackProps);
+
+const maintenanceProps: MaintenanceStackProps = {
+    env: {
+        region: 'eu-west-1',
+    },
+    maintenanceContainer: {
+        enable: true,
+        imageTag: '1.0.0',
+        ecrRepository: {
+            name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
+            arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
+        },
+    },
+    database: {
+        host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
+        port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+        name: Fn.importValue(crossStackReferenceExportNames.databaseName),
+        vpc: apiStack.vpc,
+        securityGroup: {
+            id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+        },
+    },
+};
+new MaintenanceStack(app, 'MaintenanceServiceStack', maintenanceProps);
