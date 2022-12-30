@@ -17,6 +17,8 @@ org:
           id: ${M2M_CLIENT_ID:m2m_client_id}
           secret: ${M2M_CLIENT_SECRET:m2m_client_secret}
 quarkus:
+  live-reload:
+    instrumentation: true
   http:
     cors: true
   datasource:
@@ -34,7 +36,6 @@ quarkus:
     oidc-open-id-connect-url: ${org.littil.auth.tenant_uri}/authorize
     security-scheme-name: Auth0
     security-scheme: oauth2-implicit
-    oauth-scopes: [openid, email, profile]
   oidc:
     tenant-id: "dev-g60bne29"
     authorization-path: /authorize?audience=${org.littil.auth.tenant_uri}/api/v2/

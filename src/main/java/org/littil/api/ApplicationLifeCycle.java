@@ -70,7 +70,7 @@ public class ApplicationLifeCycle {
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    private void persistDevData() {
+    void persistDevData() {
         log.info("Persisting development data to datasource, this should not be happening in staging nor production.");
 
         try (Connection connection = dataSource.getConnection()) {

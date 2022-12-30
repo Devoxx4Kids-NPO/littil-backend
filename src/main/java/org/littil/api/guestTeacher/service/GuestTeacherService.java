@@ -57,7 +57,7 @@ public class GuestTeacherService {
         return Objects.isNull(guestTeacher.getId()) ? saveTeacher(guestTeacher, userId) : update(guestTeacher, userId);
     }
 
-    private GuestTeacher saveTeacher(@Valid GuestTeacher guestTeacher, UUID userId) {
+    GuestTeacher saveTeacher(@Valid GuestTeacher guestTeacher, UUID userId) {
         GuestTeacherEntity entity = mapper.toEntity(guestTeacher);
         Optional<User> user = userService.getUserById(userId);
         if (user.isEmpty()) {
@@ -87,7 +87,7 @@ public class GuestTeacherService {
         authenticationService.removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, id);
     }
 
-    private GuestTeacher update(@Valid GuestTeacher guestTeacher, UUID userId) {
+    GuestTeacher update(@Valid GuestTeacher guestTeacher, UUID userId) {
         GuestTeacherEntity entity = repository.findByIdOptional(guestTeacher.getId())
                 .orElseThrow(() -> new NotFoundException("No Teacher found for Id"));
 
