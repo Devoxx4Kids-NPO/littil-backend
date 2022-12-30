@@ -17,6 +17,8 @@ org:
           id: ${M2M_CLIENT_ID:m2m_client_id}
           secret: ${M2M_CLIENT_SECRET:m2m_client_secret}
 quarkus:
+  live-reload:
+    instrumentation: true
   http:
     cors: true
   datasource:
