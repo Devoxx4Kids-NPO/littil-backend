@@ -16,7 +16,7 @@ docker build . -t 680278545709.dkr.ecr.eu-west-1.amazonaws.com/littil-backend-ma
 Log in to ECR using Docker:
 
 ```bash
-aws --profile littil-staging-mysql-ecr-pushpull --region eu-west-1 ecr get-login-password | docker login --username AWS --password-stdin 680278545709.dkr.ecr.eu-west-1.amazonaws.com/littil-backend-maintenance
+aws --profile littil-staging-maintenance-ecr-pushpull --region eu-west-1 ecr get-login-password | docker login --username AWS --password-stdin 680278545709.dkr.ecr.eu-west-1.amazonaws.com/littil-backend-maintenance
 ```
 
 where `littil-staging-mysql-ecr-pushpull` is a profile configed in `~/.aws/credentials`

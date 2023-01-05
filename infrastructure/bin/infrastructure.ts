@@ -64,8 +64,8 @@ new ApiStack(app, 'ApiStack', apiStackProps);
 const maintenanceProps: MaintenanceStackProps = {
     env,
     maintenanceContainer: {
-        enable: true,
-        imageTag: '1.0.1',
+        enable: false,
+        imageTag: '1.0.2',
         ecrRepository: {
             name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
             arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
