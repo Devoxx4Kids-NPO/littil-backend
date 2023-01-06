@@ -20,7 +20,7 @@
       <sonar.projectKey>littil-backend</sonar.projectKey>
       <lombok.version>1.18.24</lombok.version>
       <mapstruct.version>1.5.3.Final</mapstruct.version>
-      <assertj.version>3.23.1</assertj.version>
+      <assertj.version>3.24.0</assertj.version>
       <archunit.version>1.0.1</archunit.version>
       <jacoco.version>0.8.8</jacoco.version>
       <auth0.version>1.44.1</auth0.version>
