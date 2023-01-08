@@ -10,7 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "cdk:list": "cdk ls",
-    "cdk:diff": "cdk --profile=littil-cdk-staging-backend diff",
+    "cdk:diff": "cdk diff",
     "cdk:synth": "cdk synth",
     "cdk:deploy": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack MaintenanceEcrStack MaintenanceServiceStack --require-approval=never"
   },

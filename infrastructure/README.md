@@ -71,7 +71,7 @@ npm run build
 npm run cdk:synth --  --context environment=<env> --context account=<account>  --profile=<profile>
 ```
 
-Where `<env>` is the environment, like acc or prod, `<account>` is the numerical AWS account ID and <profile> is the
+Where `<env>` is the environment, like staging or production, `<account>` is the numerical AWS account ID and <profile> is the
 name of the credentials profile as configured in `~/.aws/credentials`. These credentials need to be for
 a `LITTIL-<country>-<env>-littil-frontend-Cdk-User` user.
 
