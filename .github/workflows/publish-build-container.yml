@@ -77,7 +77,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
-          role-session-name: github_publish_littil_frontend
+          role-session-name: github_publish_littil_backend
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Push image
         run: |
