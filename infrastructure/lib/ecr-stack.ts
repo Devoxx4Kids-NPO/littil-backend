@@ -64,7 +64,7 @@ export class EcrStack extends Stack {
 
         /* Push pull user for manual pushing of images. */
         // TODO: Remove when automated from pipeline
-        const pushPullUser = new User(this, 'PushPullUser', {userName: 'Backend-Ecr-PushPull'});
+        const pushPullUser = new User(this, 'ManualPushPullUser', {userName: 'LITTIL-NL-staging-Ecr-Manual-PushPull'});
         pushPullPolicy.attachToUser(pushPullUser);
         loginToEcrPolicy.attachToUser(pushPullUser);
 
