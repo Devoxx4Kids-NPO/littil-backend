@@ -79,6 +79,9 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-session-name: github_publish_littil_backend
           aws-region: ${{ secrets.AWS_REGION }}
+      - name:  Test credentials
+        run: |
+          aws sts get-caller-identity
       - name: Push image
         run: |
           IMAGE_ID=${{ secrets.AWS_ECR_REPOSITORY }}/$IMAGE_NAME
