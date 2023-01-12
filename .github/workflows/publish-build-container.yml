@@ -95,17 +95,16 @@ jobs:
           IMAGE_VERSION=${{ env.IMAGE_VERSION }}
           ECR_IMAGE_ID=${{ secrets.AWS_ECR_REPOSITORY }}
 
-          echo ECR_IMAGE_ID=$ECR_IMAGE_ID
-          echo IMAGE_VERSION=$IMAGE_VERSION
-
-          docker tag $IMAGE_NAME $ECR_IMAGE_ID:$IMAGE_VERSION
-          docker tag $IMAGE_NAME $ECR_IMAGE_ID:latest
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
 
+          docker tag $IMAGE_NAME $ECR_IMAGE_ID:$IMAGE_VERSION
           echo "Going to push $ECR_IMAGE_ID:$IMAGE_VERSION to ECR"
           docker push $ECR_IMAGE_ID:$IMAGE_VERSION
+
+          docker tag $IMAGE_NAME $ECR_IMAGE_ID:latest
+          echo "Going to push $ECR_IMAGE_ID:latest to ECR"
           docker push $ECR_IMAGE_ID:latest
-      - name: Tag and push image to ECR
+      - name: Force restart of ECS service
         run: |
           ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNApiVpc629800F1-NCpU7lAtciFh
           ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-FB07YvpQgxGv
