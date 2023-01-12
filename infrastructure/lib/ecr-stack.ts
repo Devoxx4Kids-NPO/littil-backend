@@ -13,7 +13,7 @@ export class EcrStack extends Stack {
         super(scope, id, props);
         const ecrRepository = new Repository(this, 'LittilBackendRepository', {
             repositoryName: 'littil-backend',
-            imageTagMutability: TagMutability.IMMUTABLE,
+            imageTagMutability: TagMutability.MUTABLE,
         });
 
         new CfnOutput(this, 'ApiRepositoryNameOutput', {
@@ -88,5 +88,21 @@ export class EcrStack extends Stack {
         });
         pushPullPolicy.attachToRole(ciPushRole);
         loginToEcrPolicy.attachToRole(ciPushRole);
+
+        const updateServicePolicy = new Policy(this, 'EcrUpdateServicePolicy', {
+            policyName: 'EcrUpdateServicePolicy',
+            statements: [
+                new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    actions: [
+                        'ecs:UpdateService',
+                    ],
+                    resources: [
+                        '*',
+                    ],
+                }),
+            ],
+        });
+        updateServicePolicy.attachToRole(ciPushRole);
     }
 }
