@@ -77,6 +77,8 @@ jobs:
 
           echo IMAGE_ID=$IMAGE_ID
 
+          echo "Going to push $ECR_IMAGE_ID:$VERSION to ghcr.io"
+
           docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_VERSION
           docker push $IMAGE_ID:$IMAGE_VERSION
       - name: Configure aws credentials
@@ -94,8 +96,10 @@ jobs:
           ECR_IMAGE_ID=${{ secrets.AWS_ECR_REPOSITORY }}/$IMAGE_NAME
 
           echo ECR_IMAGE_ID=$ECR_IMAGE_ID
+          echo IMAGE_VERSION=$IMAGE_VERSION
 
           docker tag $IMAGE_NAME $ECR_IMAGE_ID:$IMAGE_VERSION
           aws ecr get-login-password | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
+
           echo "Going to push $ECR_IMAGE_ID:$VERSION to ECR"
-          docker push $ECR_IMAGE_ID:$VERSION
+          docker push $ECR_IMAGE_ID:$IMAGE_VERSION
