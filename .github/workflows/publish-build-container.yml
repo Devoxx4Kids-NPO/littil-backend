@@ -99,6 +99,7 @@ jobs:
           echo IMAGE_VERSION=$IMAGE_VERSION
 
           docker tag $IMAGE_NAME $ECR_IMAGE_ID:$IMAGE_VERSION
+          docker tag $IMAGE_NAME $ECR_IMAGE_ID:latest
           aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
 
           echo "Going to push $ECR_IMAGE_ID:$IMAGE_VERSION to ECR"
