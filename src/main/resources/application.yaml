@@ -115,7 +115,7 @@ quarkus:
 "%prod":
   quarkus:
     banner:
-      enabled: false
+      enabled: true
     datasource:
       username: ${DATASOURCE_USERNAME:littil}
       password: ${DATASOURCE_PASSWORD:littil}
