@@ -97,4 +97,5 @@ jobs:
 
           docker tag $IMAGE_NAME $ECR_IMAGE_ID:$IMAGE_VERSION
           aws ecr get-login-password | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
+          echo "Going to push $ECR_IMAGE_ID:$VERSION to ECR"
           docker push $ECR_IMAGE_ID:$VERSION
