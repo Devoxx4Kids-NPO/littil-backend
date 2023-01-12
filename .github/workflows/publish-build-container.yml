@@ -65,7 +65,7 @@ jobs:
           [ "$VERSION" == "main" ] && VERSION=latest
           
           echo VERSION=$VERSION
-          echo "::set-env name=IMAGE_VERSION::$VERSION"
+          echo "{IMAGE_VERSION}={$VERSION}" >> $GITHUB_ENV
       - name: Tag and push image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
