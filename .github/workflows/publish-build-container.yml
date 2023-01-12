@@ -107,8 +107,8 @@ jobs:
           docker push $ECR_IMAGE_ID:latest
       - name: Tag and push image to ECR
         run: |
-          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNLittilBackendVpc2DA926C3-zO3DN80vIqXg
-          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-hfAqBYel4Qjm
+          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNApiVpc629800F1-NCpU7lAtciFh
+          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-FB07YvpQgxGv
 
           echo "Going to redeploy $ECS_SERVICE on $ECS_CLUSTER"
 
