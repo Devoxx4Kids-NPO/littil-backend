@@ -66,8 +66,10 @@ jobs:
           
           echo VERSION=$VERSION
           echo "{IMAGE_VERSION}={$VERSION}" >> $GITHUB_ENV
+          echo $GITHUB_ENV
       - name: Tag and push image
         run: |
+          IMAGE_VERSION=${{ env.action_state }}
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
 
           # Change all uppercase to lowercase
@@ -88,6 +90,7 @@ jobs:
           aws sts get-caller-identity
       - name: Tag ECR image
         run: |
+          IMAGE_VERSION=${{ env.action_state }}
           ECR_IMAGE_ID=${{ secrets.AWS_ECR_REPOSITORY }}/$IMAGE_NAME
 
           echo ECR_IMAGE_ID=$ECR_IMAGE_ID
