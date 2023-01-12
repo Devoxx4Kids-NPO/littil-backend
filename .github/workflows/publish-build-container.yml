@@ -53,7 +53,7 @@ jobs:
       - name: Log in to registry
         # This is where you will update the PAT to GITHUB_TOKEN
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-      - name: Determine image version
+      - name: Determine container image version
         run: |
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
@@ -67,7 +67,7 @@ jobs:
           echo VERSION=$VERSION
           echo "IMAGE_VERSION=$VERSION" >> $GITHUB_ENV
           cat $GITHUB_ENV
-      - name: Tag and push image
+      - name: Tag and push image to ghcr.io
         run: |
           IMAGE_VERSION=${{ env.IMAGE_VERSION }}
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
@@ -90,16 +90,16 @@ jobs:
       - name:  Test credentials
         run: |
           aws sts get-caller-identity
-      - name: Tag ECR image
+      - name: Tag and push image to ECR
         run: |
           IMAGE_VERSION=${{ env.IMAGE_VERSION }}
-          ECR_IMAGE_ID=${{ secrets.AWS_ECR_REPOSITORY }}/$IMAGE_NAME
+          ECR_IMAGE_ID=${{ secrets.AWS_ECR_REPOSITORY }}
 
           echo ECR_IMAGE_ID=$ECR_IMAGE_ID
           echo IMAGE_VERSION=$IMAGE_VERSION
 
           docker tag $IMAGE_NAME $ECR_IMAGE_ID:$IMAGE_VERSION
-          aws ecr get-login-password | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
 
           echo "Going to push $ECR_IMAGE_ID:$IMAGE_VERSION to ECR"
           docker push $ECR_IMAGE_ID:$IMAGE_VERSION
