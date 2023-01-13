@@ -1,11 +1,10 @@
 ---
-name: littil-backend-native-build
+name: littil-backend-build-deploy
 
 on:
   push:
     branches:
       - main
-      - LITTIL-150-Deployment-from-CI
     tags:
       - v*
 
