@@ -24,6 +24,6 @@ public class AuditableEntityListener {
     }
 
     private UserId currentUserId() {
-        return new UserId(tokenHelper.getCurrentUserId());
+        return new UserId(tokenHelper.currentUserId().orElse(null));
     }
 }

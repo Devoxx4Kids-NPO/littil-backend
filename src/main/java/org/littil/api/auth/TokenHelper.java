@@ -35,12 +35,16 @@ public class TokenHelper {
         return accessToken.getClaim(claimNamespace.concat(claimName));
     }
 
-    public UUID getCurrentUserId() {
+    public Optional<UUID> currentUserId() {
         String userId = getCustomClaim(userIdClaimName);
         return Optional.ofNullable(userId)
-                .map(UUID::fromString)
+                .map(UUID::fromString);
+    }
+
+    public UUID getCurrentUserId() {
+        return currentUserId()
                 .orElseThrow(() -> {
-                    throw new AuthenticationException(String.format("Unable to retrieve LiTTiL userId from JWT token with provider id %s", accessToken.getIssuer()));
+                   throw new AuthenticationException(String.format("Unable to retrieve LiTTiL userId from JWT token with provider id %s", accessToken.getIssuer()));
                 });
     }
 

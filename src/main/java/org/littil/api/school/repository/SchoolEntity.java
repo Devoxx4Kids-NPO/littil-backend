@@ -21,7 +21,6 @@ import java.util.UUID;
 public class SchoolEntity extends AbstractAuditableEntity {
 
     @Id
-    @GeneratedValue
     @Column(name = "school_id", columnDefinition = "BINARY(16)")
     private UUID id;
 

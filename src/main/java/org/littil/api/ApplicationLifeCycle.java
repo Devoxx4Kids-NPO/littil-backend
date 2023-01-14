@@ -121,7 +121,7 @@ public class ApplicationLifeCycle {
 
     private Optional<UUID> getAuthorizationClaim(Map<String,Object> appMetaData,AuthorizationType type) {
         Map<String,Object> authorizations = (Map<String, Object>) appMetaData.get(this.authorizationsClaimName);
-        List<UUID> value = Optional.ofNullable((List)authorizations.get(type.getTokenValue())).orElse(Collections.emptyList());
-        return value.stream().findFirst();
+        List<String> value = Optional.ofNullable((List)authorizations.get(type.getTokenValue())).orElse(Collections.emptyList());
+        return value.stream().map(UUID::fromString).findFirst();
     }
 }
