@@ -109,6 +109,6 @@ public class SchoolService {
     }
 
     @Transactional
-    public void createAndPersistDevSchool(UUID schoolId, UUID userId) {
+    public void createAndPersistDevData(UUID id, UUID userId) {
     }
 }

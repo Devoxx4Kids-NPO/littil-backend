@@ -97,13 +97,12 @@ public class UserService {
     }
 
     @Transactional
-    public User createAndPersistDevUser(UUID id, String auth0id, String email) {
+    public void createAndPersistDevData(UUID id, String auth0id, String email) {
         UserEntity user = new UserEntity();
         user.setId(id);
         user.setProvider(Provider.AUTH0);
         user.setProviderId("auth0|"+auth0id);
         user.setEmailAddress(email);
         this.repository.persist(user);
-        return this.mapper.toDomain(user);
     }
 }

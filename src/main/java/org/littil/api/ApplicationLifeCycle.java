@@ -74,7 +74,7 @@ public class ApplicationLifeCycle {
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     Stream<String> persistDevUserData(String email) {
            return this.findAuth0User(email)
-                .map(this::createAndSaveFor)
+                .map(this::createAndPersistDevData)
                 .flatMap(Optional::stream);
     }
 
@@ -90,7 +90,7 @@ public class ApplicationLifeCycle {
         }
     }
 
-    protected Optional<String> createAndSaveFor(User user) {
+    protected Optional<String> createAndPersistDevData(User user) {
         var appMetaData = Optional.ofNullable(user)
                 .map(User::getAppMetadata)
                 .filter(data -> data.containsKey(this.userIdClaimName))
@@ -111,12 +111,12 @@ public class ApplicationLifeCycle {
             log.warn("Not creating user[{}] for dev; duplicate email {}",auth0id,user.getEmail());
             return Optional.empty();
         }
-        String email = this.userService.createAndPersistDevUser(userId, auth0id, user.getEmail()).getEmailAddress();
+        this.userService.createAndPersistDevData(userId, auth0id, user.getEmail());
         getAuthorizationClaim(appMetaData,AuthorizationType.SCHOOL)
-                .ifPresent(schoolId -> schoolService.createAndPersistDevSchool(schoolId,userId));
+                .ifPresent(schoolId -> schoolService.createAndPersistDevData(schoolId,userId));
         getAuthorizationClaim(appMetaData,AuthorizationType.GUEST_TEACHER)
-                .ifPresent(teacherId -> guestTeacherService.createAndPersistDevSchool(teacherId,userId));
-        return Optional.of(email);
+                .ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId,userId));
+        return Optional.of(user.getEmail());
     }
 
     private Optional<UUID> getAuthorizationClaim(Map<String,Object> appMetaData,AuthorizationType type) {
