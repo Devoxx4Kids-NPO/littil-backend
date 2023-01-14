@@ -62,26 +62,21 @@ public class ApplicationLifeCycle {
         }
     }
 
-    @Transactional(Transactional.TxType.REQUIRES_NEW)
     void persistDevData() {
         log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production.");
         DEV_USERS.stream()
-                .flatMap(this::findAuth0User)
-                .map(this::toUserEntity)
-                .flatMap(Optional::stream)
-                .peek(this.userRepository::persist)
+                .flatMap(this::persistDevUserData)
                 .map(UserEntity::getEmailAddress)
                 .forEach(email -> log.info("Created {} user for development purposes",email));
         log.info("Added general LiTTiL users for development purposes. You can login via email-addresses and the default password to the dev tenant.");
     }
 
-    private static UserEntity create(UUID id, String auth0Id, String email) {
-        var user = new UserEntity();
-        user.setId(id);
-        user.setProvider(Provider.AUTH0);
-        user.setProviderId("auth0|"+auth0Id);
-        user.setEmailAddress(email);
-        return user;
+    @Transactional(Transactional.TxType.REQUIRES_NEW)
+    Stream<UserEntity> persistDevUserData(String email) {
+           return this.findAuth0User(email)
+                .map(this::toUserEntity)
+                .flatMap(Optional::stream)
+                .peek(this.userRepository::persist);
     }
 
     private Stream<User> findAuth0User(String email) {
@@ -118,7 +113,11 @@ public class ApplicationLifeCycle {
             return Optional.empty();
         }
 
-        var userEntity = create(userId,auth0id,user.getEmail());
+        var userEntity = new UserEntity();
+        userEntity.setId(userId);
+        userEntity.setProvider(Provider.AUTH0);
+        userEntity.setProviderId("auth0|"+auth0id);
+        userEntity.setEmailAddress(user.getEmail());
 
         var schoolId = getAuthorizationClaim(appMetaData,AuthorizationType.SCHOOL);
         var teacherId = getAuthorizationClaim(appMetaData,AuthorizationType.GUEST_TEACHER);
