@@ -17,6 +17,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -78,13 +79,13 @@ public class ApplicationLifeCycle {
 
     private Stream<UserEntity> devUsers() {
         return Stream.of(
-                create("62fd3224f76949850e9eb264","info@littil.org")
+                create(UUID.fromString("e87cda48-9a98-41a7-89bb-9ee62441c84c"),"62fd3224f76949850e9eb264","info@littil.org")
         );
     }
 
-    private UserEntity create(String auth0Id, String email) {
+    private UserEntity create(UUID id, String auth0Id, String email) {
         var user = new UserEntity();
-        //user.setId(UUID.from(e87cda48-9a98-41a7-89bb-9ee62441c84c)) // old fixed id
+        user.setId(id);
         user.setProvider(Provider.AUTH0);
         user.setProviderId("auth0|"+auth0Id);
         user.setEmailAddress(email);

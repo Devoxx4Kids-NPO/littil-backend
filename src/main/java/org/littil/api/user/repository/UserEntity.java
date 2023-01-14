@@ -27,9 +27,8 @@ import java.util.UUID;
 public class UserEntity {
 
     @Id
-    @GeneratedValue
     @Column(name = "user_id", columnDefinition = "BINARY(16)")
-    private UUID id;
+    private UUID id = UUID.randomUUID();
 
     @Column(name = "provider")
     @Enumerated(EnumType.STRING)
