@@ -57,6 +57,9 @@ public class UserService {
         }
 
         //save user locally
+        if(user.getId()==null) {
+            user.setId(UUID.randomUUID());
+        }
         user.setProvider(providerService.whoAmI());
         UserEntity userEntity = mapper.toEntity(user);
         repository.persist(userEntity);

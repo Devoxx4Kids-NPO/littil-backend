@@ -28,7 +28,7 @@ public class UserEntity {
 
     @Id
     @Column(name = "user_id", columnDefinition = "BINARY(16)")
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 
     @Column(name = "provider")
     @Enumerated(EnumType.STRING)
