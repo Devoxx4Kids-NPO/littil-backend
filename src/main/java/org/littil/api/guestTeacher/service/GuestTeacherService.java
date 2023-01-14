@@ -22,10 +22,8 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.DayOfWeek;
+import java.util.*;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -68,6 +66,9 @@ public class GuestTeacherService {
         UserEntity userEntity = userMapper.toEntity(user.get());
         entity.setUser(userEntity);
         locationRepository.persist(entity.getLocation());
+        if(entity.getId()==null) {
+            entity.setId(UUID.randomUUID());
+        }
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
@@ -113,5 +114,18 @@ public class GuestTeacherService {
 
     @Transactional
     public void createAndPersistDevData(UUID id, UUID userId) {
+        GuestTeacher teacher = new GuestTeacher();
+        teacher.setAddress("Lutulistate 41");
+        teacher.setPostalCode("6716NT");
+        teacher.setSurname("Nederland");
+        teacher.setFirstName("LITTIL");
+        teacher.setPrefix("Devoxx4Kids");
+        teacher.setAvailability(EnumSet.of(DayOfWeek.TUESDAY,DayOfWeek.THURSDAY));
+        var entity = this.mapper.toEntity(teacher);
+        entity.setId(id);
+        this.userService.getUserById(userId).map(userMapper::toEntity).ifPresent(entity::setUser);
+        this.locationRepository.persist(entity.getLocation());
+        this.repository.persist(entity);
+        log.info("persisted Dev GuestTeacher {} for Development purposes",id);
     }
 }
