@@ -8,6 +8,9 @@ import { allowEcsDescribeTaskStatement } from './iam/allowEcsDescribeTaskStateme
 import { allowEcsExecuteCommandStatement } from './iam/allowEcsExecuteCommandStatement';
 
 export interface MaintenanceStackProps extends StackProps {
+    apiVpc: {
+        id: string;
+    };
     maintenanceContainer: {
         enable: boolean;
         ecrRepository: {
@@ -67,8 +70,8 @@ export class MaintenanceStack extends Stack {
                 }
             });
 
-        const vpc = Vpc.fromLookup(this, 'TestVPC', {
-            vpcId: 'vpc-0a33a4f59226ac8a7',
+        const vpc = Vpc.fromLookup(this, 'ApiVpc', {
+            vpcId: props.apiVpc.id,
         });
 
         const ecsCluster = new Cluster(this, 'MaintenanceCluster', {

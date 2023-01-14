@@ -1,6 +1,6 @@
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Repository, TagMutability } from 'aws-cdk-lib/aws-ecr';
-import { Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
+import { Effect, Policy, PolicyStatement, Role, User, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 export interface EcrStackProps extends StackProps {
@@ -13,7 +13,7 @@ export class EcrStack extends Stack {
         super(scope, id, props);
         const ecrRepository = new Repository(this, 'LittilBackendRepository', {
             repositoryName: 'littil-backend',
-            imageTagMutability: TagMutability.IMMUTABLE,
+            imageTagMutability: TagMutability.MUTABLE,
         });
 
         new CfnOutput(this, 'ApiRepositoryNameOutput', {
@@ -25,6 +25,7 @@ export class EcrStack extends Stack {
             value: ecrRepository.repositoryArn,
         });
 
+        /* Push-pull permissions. */
         const pushPullPolicy = new Policy(this, 'EcrPushPullPolicy', {
             policyName: 'BackendEcrPushPullPolicy',
             statements: [
@@ -63,8 +64,45 @@ export class EcrStack extends Stack {
 
         /* Push pull user for manual pushing of images. */
         // TODO: Remove when automated from pipeline
-        const pushPullUser = new User(this, 'PushPullUser', {userName: 'Backend-Ecr-PushPull'});
+        const pushPullUser = new User(this, 'ManualPushPullUser', {userName: 'LITTIL-NL-staging-Ecr-Manual-PushPull'});
         pushPullPolicy.attachToUser(pushPullUser);
         loginToEcrPolicy.attachToUser(pushPullUser);
+
+        /* Push-pull permissions for Github repository. */
+        const issuer = 'token.actions.githubusercontent.com';
+        const gitHubOrg = 'Devoxx4Kids-NPO';
+        const githubRepoName = 'littil-backend';
+        const accountId = this.account;
+        const openIdConnectProviderArn = `arn:aws:iam::${accountId}:oidc-provider/${issuer}`;
+
+        const ciPushRole = new Role(this, 'EcrCiPushRole', {
+            roleName: 'LITTIL-NL-staging-api-ecr-push',
+            assumedBy: new WebIdentityPrincipal(openIdConnectProviderArn, {
+                StringLike: {
+                    [`${issuer}:sub`]: `repo:${gitHubOrg}/${githubRepoName}:*`,
+                },
+                StringEquals: {
+                    [`${issuer}:aud`]: 'sts.amazonaws.com',
+                },
+            }),
+        });
+        pushPullPolicy.attachToRole(ciPushRole);
+        loginToEcrPolicy.attachToRole(ciPushRole);
+
+        const updateServicePolicy = new Policy(this, 'EcrUpdateServicePolicy', {
+            policyName: 'EcrUpdateServicePolicy',
+            statements: [
+                new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    actions: [
+                        'ecs:UpdateService',
+                    ],
+                    resources: [
+                        '*',
+                    ],
+                }),
+            ],
+        });
+        updateServicePolicy.attachToRole(ciPushRole);
     }
 }

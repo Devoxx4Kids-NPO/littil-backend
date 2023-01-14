@@ -1,5 +1,5 @@
 ---
-name: littil-backend-native-build
+name: littil-backend-build-deploy
 
 on:
   push:
@@ -18,6 +18,7 @@ jobs:
     permissions:
       packages: write
       contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v3
       - uses: graalvm/setup-graalvm@v1
@@ -51,13 +52,8 @@ jobs:
       - name: Log in to registry
         # This is where you will update the PAT to GITHUB_TOKEN
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-      - name: Push image
+      - name: Determine container image version
         run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           
@@ -67,8 +63,51 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "main" ] && VERSION=latest
           
-          echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
-          
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+          echo "IMAGE_VERSION=$VERSION" >> $GITHUB_ENV
+          cat $GITHUB_ENV
+      - name: Tag and push image to ghcr.io
+        run: |
+          IMAGE_VERSION=${{ env.IMAGE_VERSION }}
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+
+          # Change all uppercase to lowercase
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+
+          echo IMAGE_ID=$IMAGE_ID
+
+          echo "Going to push $IMAGE_ID:$IMAGE_VERSION to ghcr.io"
+
+          docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_VERSION
+          docker push $IMAGE_ID:$IMAGE_VERSION
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-session-name: github_publish_littil_backend
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name:  Test credentials
+        run: |
+          aws sts get-caller-identity
+      - name: Tag and push image to ECR
+        run: |
+          IMAGE_VERSION=${{ env.IMAGE_VERSION }}
+          ECR_IMAGE_ID=${{ secrets.AWS_ECR_REPOSITORY }}
+
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_REPOSITORY }}
+
+          docker tag $IMAGE_NAME $ECR_IMAGE_ID:$IMAGE_VERSION
+          echo "Going to push $ECR_IMAGE_ID:$IMAGE_VERSION to ECR"
+          docker push $ECR_IMAGE_ID:$IMAGE_VERSION
+
+          docker tag $IMAGE_NAME $ECR_IMAGE_ID:latest
+          echo "Going to push $ECR_IMAGE_ID:latest to ECR"
+          docker push $ECR_IMAGE_ID:latest
+      - name: Force restart of ECS service
+        run: |
+          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNApiVpc629800F1-NCpU7lAtciFh
+          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-FB07YvpQgxGv
+
+          echo "Going to redeploy $ECS_SERVICE on $ECS_CLUSTER"
+
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment

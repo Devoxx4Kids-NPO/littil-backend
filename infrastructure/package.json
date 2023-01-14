@@ -10,9 +10,9 @@
     "test": "jest",
     "cdk": "cdk",
     "cdk:list": "cdk ls",
-    "cdk:diff": "cdk --profile=littil-cdk-staging-backend diff",
+    "cdk:diff": "cdk diff",
     "cdk:synth": "cdk synth",
-    "cdk:deploy": "cdk deploy ApiCertificatesStack ApiEcrStack ApiStack MaintenanceEcrStack MaintenanceServiceStack --require-approval=never"
+    "cdk:deploy": "cdk deploy ApiCertificatesStack ApiEcrStack ApiVpcStack ApiDatabaseStack ApiStack MaintenanceEcrStack MaintenanceServiceStack --require-approval=never"
   },
   "devDependencies": {
     "@types/jest": "^27.5.2",

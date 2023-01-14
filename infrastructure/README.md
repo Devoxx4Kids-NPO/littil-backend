@@ -26,7 +26,7 @@ exec into the container.
 To exec into a container, use the following command:
 
 ```bash
-winpty aws --profile littil-staging-maintenance-ecs-exec ecs execute-command --cluster Some-Cluster-abc123 --task 123abc456def --container web --command "sh" --interactive
+aws --profile littil-staging-maintenance-ecs-exec ecs execute-command --cluster Some-Cluster-abc123 --task 123abc456def --container web --command "sh" --interactive
 ```
 
 Where `littil-staging-maintenance-ecs-exec` is a profile configured in `~/.aws/credentials` (e.g.
@@ -71,12 +71,20 @@ npm run build
 npm run cdk:synth --  --context environment=<env> --context account=<account>  --profile=<profile>
 ```
 
-Where `<env>` is the environment, like acc or prod, `<account>` is the numerical AWS account ID and <profile> is the
+Where `<env>` is the environment, like staging or production, `<account>` is the numerical AWS account ID and <profile> is the
 name of the credentials profile as configured in `~/.aws/credentials`. These credentials need to be for
-a `LITTIL-<country>-<env>-littil-frontend-Cdk-User` user.
+a `LITTIL-<country>-<env>-littil-backend-Cdk-User` user.
 
 To deploy:
 
 ```bash
 npm run cdk:staging:deploy  --context environment=<env> --context account=<account>  --profile=<profile>
 ```
+
+# AWS CLI
+
+The commands used in this README partially use the NodeJS AWS libs (e.g. `npm run cdk` / `npx cdk`), but some actions (such as the ECS Exec) might require use of the AWS CLI.
+The CLI can be downloaded at https://aws.amazon.com/cli/
+Specifically for the ECS Exec command, the session manager is required: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
+
+To authenticate with AWS, the AWS CLI can use named profiles (as used in this README): https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html
