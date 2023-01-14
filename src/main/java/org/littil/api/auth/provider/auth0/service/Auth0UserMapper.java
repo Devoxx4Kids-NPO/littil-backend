@@ -4,9 +4,12 @@ import com.auth0.json.mgmt.Role;
 import com.auth0.json.mgmt.users.User;
 import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthUser;
+import org.littil.api.user.repository.UserEntity;
 import org.mapstruct.Mapper;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
