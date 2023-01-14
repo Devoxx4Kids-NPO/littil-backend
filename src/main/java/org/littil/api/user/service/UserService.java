@@ -3,6 +3,7 @@ package org.littil.api.user.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.PasswordService;
@@ -37,6 +38,10 @@ public class UserService {
 
     public Optional<User> getUserByProviderId(String providerId) {
         return repository.findByProviderId(providerId).map(mapper::toDomain);
+    }
+
+    public Optional<User> getUserByEmailAddress(String email) {
+        return repository.findByEmailAddress(email).map(mapper::toDomain);
     }
 
     public List<User> listUsers() {
@@ -89,5 +94,16 @@ public class UserService {
         }, () -> {
             throw new NotFoundException();
         });
+    }
+
+    @Transactional
+    public User createAndPersistDevUser(UUID id, String auth0id, String email, Optional<UUID> schoolId, Optional<UUID> guestTeacherId) {
+        UserEntity user = new UserEntity();
+        user.setId(id);
+        user.setProvider(Provider.AUTH0);
+        user.setProviderId("auth0|"+auth0id);
+        user.setEmailAddress(email);
+        this.repository.persist(user);
+        return this.mapper.toDomain(user);
     }
 }

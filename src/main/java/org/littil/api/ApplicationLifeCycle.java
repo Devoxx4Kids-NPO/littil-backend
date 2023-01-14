@@ -8,11 +8,8 @@ import io.quarkus.runtime.StartupEvent;
 import io.quarkus.runtime.configuration.ProfileManager;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthorizationType;
-import org.littil.api.exception.EntityAlreadyExistsException;
-import org.littil.api.user.repository.UserEntity;
-import org.littil.api.user.repository.UserRepository;
+import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -21,13 +18,11 @@ import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static java.util.Collections.emptyList;
-
 @ApplicationScoped
 @Slf4j
 public class ApplicationLifeCycle {
 
-    //TODO: make this configurable with other purposes
+    //TODO: make this configurable for other purposes (e2e tests for example)
     private static final List<String> DEV_USERS = List.of(
             "info@littil.org",
             "testdocent1@littil.org",
@@ -50,7 +45,7 @@ public class ApplicationLifeCycle {
     String authorizationsClaimName;
 
     @Inject
-    UserRepository userRepository;
+    UserService userService;
 
     @Inject
     ManagementAPI managementAPI;
@@ -66,17 +61,15 @@ public class ApplicationLifeCycle {
         log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production.");
         DEV_USERS.stream()
                 .flatMap(this::persistDevUserData)
-                .map(UserEntity::getEmailAddress)
                 .forEach(email -> log.info("Created {} user for development purposes",email));
         log.info("Added general LiTTiL users for development purposes. You can login via email-addresses and the default password to the dev tenant.");
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    Stream<UserEntity> persistDevUserData(String email) {
+    Stream<String> persistDevUserData(String email) {
            return this.findAuth0User(email)
-                .map(this::toUserEntity)
-                .flatMap(Optional::stream)
-                .peek(this.userRepository::persist);
+                .map(this::createAndSaveFor)
+                .flatMap(Optional::stream);
     }
 
     private Stream<User> findAuth0User(String email) {
@@ -91,7 +84,7 @@ public class ApplicationLifeCycle {
         }
     }
 
-    protected Optional<UserEntity> toUserEntity(User user) {
+    protected Optional<String> createAndSaveFor(User user) {
         var appMetaData = Optional.ofNullable(user)
                 .map(User::getAppMetadata)
                 .filter(data -> data.containsKey(this.userIdClaimName))
@@ -105,24 +98,19 @@ public class ApplicationLifeCycle {
         var auth0id = user.getId();
 
         var userId = UUID.fromString(String.valueOf(appMetaData.get(this.userIdClaimName)));
-        if(this.userRepository.findByIdOptional(userId).isPresent()) {
+        if(this.userService.getUserById(userId).isPresent()) {
             log.warn("Not creating user[{}] for dev; duplicate id {}",auth0id,userId);
             return Optional.empty();
-        } else if(this.userRepository.findByEmailAddress(user.getEmail()).isPresent()) {
+        } else if(this.userService.getUserByEmailAddress(user.getEmail()).isPresent()) {
             log.warn("Not creating user[{}] for dev; duplicate email {}",auth0id,user.getEmail());
             return Optional.empty();
         }
-
-        var userEntity = new UserEntity();
-        userEntity.setId(userId);
-        userEntity.setProvider(Provider.AUTH0);
-        userEntity.setProviderId("auth0|"+auth0id);
-        userEntity.setEmailAddress(user.getEmail());
-
-        var schoolId = getAuthorizationClaim(appMetaData,AuthorizationType.SCHOOL);
-        var teacherId = getAuthorizationClaim(appMetaData,AuthorizationType.GUEST_TEACHER);
-
-        return Optional.of(userEntity);
+        String email = this.userService.createAndPersistDevUser(
+                userId, auth0id, user.getEmail(),
+                getAuthorizationClaim(appMetaData,AuthorizationType.SCHOOL),
+                getAuthorizationClaim(appMetaData,AuthorizationType.GUEST_TEACHER)
+        ).getEmailAddress();
+        return Optional.of(email);
     }
 
     private Optional<UUID> getAuthorizationClaim(Map<String,Object> appMetaData,AuthorizationType type) {
