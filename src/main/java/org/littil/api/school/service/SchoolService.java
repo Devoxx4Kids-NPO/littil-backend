@@ -107,4 +107,8 @@ public class SchoolService {
         repository.persist(entity);
         return mapper.updateDomainFromEntity(entity, school);
     }
+
+    @Transactional
+    public void createAndPersistDevSchool(UUID schoolId, UUID userId) {
+    }
 }

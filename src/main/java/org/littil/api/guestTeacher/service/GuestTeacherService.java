@@ -111,4 +111,7 @@ public class GuestTeacherService {
         return user.getId();
     }
 
+    @Transactional
+    public void createAndPersistDevSchool(UUID schoolId, UUID userId) {
+    }
 }

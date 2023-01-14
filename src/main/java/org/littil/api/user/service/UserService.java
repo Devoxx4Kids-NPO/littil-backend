@@ -97,7 +97,7 @@ public class UserService {
     }
 
     @Transactional
-    public User createAndPersistDevUser(UUID id, String auth0id, String email, Optional<UUID> schoolId, Optional<UUID> guestTeacherId) {
+    public User createAndPersistDevUser(UUID id, String auth0id, String email) {
         UserEntity user = new UserEntity();
         user.setId(id);
         user.setProvider(Provider.AUTH0);

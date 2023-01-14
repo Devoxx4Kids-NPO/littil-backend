@@ -9,6 +9,8 @@ import io.quarkus.runtime.configuration.ProfileManager;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.service.AuthorizationType;
+import org.littil.api.guestTeacher.service.GuestTeacherService;
+import org.littil.api.school.service.SchoolService;
 import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -46,6 +48,10 @@ public class ApplicationLifeCycle {
 
     @Inject
     UserService userService;
+    @Inject
+    SchoolService schoolService;
+    @Inject
+    GuestTeacherService guestTeacherService;
 
     @Inject
     ManagementAPI managementAPI;
@@ -105,11 +111,11 @@ public class ApplicationLifeCycle {
             log.warn("Not creating user[{}] for dev; duplicate email {}",auth0id,user.getEmail());
             return Optional.empty();
         }
-        String email = this.userService.createAndPersistDevUser(
-                userId, auth0id, user.getEmail(),
-                getAuthorizationClaim(appMetaData,AuthorizationType.SCHOOL),
-                getAuthorizationClaim(appMetaData,AuthorizationType.GUEST_TEACHER)
-        ).getEmailAddress();
+        String email = this.userService.createAndPersistDevUser(userId, auth0id, user.getEmail()).getEmailAddress();
+        getAuthorizationClaim(appMetaData,AuthorizationType.SCHOOL)
+                .ifPresent(schoolId -> schoolService.createAndPersistDevSchool(schoolId,userId));
+        getAuthorizationClaim(appMetaData,AuthorizationType.GUEST_TEACHER)
+                .ifPresent(teacherId -> guestTeacherService.createAndPersistDevSchool(teacherId,userId));
         return Optional.of(email);
     }
 
