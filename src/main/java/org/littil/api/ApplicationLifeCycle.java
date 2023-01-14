@@ -1,6 +1,8 @@
 package org.littil.api;
 
 import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.filter.FieldsFilter;
+import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.users.User;
 import io.quarkus.runtime.StartupEvent;
@@ -17,6 +19,8 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -45,10 +49,8 @@ public class ApplicationLifeCycle {
 
     void onStart(@Observes StartupEvent ev) throws Auth0Exception {
         log.info("The application is starting with profile {}",ProfileManager.getActiveProfile());
-
         if (insertDevData) {
             persistDevData();
-            cleanLittilAuth0User();
         }
     }
 
@@ -69,8 +71,8 @@ public class ApplicationLifeCycle {
     @Transactional(Transactional.TxType.REQUIRES_NEW)
     void persistDevData() {
         log.info("Persisting development data to datasource, this should not be happening in staging nor production.");
-        devUsers()
-                .peek(this.userRepository::persist)
+        auth0users()
+                .flatMap(this::persistLocal)
                 .map(UserEntity::getEmailAddress)
                 .forEach(email -> log.info("Created {} user for development purposes",email));
         log.info("Added general LiTTiL users for development purposes. You can login via email-addresses and the default password to the dev tenant.");
@@ -89,5 +91,35 @@ public class ApplicationLifeCycle {
         user.setProviderId("auth0|"+auth0Id);
         user.setEmailAddress(email);
         return user;
+    }
+
+    private Stream<UserEntity> persistLocal(User user) {
+        var appMetaData = user.getAppMetadata();
+        if(!appMetaData.containsKey(this.userIdClaimName) && !appMetaData.containsKey(this.authorizationsClaimName)) {
+            log.debug("Ignored {} user for development purposes",user.getEmail());
+            return Stream.empty();
+        }
+        var uuid = UUID.fromString(String.valueOf(user.getAppMetadata().get(this.userIdClaimName)));
+        var persistedUser = new UserEntity();
+        persistedUser.setId(uuid);
+        persistedUser.setProvider(Provider.AUTH0);
+        persistedUser.setProviderId("auth0|"+user.getId());
+        persistedUser.setEmailAddress(user.getEmail());
+        this.userRepository.persist(persistedUser);
+        return Stream.of(persistedUser);
+    }
+
+    private Stream<User> auth0users() {
+        try {
+            return this.managementAPI
+                    .users()
+                    .list(new UserFilter())
+                    .execute()
+                    .getItems()
+                    .stream();
+        } catch (Auth0Exception e) {
+            log.error("unable to get users from auth0 ",e);
+            return Stream.empty();
+        }
     }
 }
