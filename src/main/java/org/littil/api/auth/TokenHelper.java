@@ -7,7 +7,7 @@ import org.littil.api.exception.AuthenticationException;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,21 +49,19 @@ public class TokenHelper {
     }
 
     public Boolean hasUserAuthorizations() {
-        final Map<String, List<UUID>> authorizations = getUserAuthorizations();
-        return authorizations != null &&
-                !authorizations.isEmpty() &&
-                (hasSchoolAuthorizations(authorizations) || hasGuestTeacherAuthorizations(authorizations));
+        final Map<String, List<String>> authorizations = Optional.ofNullable(getUserAuthorizations()).orElse(Collections.emptyMap());
+        return hasSchoolAuthorizations(authorizations) || hasGuestTeacherAuthorizations(authorizations);
     }
 
-    private Map<String, List<UUID>> getUserAuthorizations() {
+    private Map<String, List<String>> getUserAuthorizations() {
         return getCustomClaim(authorizationsClaimName);
     }
 
-    private Boolean hasSchoolAuthorizations(Map<String, List<UUID>> authorizations) {
-        return authorizations.getOrDefault(AuthorizationType.SCHOOL.getTokenValue(), new ArrayList<>()).size() > 0;
+    private static boolean hasSchoolAuthorizations(Map<String, List<String>> authorizations) {
+        return AuthorizationType.SCHOOL.authorizationIds(authorizations).findAny().isPresent();
     }
 
-    private Boolean hasGuestTeacherAuthorizations(Map<String, List<UUID>> authorizations) {
-        return authorizations.getOrDefault(AuthorizationType.GUEST_TEACHER.getTokenValue(), new ArrayList<>()).size() > 0;
+    private static boolean hasGuestTeacherAuthorizations(Map<String, List<String>> authorizations) {
+        return AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations).findAny().isPresent();
     }
 }

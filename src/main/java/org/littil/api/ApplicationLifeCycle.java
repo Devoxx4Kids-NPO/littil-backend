@@ -117,10 +117,10 @@ public class ApplicationLifeCycle {
             return Optional.empty();
         }
         this.userService.createAndPersistDevData(userId, auth0id, email);
-        getAuthorizationClaim(authorizations,AuthorizationType.SCHOOL)
-                .ifPresent(schoolId -> schoolService.createAndPersistDevData(schoolId,userId));
-        getAuthorizationClaim(authorizations,AuthorizationType.GUEST_TEACHER)
-                .ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId,userId));
+        AuthorizationType.SCHOOL.authorizationIds(authorizations)
+                .findFirst().ifPresent(schoolId -> schoolService.createAndPersistDevData(schoolId,userId));
+        AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations)
+                .findFirst().ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId,userId));
         return Optional.of(email);
     }
 
