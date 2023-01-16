@@ -98,30 +98,34 @@ public class ApplicationLifeCycle {
                 .orElse(Collections.emptyMap());
 
         // incomplete/invalid user
+        var auth0id = user.getId();
         if(appMetaData.isEmpty()) {
+            log.warn("auth0 user [{}] incomplete metadata, missing {} or {}",auth0id,this.userIdClaimName,this.authorizationsClaimName);
             return Optional.empty();
         }
-        var auth0id = user.getId();
-
         var userId = UUID.fromString(String.valueOf(appMetaData.get(this.userIdClaimName)));
+        var authorizations = (Map<String, List<String>>)appMetaData.get(this.authorizationsClaimName);
+        return createAndPersistDevData(userId,auth0id,user.getEmail(),authorizations);
+    }
+
+    protected Optional<String> createAndPersistDevData(UUID userId,String auth0id,String email, Map<String,List<String>> authorizations) {
         if(this.userService.getUserById(userId).isPresent()) {
             log.warn("Not creating user[{}] for dev; duplicate id {}",auth0id,userId);
             return Optional.empty();
-        } else if(this.userService.getUserByEmailAddress(user.getEmail()).isPresent()) {
-            log.warn("Not creating user[{}] for dev; duplicate email {}",auth0id,user.getEmail());
+        } else if(this.userService.getUserByEmailAddress(email).isPresent()) {
+            log.warn("Not creating user[{}] for dev; duplicate email {}",auth0id,email);
             return Optional.empty();
         }
-        this.userService.createAndPersistDevData(userId, auth0id, user.getEmail());
-        getAuthorizationClaim(appMetaData,AuthorizationType.SCHOOL)
+        this.userService.createAndPersistDevData(userId, auth0id, email);
+        getAuthorizationClaim(authorizations,AuthorizationType.SCHOOL)
                 .ifPresent(schoolId -> schoolService.createAndPersistDevData(schoolId,userId));
-        getAuthorizationClaim(appMetaData,AuthorizationType.GUEST_TEACHER)
+        getAuthorizationClaim(authorizations,AuthorizationType.GUEST_TEACHER)
                 .ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId,userId));
-        return Optional.of(user.getEmail());
+        return Optional.of(email);
     }
 
-    private Optional<UUID> getAuthorizationClaim(Map<String,Object> appMetaData,AuthorizationType type) {
-        Map<String,Object> authorizations = (Map<String, Object>) appMetaData.get(this.authorizationsClaimName);
-        List<String> value = Optional.ofNullable((List)authorizations.get(type.getTokenValue())).orElse(Collections.emptyList());
+    private static Optional<UUID> getAuthorizationClaim(Map<String,List<String>> authorizations,AuthorizationType type) {
+        List<String> value = Optional.ofNullable(authorizations.get(type.getTokenValue())).orElse(Collections.emptyList());
         return value.stream().map(UUID::fromString).findFirst();
     }
 }
