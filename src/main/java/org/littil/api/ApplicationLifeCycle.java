@@ -123,9 +123,4 @@ public class ApplicationLifeCycle {
                 .findFirst().ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId,userId));
         return Optional.of(email);
     }
-
-    private static Optional<UUID> getAuthorizationClaim(Map<String,List<String>> authorizations,AuthorizationType type) {
-        List<String> value = Optional.ofNullable(authorizations.get(type.getTokenValue())).orElse(Collections.emptyList());
-        return value.stream().map(UUID::fromString).findFirst();
-    }
 }
