@@ -4,6 +4,7 @@ import io.quarkus.security.UnauthorizedException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auditing.repository.UserId;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
@@ -123,6 +124,7 @@ public class GuestTeacherService {
         teacher.setAvailability(EnumSet.of(DayOfWeek.TUESDAY,DayOfWeek.THURSDAY));
         var entity = this.mapper.toEntity(teacher);
         entity.setId(id);
+        entity.setCreatedBy(new UserId(userId));
         this.userService.getUserById(userId).map(userMapper::toEntity).ifPresent(entity::setUser);
         this.locationRepository.persist(entity.getLocation());
         this.repository.persist(entity);

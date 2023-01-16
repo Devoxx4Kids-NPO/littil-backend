@@ -15,7 +15,9 @@ public class AuditableEntityListener {
 
     @PrePersist
     public void prePersist(AbstractAuditableEntity entity) {
-        entity.setCreatedBy(currentUserId());
+        if(entity.getCreatedBy()==null) {
+            entity.setCreatedBy(currentUserId());
+        }
     }
 
     @PreUpdate
