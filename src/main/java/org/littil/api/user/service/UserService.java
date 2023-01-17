@@ -3,12 +3,13 @@ package org.littil.api.user.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.PasswordService;
 import org.littil.api.auth.service.ProviderService;
-import org.littil.api.mail.MailService;
 import org.littil.api.exception.EntityAlreadyExistsException;
+import org.littil.api.mail.MailService;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
@@ -39,6 +40,10 @@ public class UserService {
         return repository.findByProviderId(providerId).map(mapper::toDomain);
     }
 
+    public Optional<User> getUserByEmailAddress(String email) {
+        return repository.findByEmailAddress(email).map(mapper::toDomain);
+    }
+
     public List<User> listUsers() {
         return repository.findAll().stream()
                 .map(mapper::toDomain)
@@ -57,6 +62,9 @@ public class UserService {
         }
 
         //save user locally
+        if (user.getId() == null) {
+            user.setId(UUID.randomUUID());
+        }
         user.setProvider(providerService.whoAmI());
         UserEntity userEntity = mapper.toEntity(user);
         repository.persist(userEntity);
@@ -86,5 +94,15 @@ public class UserService {
         }, () -> {
             throw new NotFoundException();
         });
+    }
+
+    @Transactional
+    public void createAndPersistDevData(UUID id, String auth0id, String email) {
+        UserEntity user = new UserEntity();
+        user.setId(id);
+        user.setProvider(Provider.AUTH0);
+        user.setProviderId(auth0id);
+        user.setEmailAddress(email);
+        this.repository.persist(user);
     }
 }

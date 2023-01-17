@@ -4,6 +4,7 @@ import io.quarkus.security.UnauthorizedException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.littil.api.auditing.repository.UserId;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
@@ -71,6 +72,9 @@ public class SchoolService {
         entity.setUser(userEntity);
         contactPersonRepository.persist(entity.getContactPerson());
         locationRepository.persist(entity.getLocation());
+        if (entity.getId() == null) {
+            entity.setId(UUID.randomUUID());
+        }
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
@@ -106,5 +110,24 @@ public class SchoolService {
         mapper.updateEntityFromDomain(school, entity);
         repository.persist(entity);
         return mapper.updateDomainFromEntity(entity, school);
+    }
+
+    @Transactional
+    public void createAndPersistDevData(UUID id, UUID userId) {
+        School school = new School();
+        school.setName("Dev School");
+        school.setAddress("Lutulistate 41");
+        school.setPostalCode("6716NT");
+        school.setSurname("Nederland");
+        school.setFirstName("LITTIL");
+        school.setPrefix("Devoxx4Kids");
+        var entity = this.mapper.toEntity(school);
+        entity.setId(id);
+        entity.setCreatedBy(new UserId(userId));
+        this.userService.getUserById(userId).map(userMapper::toEntity).ifPresent(entity::setUser);
+        this.contactPersonRepository.persist(entity.getContactPerson());
+        this.locationRepository.persist(entity.getLocation());
+        this.repository.persist(entity);
+        log.info("persisted Dev School {} for Development purposes",id);
     }
 }

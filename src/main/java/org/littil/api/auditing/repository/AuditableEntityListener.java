@@ -15,7 +15,9 @@ public class AuditableEntityListener {
 
     @PrePersist
     public void prePersist(AbstractAuditableEntity entity) {
-        entity.setCreatedBy(currentUserId());
+        if (entity.getCreatedBy() == null) {
+            entity.setCreatedBy(currentUserId());
+        }
     }
 
     @PreUpdate
@@ -24,6 +26,6 @@ public class AuditableEntityListener {
     }
 
     private UserId currentUserId() {
-        return new UserId(tokenHelper.getCurrentUserId());
+        return new UserId(tokenHelper.currentUserId().orElse(null));
     }
 }

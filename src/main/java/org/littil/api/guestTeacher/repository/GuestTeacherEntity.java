@@ -24,7 +24,6 @@ import java.util.UUID;
 public class GuestTeacherEntity extends AbstractAuditableEntity {
 
     @Id
-    @GeneratedValue
     @Column(name = "guest_teacher_id", columnDefinition = "BINARY(16)")
     private UUID id;
 

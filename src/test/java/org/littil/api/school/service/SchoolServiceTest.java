@@ -209,7 +209,6 @@ class SchoolServiceTest {
         assertEquals(expectedSchool,savedSchool);
         
         then(authenticationService).should().addAuthorization(userId, AuthorizationType.SCHOOL, schoolId);
-        
     }
     
     @Test
