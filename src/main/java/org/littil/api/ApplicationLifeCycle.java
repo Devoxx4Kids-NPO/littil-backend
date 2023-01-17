@@ -17,7 +17,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @ApplicationScoped
@@ -34,6 +38,7 @@ public class ApplicationLifeCycle {
             "testschool2@littil.org",
             "testschool3@littil.org"
     );
+
     @Inject
     @ConfigProperty(name = "org.littil.devservices.devdata", defaultValue = "false")
     boolean insertDevData;
@@ -48,8 +53,10 @@ public class ApplicationLifeCycle {
 
     @Inject
     UserService userService;
+
     @Inject
     SchoolService schoolService;
+
     @Inject
     GuestTeacherService guestTeacherService;
 
@@ -57,8 +64,7 @@ public class ApplicationLifeCycle {
     ManagementAPI managementAPI;
 
     void onStart(@Observes StartupEvent ev) {
-        log.info("The application is starting with profile {}",ProfileManager.getActiveProfile());
-        if (this.insertDevData) {
+        if (this.insertDevData && ProfileManager.getLaunchMode().isDevOrTest()) {
             persistDevData();
         }
     }
@@ -67,7 +73,7 @@ public class ApplicationLifeCycle {
         log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production.");
         DEV_USERS.stream()
                 .flatMap(this::persistDevUserData)
-                .forEach(email -> log.info("Created {} user for development purposes",email));
+                .forEach(email -> log.info("Created {} user for development purposes", email));
         log.info("Added general LiTTiL users for development purposes. You can login via email-addresses and the default password to the dev tenant.");
     }
 
@@ -85,7 +91,7 @@ public class ApplicationLifeCycle {
                     .execute()
                     .stream();
         } catch (Auth0Exception e) {
-            log.error("unable to find {} in auth0 ",email,e);
+            log.error("unable to find {} in auth0, skipping this development user ", email, e);
             return Stream.empty();
         }
     }
@@ -97,30 +103,32 @@ public class ApplicationLifeCycle {
                 .filter(data -> data.containsKey(this.authorizationsClaimName))
                 .orElse(Collections.emptyMap());
 
-        // incomplete/invalid user
         var auth0id = user.getId();
-        if(appMetaData.isEmpty()) {
-            log.warn("auth0 user [{}] incomplete metadata, missing {} or {}",auth0id,this.userIdClaimName,this.authorizationsClaimName);
+        if (appMetaData.isEmpty()) {
+            log.warn("Auth0 user [{}] incomplete metadata, missing {} or {}. Unable to create mapping with local user, school or guest teacher. Skipping this development user.", auth0id, this.userIdClaimName, this.authorizationsClaimName);
             return Optional.empty();
         }
         var userId = UUID.fromString(String.valueOf(appMetaData.get(this.userIdClaimName)));
-        var authorizations = (Map<String, List<String>>)appMetaData.get(this.authorizationsClaimName);
-        return createAndPersistDevData(userId,auth0id,user.getEmail(),authorizations);
+        var authorizations = (Map<String, List<String>>) appMetaData.get(this.authorizationsClaimName);
+        return createAndPersistDevData(userId, auth0id, user.getEmail(), authorizations);
     }
 
-    protected Optional<String> createAndPersistDevData(UUID userId,String auth0id,String email, Map<String,List<String>> authorizations) {
-        if(this.userService.getUserById(userId).isPresent()) {
-            log.warn("Not creating user[{}] for dev; duplicate id {}",auth0id,userId);
-            return Optional.empty();
-        } else if(this.userService.getUserByEmailAddress(email).isPresent()) {
-            log.warn("Not creating user[{}] for dev; duplicate email {}",auth0id,email);
+    protected Optional<String> createAndPersistDevData(UUID userId, String auth0id, String email, Map<String, List<String>> authorizations) {
+        if (this.userService.getUserById(userId).isPresent()) {
+            log.warn("Not creating user[{}] for dev; An user with id {} already exists", auth0id, userId);
             return Optional.empty();
         }
+
+        if (this.userService.getUserByEmailAddress(email).isPresent()) {
+            log.warn("Not creating user[{}] for dev; An user with email address {} already exists.", auth0id, email);
+            return Optional.empty();
+        }
+
         this.userService.createAndPersistDevData(userId, auth0id, email);
         AuthorizationType.SCHOOL.authorizationIds(authorizations)
-                .findFirst().ifPresent(schoolId -> schoolService.createAndPersistDevData(schoolId,userId));
+                .findFirst().ifPresent(schoolId -> schoolService.createAndPersistDevData(schoolId, userId));
         AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations)
-                .findFirst().ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId,userId));
+                .findFirst().ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId, userId));
         return Optional.of(email);
     }
 }

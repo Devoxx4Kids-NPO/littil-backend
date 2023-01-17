@@ -8,8 +8,8 @@ import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.PasswordService;
 import org.littil.api.auth.service.ProviderService;
-import org.littil.api.mail.MailService;
 import org.littil.api.exception.EntityAlreadyExistsException;
+import org.littil.api.mail.MailService;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
@@ -62,7 +62,7 @@ public class UserService {
         }
 
         //save user locally
-        if(user.getId()==null) {
+        if (user.getId() == null) {
             user.setId(UUID.randomUUID());
         }
         user.setProvider(providerService.whoAmI());

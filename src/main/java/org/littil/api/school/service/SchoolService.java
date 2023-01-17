@@ -72,7 +72,7 @@ public class SchoolService {
         entity.setUser(userEntity);
         contactPersonRepository.persist(entity.getContactPerson());
         locationRepository.persist(entity.getLocation());
-        if(entity.getId()==null) {
+        if (entity.getId() == null) {
             entity.setId(UUID.randomUUID());
         }
         repository.persist(entity);

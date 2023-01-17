@@ -24,7 +24,11 @@ import javax.validation.Valid;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.time.DayOfWeek;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -67,7 +71,7 @@ public class GuestTeacherService {
         UserEntity userEntity = userMapper.toEntity(user.get());
         entity.setUser(userEntity);
         locationRepository.persist(entity.getLocation());
-        if(entity.getId()==null) {
+        if (entity.getId() == null) {
             entity.setId(UUID.randomUUID());
         }
         repository.persist(entity);

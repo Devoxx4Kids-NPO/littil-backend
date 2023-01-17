@@ -14,11 +14,11 @@ public enum AuthorizationType {
 
     final String tokenValue;
 
-    private AuthorizationType(String tokenvalue) {
-        this.tokenValue = tokenvalue;
+    AuthorizationType(String tokenValue) {
+        this.tokenValue = tokenValue;
     }
 
-    public String getTokenValue(){
+    public String getTokenValue() {
         return tokenValue;
     }
 
