@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,14 +55,15 @@ public class SearchResource {
     public Response get(@QueryParam("lat") double latitude,
                         @QueryParam("long") double longitude,
                         @QueryParam("userType") String userTypeInput) {
+        List<SearchResult> searchResults = new ArrayList<>();
         Optional<UserType> expectedUserType = UserType.findByLabel(userTypeInput);
         if(expectedUserType.isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            searchResults.addAll(searchService.getSearchResults(latitude, longitude, UserType.SCHOOL));
+            searchResults.addAll(searchService.getSearchResults(latitude, longitude, UserType.GUEST_TEACHER));
+        } else {
+            searchResults = searchService.getSearchResults(latitude, longitude,
+                    expectedUserType.get());
         }
-
-        List<SearchResult> searchResults = searchService.getSearchResults(latitude, longitude,
-                expectedUserType.get());
-
         return Response.ok(searchResults).build();
     }
 

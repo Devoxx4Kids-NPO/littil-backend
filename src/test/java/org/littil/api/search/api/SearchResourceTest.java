@@ -63,21 +63,21 @@ class SearchResourceTest {
         assertTrue(result.isEmpty());
      }
 
-     @Test
-     @TestSecurity(user = "littil", roles = "viewer")
-     @OidcSecurity(claims = {
-             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-     void givenGetAuthorzed_withUnknownUserType_thenShouldReturnBadRequest() {
-         
-         given() //
-                 .when() //
-                 .queryParam("lat", 0.0)
-                 .queryParam("lon", 0.0)
-                 .queryParam("userType", "unknown")
-                 .get() //
-                 .then() //
-                 .statusCode(400);
-     }
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetAuthorzed_withEmptyUserType_thenShouldReturnAllTypes() {
 
-
+        given() //
+                .when() //
+                .queryParam("lat", 0.0)
+                .queryParam("lon", 0.0)
+                .queryParam("userType", "")
+                .get() //
+                .then() //
+                .statusCode(200)
+                .extract()
+                .jsonPath().getList(".", SearchResult.class);
+    }
 }
