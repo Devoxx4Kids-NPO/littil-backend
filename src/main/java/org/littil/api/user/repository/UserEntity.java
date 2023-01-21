@@ -24,7 +24,7 @@ import java.util.UUID;
 @Builder
 @Entity(name = "User")
 @Table(name = "user")
-public class UserEntity {
+public class UserEntity extends AbstractAuditableEntity {
 
     @Id
     @Column(name = "user_id", columnDefinition = "BINARY(16)")
