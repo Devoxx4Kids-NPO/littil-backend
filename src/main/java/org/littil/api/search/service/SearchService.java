@@ -69,7 +69,7 @@ public class SearchService {
         for(LocationSearchResult location : locationSearchResults) {
             Optional<GuestTeacher> teacher = teacherService.getTeacherByLocation(location.getId());
             if(teacher.isEmpty()) break;
-            searchResults.add(searchMapper.toGuestTeacherDomain(location, teacher.get(), UserType.SCHOOL));
+            searchResults.add(searchMapper.toGuestTeacherDomain(location, teacher.get(), UserType.GUEST_TEACHER));
         }
         return searchResults;
     }
