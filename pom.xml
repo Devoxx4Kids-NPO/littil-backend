@@ -18,7 +18,7 @@
       <sonar.host.url>https://sonarcloud.io</sonar.host.url>
       <sonar.organization>littil</sonar.organization>
       <sonar.projectKey>littil-backend</sonar.projectKey>
-      <lombok.version>1.18.24</lombok.version>
+      <lombok.version>1.18.26</lombok.version>
       <mapstruct.version>1.5.3.Final</mapstruct.version>
       <assertj.version>3.24.2</assertj.version>
       <archunit.version>1.0.1</archunit.version>
