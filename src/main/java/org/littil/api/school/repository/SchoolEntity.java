@@ -11,6 +11,7 @@ import org.littil.api.user.repository.UserEntity;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -40,4 +41,8 @@ public class SchoolEntity extends AbstractAuditableEntity {
     @OneToOne
     @JoinColumn(name = "user", referencedColumnName = "user_id")
     private UserEntity user;
+
+    @OneToMany(mappedBy="school")
+    private List<SchoolModuleEntity> modules;
+
 }

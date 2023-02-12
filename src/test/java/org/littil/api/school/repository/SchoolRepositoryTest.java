@@ -28,7 +28,7 @@ class SchoolRepositoryTest {
     @Test
     void givenFindExistingSchoolByName_thenShouldReturnSuccessfully() {
         String name = RandomStringUtils.randomAlphabetic(10);
-        List<SchoolEntity> school = List.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null));
+        List<SchoolEntity> school = List.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null, null));
 
         Object[] params = { "%" + name + "%" } ;
         doReturn(school).when(repository).list(anyString(), eq(params));
@@ -53,7 +53,7 @@ class SchoolRepositoryTest {
     @Test
     void givenFindByLocation_thenShouldReturnSuccessfully() {
         String name = RandomStringUtils.randomAlphabetic(10);
-        Optional<SchoolEntity> school = Optional.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null));
+        Optional<SchoolEntity> school = Optional.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null, null));
 
         LocationEntity location = new LocationEntity();
 
