@@ -3,6 +3,8 @@ package org.littil.api.school.service;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -25,4 +27,6 @@ public class School {
 
     @NotEmpty(message = "{School.surname.required}")
     private String surname;
+
+    private List<SchoolModule> modules = new ArrayList<>();
 }
