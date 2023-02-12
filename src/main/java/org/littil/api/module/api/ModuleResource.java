@@ -8,7 +8,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.littil.api.module.repository.ModuleService;
+import org.littil.api.module.service.ModuleService;
 import org.littil.api.module.service.Module;
 
 import javax.enterprise.context.RequestScoped;
