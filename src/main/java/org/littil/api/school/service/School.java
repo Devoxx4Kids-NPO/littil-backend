@@ -2,10 +2,10 @@ package org.littil.api.school.service;
 
 import lombok.Data;
 
+import org.littil.api.module.service.Module;
+
 import javax.validation.constraints.NotEmpty;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Data
 public class School {
@@ -28,5 +28,5 @@ public class School {
     @NotEmpty(message = "{School.surname.required}")
     private String surname;
 
-    private List<SchoolModule> modules = new ArrayList<>();
+    private List<Module> modules = new ArrayList<>();
 }
