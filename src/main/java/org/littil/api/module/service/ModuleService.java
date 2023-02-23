@@ -17,6 +17,10 @@ public class ModuleService {
     private final ModuleMapper mapper;
 
     public List<Module> findAll() {
-        return repository.findAll().stream().map(mapper::toDomain).toList();
+        return repository.findAll() //
+                .stream() //
+                .filter(module -> module.getDeleted().equals(Boolean.FALSE)) //
+                .map(mapper::toDomain) //
+                .toList();
     }
 }
