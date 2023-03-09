@@ -4,7 +4,7 @@ import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.APIException;
 import com.auth0.exception.Auth0Exception;
-import com.auth0.json.mgmt.Role;
+import com.auth0.json.mgmt.roles.Role;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
 import lombok.AllArgsConstructor;
@@ -51,7 +51,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public Optional<AuthUser> getUserById(String userId) {
         try {
-            User user = managementAPI.users().get(userId, null).execute();
+            User user = managementAPI.users().get(userId, null).execute().getBody();
             AuthUser authUser = getAuthUser(user);
             return Optional.of(authUser);
         } catch (APIException exception) {
@@ -67,12 +67,12 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public AuthUser createUser(AuthUser authUser, String tempPassword) {
         try {
-            UsersPage usersForEmail = managementAPI.users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute();
+            UsersPage usersForEmail = managementAPI.users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute().getBody();
 
             if (!usersForEmail.getItems().isEmpty()) {
                 throw new Auth0DuplicateUserException("User already exists for" + authUser.getEmailAddress());
             }
-            User user = managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute();
+            User user = managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute().getBody();
             return getAuthUser(user);
         } catch (Auth0Exception exception) {
             throw new Auth0UserException("Could not create user for email " + authUser.getEmailAddress(), exception);
@@ -80,7 +80,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private AuthUser getAuthUser(User user) throws Auth0Exception {
-        List<Role> roles = managementAPI.users().listRoles(user.getId(), null).execute().getItems();
+        List<Role> roles = managementAPI.users().listRoles(user.getId(), null).execute().getBody().getItems();
         return auth0UserMapper.toDomain(user, roles);
     }
 
@@ -163,7 +163,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private User getUserForId(String userId) throws Auth0Exception {
-        return managementAPI.users().get(userId, null).execute();
+        return managementAPI.users().get(userId, null).execute().getBody();
     }
 
     enum AuthorizationAction {

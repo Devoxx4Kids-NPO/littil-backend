@@ -4,11 +4,15 @@ import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
-import com.auth0.net.AuthRequest;
+import com.auth0.net.Response;
+import com.auth0.net.TokenRequest;
+import com.auth0.net.client.Auth0HttpClient;
+import com.auth0.net.client.DefaultHttpClient;
 import io.quarkus.oidc.OidcTenantConfig;
 import io.quarkus.oidc.runtime.DefaultTenantConfigResolver;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jetbrains.annotations.NotNull;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -40,6 +44,26 @@ public class Auth0ManagementAPI {
 
     @Produces
     public ManagementAPI produceManagementAPI() throws Auth0Exception {
+        String audience = getAudienceFromOidcTenantConfig();
+
+        Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
+
+        // todo if not present throw exception
+        AuthAPI authAPI = AuthAPI.newBuilder(tenantUri, clientId, clientSecret)
+                .withHttpClient(auth0HttpClient)
+                .build();
+        TokenRequest authRequest = authAPI.requestToken(audience);
+
+        // Machine2Machine tokens is paid after 1000 tokens each month
+        Response<TokenHolder> holder = authRequest.execute();
+
+        return ManagementAPI.newBuilder(providerApiUri, holder.getBody().getAccessToken())
+                .withHttpClient(auth0HttpClient)
+                .build();
+    }
+
+    @NotNull
+    private String getAudienceFromOidcTenantConfig() throws Auth0Exception {
         //todo improve trainwreck
         OidcTenantConfig tenantConfig = defaultTenantConfigResolver.getTenantConfigBean().getDefaultTenant().getOidcTenantConfig();
 
@@ -48,15 +72,7 @@ public class Auth0ManagementAPI {
             throw new Auth0Exception("No audience is set to fetch a token.");
 
         //todo :(
-        String audience = tenantConfig.token.audience.get().get(0);
+        return tenantConfig.token.audience.get().get(0);  // aidoemce
 
-        // todo if not present throw exception
-        AuthAPI authAPI = new AuthAPI(tenantUri, clientId, clientSecret);
-        AuthRequest authRequest = authAPI.requestToken(audience);
-
-        // Machine2Machine tokens is paid after 1000 tokens each month
-        TokenHolder holder = authRequest.execute();
-
-        return new ManagementAPI(providerApiUri, holder.getAccessToken());
     }
 }
