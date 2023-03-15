@@ -73,8 +73,7 @@ class SchoolResourceTest {
                 .when() //
                 .get() //
                 .then() //
-
-                .statusCode(200);
+            .statusCode(200);
     }
  
     @Test
@@ -91,11 +90,11 @@ class SchoolResourceTest {
                 .get("/{id}", saved.getId())
                 .then()
                 .statusCode(200)
-                .extract().as(School.class);
+                .extract()
+                .as(School.class);
 
         assertThat(saved).isEqualTo(got);
     }
-
 
     @Test
     @TestSecurity(user = "littil", roles = "viewer")

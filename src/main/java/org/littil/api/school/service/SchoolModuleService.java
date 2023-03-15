@@ -1,5 +1,6 @@
 package org.littil.api.school.service;
 
+import io.quarkus.security.UnauthorizedException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.littil.api.school.repository.SchoolRepository;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 import javax.ws.rs.NotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,17 +31,15 @@ public class SchoolModuleService {
     private final SchoolRepository schoolRepository;
     private final SchoolModuleRepository schoolModuleRepository;
     private final TokenHelper tokenHelper;
-
-private final SchoolModuleMapper mapper;
+    private final SchoolModuleMapper mapper;
 
     /*
     *  return list of active Modules for a given school
     */
-    public List<Module> getSchoolModules (final UUID schoolId) {
+    public List<Module> getSchoolModulesBySchoolId(final UUID schoolId) {
         SchoolEntity school = getSchoolEntity(schoolId);
         return school.getModules() //
                 .stream() //
-                .filter(schoolModule -> ! schoolModule.getDeleted()) //
                 .filter(schoolModule -> ! schoolModule.getModule().getDeleted()) //
                 .map(mapper::toDomain) //
                 .toList();
@@ -55,8 +55,7 @@ private final SchoolModuleMapper mapper;
             throw new NotFoundException("Module not found.");
         }
         SchoolModuleEntity entity = schoolModule.get();
-        entity.setDeleted(true);
-        schoolModuleRepository.persist(entity);
+        schoolModuleRepository.delete(entity);
     }
 
     @Transactional
@@ -65,15 +64,11 @@ private final SchoolModuleMapper mapper;
         ModuleEntity moduleEntity = getModuleEntity (module);
         Optional<SchoolModuleEntity> schoolModule = school.getModules().stream() //
                 .filter(s -> s.getModule().getId().equals(module.getId()))
-           .findFirst();
-        if (schoolModule.isPresent()) {
-            schoolModule.get().setDeleted(false);
-        } else {
-            // TODO refactor
+                .findFirst();
+        if (schoolModule.isEmpty()) {
             SchoolModuleEntity newSchoolModuleEntity = new SchoolModuleEntity();
             newSchoolModuleEntity.setId(UUID.randomUUID());
             newSchoolModuleEntity.setModule(moduleEntity);
-            newSchoolModuleEntity.setDeleted(Boolean.FALSE);
             newSchoolModuleEntity.setSchool(school);
             schoolModule = Optional.of(newSchoolModuleEntity);
         }
@@ -85,14 +80,15 @@ private final SchoolModuleMapper mapper;
      */
     @NotNull
     private SchoolEntity getSchoolEntity(@NotNull UUID school_id) {
-// TODO disabled to test if everything is working properly
-//        UUID userId = tokenHelper.getCurrentUserId();
+        UUID userId = tokenHelper.getCurrentUserId();
         SchoolEntity school = schoolRepository.findByIdOptional(school_id)
                 .orElseThrow(() -> new NotFoundException("No School found for Id"));
-// TODO disabled to test if everything is working properly
-//        if (school.getUser() != null && !school.getUser().getId().equals(userId)) {
-//            throw new UnauthorizedException("Action not allowed, user is not the owner of this entity.");
-//        }
+        if ((school.getUser() == null) || !school.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException("Action not allowed, user is not the owner of this entity.");
+        }
+        if (school.getModules() == null) {
+            school.setModules(new ArrayList<>());
+        }
         return school;
     }
 
@@ -102,7 +98,9 @@ private final SchoolModuleMapper mapper;
     @NotNull
     private ModuleEntity getModuleEntity(@NotNull Module module) {
         ModuleEntity moduleEntity = moduleRepository.findById(module.getId());
-        if (moduleEntity == null || !moduleEntity.getName().equals(module.getName()) || moduleEntity.getDeleted()) {
+        if (moduleEntity == null ||
+                !moduleEntity.getName().equals(module.getName()) ||
+                moduleEntity.getDeleted()) {
             throw new NotFoundException("Module not found or not valid.");
         }
         return moduleEntity;

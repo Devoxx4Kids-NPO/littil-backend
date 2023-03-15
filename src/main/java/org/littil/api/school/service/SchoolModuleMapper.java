@@ -10,7 +10,6 @@ import java.util.List;
 @Mapper(componentModel = "cdi")
 public interface SchoolModuleMapper {
 
-    // TODO refactor since Module doesn't have a deleted.
     List<Module> toDomain(List<SchoolModuleEntity> modules);
 
     @Mapping(source = "module.id", target = "id")
