@@ -10,6 +10,8 @@ import com.auth0.net.client.Auth0HttpClient;
 import com.auth0.net.client.DefaultHttpClient;
 import io.quarkus.oidc.OidcTenantConfig;
 import io.quarkus.oidc.runtime.DefaultTenantConfigResolver;
+import io.quarkus.oidc.runtime.TenantConfigBean;
+import io.quarkus.oidc.runtime.TenantConfigContext;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +19,9 @@ import org.jetbrains.annotations.NotNull;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Singleton
 @Slf4j
@@ -64,15 +69,21 @@ public class Auth0ManagementAPI {
 
     @NotNull
     private String getAudienceFromOidcTenantConfig() throws Auth0Exception {
-        //todo improve trainwreck
-        OidcTenantConfig tenantConfig = defaultTenantConfigResolver.getTenantConfigBean().getDefaultTenant().getOidcTenantConfig();
 
-        //todo fix me
-        if (tenantConfig.token.audience.isEmpty())
+        List<String> audience = Optional.ofNullable(defaultTenantConfigResolver)
+                .map(DefaultTenantConfigResolver::getTenantConfigBean)
+                .map(TenantConfigBean::getDefaultTenant)
+                .map(TenantConfigContext::getOidcTenantConfig)
+                .map(OidcTenantConfig::getToken)
+                .map(OidcTenantConfig.Token::getAudience)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .orElse(new ArrayList<>());
+
+        if (audience.isEmpty())
             throw new Auth0Exception("No audience is set to fetch a token.");
 
-        //todo :(
-        return tenantConfig.token.audience.get().get(0);  // aidoemce
+        return audience.get(0);
 
     }
 }
