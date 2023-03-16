@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: graalvm/setup-graalvm@v1
         with:
-          version: '22.3.0'
+          version: '22.3.1'
           java-version: '17'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -81,7 +81,7 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_VERSION
           docker push $IMAGE_ID:$IMAGE_VERSION
       - name: Configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-session-name: github_publish_littil_backend
