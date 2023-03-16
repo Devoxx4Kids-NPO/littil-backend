@@ -6,7 +6,6 @@ import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.users.User;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.runtime.configuration.ProfileManager;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.service.AuthorizationType;
@@ -98,8 +97,8 @@ public class ApplicationLifeCycle {
         }
     }
 
-    protected Optional<String> createAndPersistDevData(@NonNull User user) {
-        var appMetaData = Optional.of(user)
+    protected Optional<String> createAndPersistDevData(User user) {
+        var appMetaData = Optional.ofNullable(user)
                 .map(User::getAppMetadata)
                 .filter(data -> data.containsKey(this.userIdClaimName))
                 .filter(data -> data.containsKey(this.authorizationsClaimName))
