@@ -29,7 +29,7 @@ class GuestTeacherRepositoryTest {
     void givenFindExistingTeacherByName_thenShouldReturnSuccessfully() {
         String firstName = RandomStringUtils.randomAlphabetic(10);
         String surname = RandomStringUtils.randomAlphabetic(10);
-        List<GuestTeacherEntity> teacherList = List.of(new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, null, null, null, null));
+        List<GuestTeacherEntity> teacherList = List.of(new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, null, null, null, null, null));
 
         doReturn(teacherList).when(repository).list("surname like ?1", "%" + surname + "%");
 
@@ -57,7 +57,7 @@ class GuestTeacherRepositoryTest {
         LocationEntity location = new LocationEntity();
         LinkedHashSet<DayOfWeek> availibility = new LinkedHashSet<>(List.of(DayOfWeek.MONDAY));
         UserEntity user = new UserEntity();
-        GuestTeacherEntity expectedTeacher = new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, prefix, location, availibility, user);
+        GuestTeacherEntity expectedTeacher = new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, prefix, location, availibility, user, null);
 
         doReturn(List.of(expectedTeacher)).when(repository).list("surname like ?1", "%" + surname + "%");
 
@@ -74,7 +74,7 @@ class GuestTeacherRepositoryTest {
     void givenFindByLocation_thenShouldReturnSuccessfully() {
         String firstName = RandomStringUtils.randomAlphabetic(10);
         String surname = RandomStringUtils.randomAlphabetic(10);
-        Optional<GuestTeacherEntity> teacher = Optional.of(new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, null, null, null, null));
+        Optional<GuestTeacherEntity> teacher = Optional.of(new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, null, null, null, null, null));
 
         LocationEntity location = new LocationEntity();
 
