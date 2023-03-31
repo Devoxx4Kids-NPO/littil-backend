@@ -14,7 +14,6 @@ import io.quarkus.oidc.runtime.TenantConfigBean;
 import io.quarkus.oidc.runtime.TenantConfigContext;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jetbrains.annotations.NotNull;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -67,9 +66,7 @@ public class Auth0ManagementAPI {
                 .build();
     }
 
-    @NotNull
     private String getAudienceFromOidcTenantConfig() throws Auth0Exception {
-
         List<String> audience = Optional.ofNullable(defaultTenantConfigResolver)
                 .map(DefaultTenantConfigResolver::getTenantConfigBean)
                 .map(TenantConfigBean::getDefaultTenant)
