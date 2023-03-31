@@ -1,6 +1,6 @@
 package org.littil.api.auth.provider.auth0.service;
 
-import com.auth0.json.mgmt.Role;
+import com.auth0.json.mgmt.roles.Role;
 import com.auth0.json.mgmt.users.User;
 import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthUser;
