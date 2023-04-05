@@ -30,7 +30,7 @@ import java.util.UUID;
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
 @GuestTeacherSecured
-@Tag(name = "GuestTeacher Modules", description = "CRUD Operations")
+@Tag(name = "Teacher Modules", description = "CRUD Operations")
 public class GuestTeacherModuleResource {
 
     @Inject
