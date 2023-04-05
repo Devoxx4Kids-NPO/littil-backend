@@ -15,6 +15,7 @@ import org.littil.api.search.repository.SearchRepository;
 
 import javax.inject.Inject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,7 +57,7 @@ class SearchServiceTest {
         school.setName(RandomStringUtils.randomAlphabetic(10));
         doReturn(Optional.of(school)).when(schoolService).getSchoolByLocation(any());
     
-        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, UserType.SCHOOL);
+        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, Optional.of(UserType.SCHOOL), new ArrayList<>());
         assertNotNull(searchResults);
         assertFalse(searchResults.isEmpty());
         assertEquals(1, searchResults.size());
@@ -75,7 +76,7 @@ class SearchServiceTest {
         
         doReturn(Optional.empty()).when(schoolService).getSchoolByLocation(any());
     
-        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, UserType.SCHOOL);
+        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, Optional.of(UserType.SCHOOL), new ArrayList<>());
         assertNotNull(searchResults);
         assertTrue(searchResults.isEmpty());
     }
@@ -95,7 +96,7 @@ class SearchServiceTest {
         teacher.setSurname(RandomStringUtils.randomAlphabetic(10));
         doReturn(Optional.of(teacher)).when(teacherService).getTeacherByLocation(any());
 
-        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, UserType.GUEST_TEACHER);
+        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, Optional.of(UserType.GUEST_TEACHER), new ArrayList<>());
         assertNotNull(searchResults);
         assertFalse(searchResults.isEmpty());
         assertEquals(1, searchResults.size());
@@ -115,7 +116,7 @@ class SearchServiceTest {
 
         doReturn(Optional.empty()).when(teacherService).getTeacherByLocation(any());
 
-        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, UserType.GUEST_TEACHER);
+        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, Optional.of(UserType.GUEST_TEACHER), new ArrayList<>());
         assertNotNull(searchResults);
         assertTrue(searchResults.isEmpty());
     }

@@ -9,6 +9,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.authz.GuestTeacherSecured;
 import org.littil.api.exception.ErrorResponse;
+import org.littil.api.module.service.Module;
+import org.littil.api.module.service.ModuleService;
 import org.littil.api.search.service.SearchResult;
 import org.littil.api.search.service.SearchService;
 
@@ -17,7 +19,6 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,9 +34,12 @@ public class SearchResource {
     @Inject
     SearchService searchService;
 
+    @Inject
+    ModuleService moduleService;
+
     @GET
     @Path("/")
-    @Operation(summary = "Fetch a list of teachers or school ordered by distance")
+    @Operation(summary = "Fetch a list of teachers or school ordered by distance.test", description ="test")
     @APIResponse(
             responseCode = "200",
             description = "Fetch a list of teachers or school ordered by distance",
@@ -52,19 +56,25 @@ public class SearchResource {
                     schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
             )
     )
-    public Response get(@QueryParam("lat") double latitude,
+    public Response get(@QueryParam("lat")  double latitude,
                         @QueryParam("long") double longitude,
-                        @QueryParam("userType") String userTypeInput) {
-        List<SearchResult> searchResults = new ArrayList<>();
-        Optional<UserType> expectedUserType = UserType.findByLabel(userTypeInput);
-        if(expectedUserType.isEmpty()) {
-            searchResults.addAll(searchService.getSearchResults(latitude, longitude, UserType.SCHOOL));
-            searchResults.addAll(searchService.getSearchResults(latitude, longitude, UserType.GUEST_TEACHER));
-        } else {
-            searchResults = searchService.getSearchResults(latitude, longitude,
-                    expectedUserType.get());
+                        @QueryParam("userType") String userTypeInput,
+                        @QueryParam("expectedModules") List<String> expectedModules) {
+
+        if (!validModules(expectedModules)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
+        Optional<UserType> expectedUserType = UserType.findByLabel(userTypeInput);
+        List<SearchResult> searchResults = searchService.getSearchResults(latitude, longitude, expectedUserType, expectedModules);
         return Response.ok(searchResults).build();
+    }
+
+    private boolean validModules(List<String> expectedModules) {
+        List<String> activeModules = moduleService.findAll().stream().map(Module::getName).toList();
+        return expectedModules.stream() //
+                .filter(name -> !activeModules.contains(name)) //
+                .toList() //
+                .size() == 0;
     }
 
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
+import org.littil.api.module.service.Module;
 import org.littil.api.school.service.School;
 import org.littil.api.school.service.SchoolService;
 import org.littil.api.search.api.UserType;
@@ -28,13 +29,26 @@ public class SearchService {
     private static final int MAX_DISTANCE = 10000;
     private static final int LIMIT = 100;
 
+
     public List<SearchResult> getSearchResults(final double latitude, final double longitude,
-                                               UserType expectedUserType) {
+                                               Optional<UserType> expectedUserType, List<String> expectedModules)  {
+        List<SearchResult> searchResults = new ArrayList<>();
+        if(expectedUserType.isEmpty()) {
+                searchResults.addAll(getSearchResultForUserType(latitude, longitude, UserType.SCHOOL, expectedModules));
+                searchResults.addAll(getSearchResultForUserType(latitude, longitude, UserType.GUEST_TEACHER, expectedModules));
+        } else {
+             searchResults = getSearchResultForUserType(latitude, longitude,
+             expectedUserType.get(), expectedModules);
+         }
+        return searchResults;
+    }
+    private List<SearchResult> getSearchResultForUserType(final double latitude, final double longitude,
+                                               UserType expectedUserType, List<String> expectedModules) {
         String condition = getCondition(expectedUserType);
 
         List<LocationSearchResult> searchResults = searchRepository.findLocationsOrderedByDistance(
                 latitude, longitude, START_DISTANCE, MAX_DISTANCE, LIMIT, condition);
-        return mapSearchResults(searchResults, expectedUserType);
+        return mapSearchResults(searchResults, expectedUserType, expectedModules);
     }
 
     private String getCondition(UserType expectedUserType) {
@@ -45,33 +59,48 @@ public class SearchService {
     }
 
     private List<SearchResult> mapSearchResults(List<LocationSearchResult> locationSearchResults,
-                                                UserType expectedUserType) {
+                                                UserType expectedUserType, List<String> expectedModules) {
         return switch(expectedUserType) {
-            case SCHOOL -> mapLocationResultToSchoolSearchResult(locationSearchResults);
-            case GUEST_TEACHER -> mapLocationResultToTeacherSearchResult(locationSearchResults);
+            case SCHOOL -> mapLocationResultToSchoolSearchResult(locationSearchResults, expectedModules);
+            case GUEST_TEACHER -> mapLocationResultToTeacherSearchResult(locationSearchResults, expectedModules);
         };
     }
 
-    private List<SearchResult> mapLocationResultToSchoolSearchResult(List<LocationSearchResult> locationSearchResults) {
+    private List<SearchResult> mapLocationResultToSchoolSearchResult(List<LocationSearchResult> locationSearchResults, List<String> expectedModules) {
         List<SearchResult> searchResults = new ArrayList<>();
 
         for(LocationSearchResult location : locationSearchResults) {
             Optional<School> school = schoolService.getSchoolByLocation(location.getId());
-            if(school.isEmpty()) break;
-            searchResults.add(searchMapper.toSchoolDomain(location, school.get(), UserType.SCHOOL));
+            if(school.isPresent() && matchModules(school.get().getModules(), expectedModules)) {
+                searchResults.add(searchMapper.toSchoolDomain(location, school.get(), UserType.SCHOOL));
+            }
         }
         return searchResults;
     }
 
-    private List<SearchResult> mapLocationResultToTeacherSearchResult(List<LocationSearchResult> locationSearchResults) {
+    private List<SearchResult> mapLocationResultToTeacherSearchResult(List<LocationSearchResult> locationSearchResults, List<String> expectedModules) {
         List<SearchResult> searchResults = new ArrayList<>();
 
         for(LocationSearchResult location : locationSearchResults) {
             Optional<GuestTeacher> teacher = teacherService.getTeacherByLocation(location.getId());
-            if(teacher.isEmpty()) break;
-            searchResults.add(searchMapper.toGuestTeacherDomain(location, teacher.get(), UserType.GUEST_TEACHER));
+            if (teacher.isPresent() && matchModules(teacher.get().getModules(), expectedModules)) {
+                searchResults.add(searchMapper.toGuestTeacherDomain(location, teacher.get(), UserType.GUEST_TEACHER));
+            }
         }
         return searchResults;
+    }
+
+    private boolean matchModules(List<Module> activeModules, List<String> expectedModules) {
+        if (expectedModules.isEmpty() || activeModules == null) {
+            return true;
+        }
+        int nrOfMatchedModules = activeModules //
+                .stream() //
+                .map(Module::getName) //
+                .filter(expectedModules::contains)
+                .toList()
+                .size();
+        return nrOfMatchedModules != 0;
     }
 
 }
