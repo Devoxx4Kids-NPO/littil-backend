@@ -5,7 +5,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
-import org.littil.api.auditing.repository.AuditableEntityListener;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
@@ -60,10 +59,6 @@ class SchoolServiceTest {
     
     @InjectMock
     LocationRepository locationRepository;
-
-    @InjectMock
-    //TODO refoctor this. Should not need to mock this
-    AuditableEntityListener auditableEntityListener;
 
     @InjectMock
     TokenHelper tokenHelper;
@@ -199,7 +194,6 @@ class SchoolServiceTest {
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(true).when(repository).isPersistent(entity);
-        doNothing().when(auditableEntityListener).prePersist(entity);
         doNothing().when(locationRepository).persist(any(LocationEntity.class));
 
         doReturn(expectedSchool).when(mapper).updateDomainFromEntity(any(SchoolEntity.class), any(School.class));
@@ -240,7 +234,6 @@ class SchoolServiceTest {
         
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
-        doNothing().when(auditableEntityListener).prePersist(entity);
         doReturn(false).when(repository).isPersistent(entity);
         doNothing().when(locationRepository).persist(any(LocationEntity.class));
 

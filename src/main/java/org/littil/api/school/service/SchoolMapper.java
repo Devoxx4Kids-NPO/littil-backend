@@ -1,11 +1,15 @@
 package org.littil.api.school.service;
 
 import org.littil.api.school.api.SchoolPostResource;
+import org.littil.api.module.service.Module;
 import org.littil.api.school.repository.SchoolEntity;
+import org.littil.api.school.repository.SchoolModuleEntity;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+
+import java.util.List;
 
 @Mapper(componentModel = "cdi")
 public interface SchoolMapper {
@@ -42,4 +46,10 @@ public interface SchoolMapper {
     @Mapping(source = "contactPerson.prefix", target = "prefix")
     @Mapping(source = "contactPerson.surname", target = "surname")
     School updateDomainFromEntity(SchoolEntity entity, @MappingTarget School domain);
+
+    List<Module> toDomain(List<SchoolModuleEntity> modules);
+
+    @Mapping(source = "module.id", target = "id")
+    @Mapping(source = "module.name", target = "name")
+    Module toDomain(SchoolModuleEntity entity);
 }
