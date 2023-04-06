@@ -12,6 +12,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.time.DayOfWeek;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -51,4 +52,8 @@ public class GuestTeacherEntity extends AbstractAuditableEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user", referencedColumnName = "user_id")
     private UserEntity user;
+
+    @OneToMany(mappedBy="guestTeacher")
+    private List<GuestTeacherModuleEntity> modules;
+
 }
