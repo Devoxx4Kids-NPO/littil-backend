@@ -91,7 +91,7 @@ public class SearchService {
     }
 
     private boolean matchModules(List<Module> activeModules, List<String> expectedModules) {
-        if (expectedModules.isEmpty() || activeModules == null) {
+        if (expectedModules.isEmpty()) {
             return true;
         }
         int nrOfMatchedModules = activeModules //

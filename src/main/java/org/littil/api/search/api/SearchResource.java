@@ -31,6 +31,8 @@ import java.util.Optional;
 @Tag(name = "Search", description = "CRUD Operations")
 public class SearchResource {
 
+    static final String MODULES_NOT_VALID = "List of modules contain invalid module(s)";
+
     @Inject
     SearchService searchService;
 
@@ -62,7 +64,9 @@ public class SearchResource {
                         @QueryParam("expectedModules") List<String> expectedModules) {
 
         if (!validModules(expectedModules)) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return Response.status(Response.Status.BAD_REQUEST) //
+                 .entity(new ErrorResponse(null,new ErrorResponse.ErrorMessage(MODULES_NOT_VALID))).build();
+
         }
         Optional<UserType> expectedUserType = UserType.findByLabel(userTypeInput);
         List<SearchResult> searchResults = searchService.getSearchResults(latitude, longitude, expectedUserType, expectedModules);
