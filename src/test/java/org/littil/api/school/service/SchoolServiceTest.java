@@ -234,7 +234,6 @@ class SchoolServiceTest {
         
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
-//        doNothing().when(auditableEntityListener).prePersist(entity);
         doReturn(false).when(repository).isPersistent(entity);
         doNothing().when(locationRepository).persist(any(LocationEntity.class));
 
