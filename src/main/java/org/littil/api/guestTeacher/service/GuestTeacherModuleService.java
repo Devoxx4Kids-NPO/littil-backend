@@ -4,7 +4,6 @@ import io.quarkus.security.UnauthorizedException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherModuleEntity;
@@ -16,6 +15,7 @@ import org.littil.api.module.service.Module;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;

@@ -98,7 +98,6 @@ public class SchoolModuleResourceTest
         given()
                 .contentType(ContentType.JSON)
                 .delete("/{school_id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
-                // school.getId(), module.getId())
                 .then()
                 .statusCode(401);
     }
