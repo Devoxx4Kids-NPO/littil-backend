@@ -7,11 +7,13 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.littil.api.guestTeacher.service.GuestTeacher;
-import org.littil.api.guestTeacher.service.GuestTeacherService;
-import org.littil.api.module.service.Module;
-import org.littil.api.school.service.School;
-import org.littil.api.school.service.SchoolService;
+import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
+import org.littil.api.guestTeacher.repository.GuestTeacherModuleEntity;
+import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
+import org.littil.api.module.repository.ModuleEntity;
+import org.littil.api.school.repository.SchoolEntity;
+import org.littil.api.school.repository.SchoolModuleEntity;
+import org.littil.api.school.repository.SchoolRepository;
 import org.littil.api.search.api.UserType;
 import org.littil.api.search.repository.LocationSearchResult;
 import org.littil.api.search.repository.SearchRepository;
@@ -40,10 +42,10 @@ class SearchServiceTest {
     SearchService searchService;
     
     @InjectMock
-    GuestTeacherService teacherService;
+    GuestTeacherRepository teacherRepository;
     
     @InjectMock
-    SchoolService schoolService;
+    SchoolRepository schoolRepository;
 
     @InjectMock
     SearchRepository searchRepository;
@@ -51,24 +53,24 @@ class SearchServiceTest {
 
     @ParameterizedTest
     @MethodSource("provideArgumentsForWhenGetSearchResultsTest")
-    public void whenGetSearchResults_ReturnExpectedSearchResult (List<School> schoolList, List<GuestTeacher> teacherList,
+    public void whenGetSearchResults_ReturnExpectedSearchResult (List<SchoolEntity> schoolList, List<GuestTeacherEntity> teacherList,
                   Optional<UserType> expectedUserType, List<String> expectedModules, int expectedResults) {
 
         List<LocationSearchResult> locationSearchResult = new ArrayList<>();
-        for (School school : schoolList) {
+        for (SchoolEntity school : schoolList) {
             UUID locationId = UUID.randomUUID();
             LocationSearchResult location = new LocationSearchResult();
             location.setId(locationId);
             locationSearchResult.add(location);
-            doReturn(Optional.of(school)).when(schoolService).getSchoolByLocation(locationId);
+            doReturn(Optional.of(school)).when(schoolRepository).findByLocationId(locationId);
         }
 
-        for (GuestTeacher teacher : teacherList) {
+        for (GuestTeacherEntity teacher : teacherList) {
             UUID locationId = UUID.randomUUID();
             LocationSearchResult location = new LocationSearchResult();
             location.setId(locationId);
             locationSearchResult.add(location);
-            doReturn(Optional.of(teacher)).when(teacherService).getTeacherByLocation(locationId);
+            doReturn(Optional.of(teacher)).when(teacherRepository).findByLocationId(locationId);
         }
 
         doReturn(locationSearchResult).when(searchRepository).findLocationsOrderedByDistance(
@@ -79,21 +81,21 @@ class SearchServiceTest {
 
         if (locationSearchResult.size() == expectedResults) {
             List<String> searchResultNames = searchResults.stream().map(SearchResult::getName).toList();
-            for (School school : schoolList) {
+            for (SchoolEntity school : schoolList) {
                 assertTrue(searchResultNames.contains(school.getName()));
             }
-            for (GuestTeacher teacher : teacherList) {
+            for (GuestTeacherEntity teacher : teacherList) {
                 assertTrue(searchResultNames.contains(teacher.getFirstName() + " " + teacher.getPrefix()+ " " + teacher.getSurname()));
             }
         }
     }
 
     public static Stream<Arguments> provideArgumentsForWhenGetSearchResultsTest() {
-        School school1 = getSchool(List.of("Scratch"));
-        School school2 = getSchool(new ArrayList<>());
-        List<School> allSchools = List.of(school1, school2);
-        GuestTeacher teacher1 = getGuestTeacher(List.of("Scratch"));
-        GuestTeacher teacher2 = getGuestTeacher(new ArrayList<>());
+        SchoolEntity school1 = getSchool(List.of("Scratch"));
+        SchoolEntity school2 = getSchool(new ArrayList<>());
+        List<SchoolEntity> allSchools = List.of(school1, school2);
+        GuestTeacherEntity teacher1 = getGuestTeacher(List.of("Scratch"));
+        GuestTeacherEntity teacher2 = getGuestTeacher(new ArrayList<>());
 
         List emptyList = new ArrayList<>();
 
@@ -109,45 +111,52 @@ class SearchServiceTest {
         );
     }
 
-    private static School getSchool(List<String> moduleNames) {
-        School school = getSchool();
-        List<Module> schoolModules = new ArrayList<>();
+    private static SchoolEntity getSchool(List<String> moduleNames) {
+        SchoolEntity school = getSchool();
+        List<SchoolModuleEntity> schoolModules = new ArrayList<>();
         for (String moduleName : moduleNames) {
-            Module module = new Module();
-            module.setName(moduleName);
-            module.setId(UUID.randomUUID());
-            schoolModules.add(module);
+            SchoolModuleEntity schoolModuleEntity = new SchoolModuleEntity();
+            schoolModuleEntity.setId(UUID.randomUUID());
+            schoolModuleEntity.setModule(createModuleEntity(moduleName));
+            schoolModules.add(schoolModuleEntity);
         }
         school.setModules(schoolModules);
         return school;
     }
 
-    private static School getSchool() {
-        School school = new School();
+    private static SchoolEntity getSchool() {
+        SchoolEntity school = new SchoolEntity();
         school.setName(RandomStringUtils.randomAlphabetic(10));
         return school;
     }
 
-    private static GuestTeacher getGuestTeacher(List<String> moduleNames) {
-        GuestTeacher teacher = getGuestTeacher();
-        List<Module> teacherModules = new ArrayList<>();
+    private static GuestTeacherEntity getGuestTeacher(List<String> moduleNames) {
+        GuestTeacherEntity teacher = getGuestTeacher();
+        List<GuestTeacherModuleEntity> teacherModules = new ArrayList<>();
         for (String moduleName : moduleNames) {
-            Module module = new Module();
-            module.setName(moduleName);
-            module.setId(UUID.randomUUID());
-            teacherModules.add(module);
+            GuestTeacherModuleEntity guestTeacherModuleEntity = new GuestTeacherModuleEntity();
+            guestTeacherModuleEntity.setId(UUID.randomUUID());
+            guestTeacherModuleEntity.setModule(createModuleEntity(moduleName));
+            teacherModules.add(guestTeacherModuleEntity);
         }
         teacher.setModules(teacherModules);
         return teacher;
     }
 
 
-    private static GuestTeacher getGuestTeacher() {
-        GuestTeacher teacher = new GuestTeacher();
+    private static GuestTeacherEntity getGuestTeacher() {
+        GuestTeacherEntity teacher = new GuestTeacherEntity();
         teacher.setFirstName(RandomStringUtils.randomAlphabetic(10));
         teacher.setPrefix("");
         teacher.setSurname(RandomStringUtils.randomAlphabetic(10));
         return teacher;
     }
 
+    private static ModuleEntity createModuleEntity(String moduleName) {
+        ModuleEntity module = new ModuleEntity();
+        module.setName(moduleName);
+        module.setId(UUID.randomUUID());
+        module.setDeleted(false);
+        return module;
+    }
 }
