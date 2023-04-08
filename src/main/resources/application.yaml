@@ -58,7 +58,6 @@ quarkus:
     ssl: true
     username: ${SMTP_USERNAME:user}
     password: ${SMTP_PASSWORD:pwd}
-    mock: true #Mock SMTP server when running in development mode. See: http://localhost:8080/mail for incoming mail
   flyway:
     migrate-at-start: true
     locations: db/migration
@@ -84,6 +83,8 @@ quarkus:
           level: DEBUG
         "quarkus.oidc":
           level: DEBUG
+    mailer:
+      mock: true
     hibernate-orm:
       log:
         sql: true
@@ -101,6 +102,8 @@ quarkus:
       category:
         "org.littil":
           level: INFO
+    mailer:
+      mock: true
     hibernate-orm:
       database:
         generation: none
