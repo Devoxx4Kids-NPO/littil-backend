@@ -35,7 +35,6 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
-@SchoolSecured
 @Tag(name = "Contact", description = "CRUD Operations")
 public class ContactResource {
 

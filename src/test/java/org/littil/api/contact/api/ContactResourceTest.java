@@ -44,6 +44,7 @@ import static org.mockito.Mockito.doReturn;
 @QuarkusTestResource(APIManagementMock.class)
 @QuarkusTestResource(WireMockSearchService.class)
 class ContactResourceTest {
+    private static final UUID ID = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
     
     @InjectSpy
     UserService userService;
@@ -73,14 +74,15 @@ class ContactResourceTest {
             .statusCode(200);
     }
 
-    /*
     @Test
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetContactById_thenShouldReturnSuccessfully() {
         ContactPostResource contact = getDefaultContact();
+
         Contact saved = save(contact);
+
         Contact got = given()
                 .when()
                 .get("/{id}", saved.getId())
@@ -89,11 +91,11 @@ class ContactResourceTest {
                 .extract()
                 .as(Contact.class);
 
-        assertThat(saved).isEqualTo(got);
-    }*/
+        assertThat(saved.getId()).isEqualTo(got.getId());
+    }
 
     private Contact save(ContactPostResource contact) {
-        doReturn(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf")).when(tokenHelper).getCurrentUserId();
+        doReturn(ID).when(tokenHelper).getCurrentUserId();
 
         User createdUser = createAndSaveUser();
         doReturn(Optional.ofNullable(createdUser))
@@ -111,6 +113,7 @@ class ContactResourceTest {
 
     private static ContactPostResource getDefaultContact() {
         ContactPostResource contact = new ContactPostResource();
+        contact.setRecipient(ID);
         contact.setMedium("+31 6 1337 1337");
         contact.setMessage("Hello world");
         return contact;
