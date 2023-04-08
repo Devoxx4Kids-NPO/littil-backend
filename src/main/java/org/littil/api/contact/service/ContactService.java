@@ -47,9 +47,8 @@ public class ContactService {
                 .map(userMapper::toEntity)
                 .ifPresent(contactEntity::setRecipient);
 
-        // send email to recipient
-        // send email to sender
-
+        // FIXME: send email to recipient
+        // FIXME: send email to sender
         // set createdBy? -> probably quarkus
         // set createdOn? -> probably quarkus
         repository.persist(contactEntity);
@@ -68,8 +67,10 @@ public class ContactService {
 
     public List<Contact> findAll() {
         UUID userId = tokenHelper.getCurrentUserId();
-        // FIXME: repo.findAllByCreatedById(userId)
-        // FIXME: append repo.findAllByRecipientId(userId)
-        return Collections.emptyList();
+        return Stream.concat(
+                this.repository.findByCreatedBy(userId),
+                this.repository.findByRecipientId(userId)
+        ).map(this.mapper::toDomain)
+                .toList();
     }
 }
