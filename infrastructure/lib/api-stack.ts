@@ -9,8 +9,11 @@ import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { allowEcsDescribeTaskStatement } from './iam/allowEcsDescribeTaskStatement';
 import { allowEcsExecuteCommandStatement } from './iam/allowEcsExecuteCommandStatement';
+import { LittilEnvironmentSettings } from './littil-environment-settings';
 
 export interface ApiStackProps extends StackProps {
+    littil: LittilEnvironmentSettings;
+
     apiVpc: {
         id: string;
     };
@@ -43,8 +46,6 @@ export class ApiStack extends Stack {
         });
 
         /* Fargate. */
-        const littilBackendSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendSecret', 'littil/backend/staging');
-
         const apiEcrRepository = Repository.fromRepositoryAttributes(this, 'ApiEcrContainerRepository', {
             repositoryName: props.ecrRepository.name,
             repositoryArn: props.ecrRepository.arn,
@@ -52,8 +53,10 @@ export class ApiStack extends Stack {
 
         const certificate = Certificate.fromCertificateArn(this, 'ApiCertificate', props.apiCertificateArn);
 
-        // TODO: Deduplicate
-        const littilDatabaseSecretName = 'littil/backend/databaseCredentials';
+        const littilOidcSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendSecret', 'littil/backend/' + props.littil.environment + '/oidc');
+        const littilSmtpSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendSecret', 'littil/backend/' + props.littil.environment + '/smtp');
+
+        const littilDatabaseSecretName = 'littil/backend/' + props.littil.environment + '/databaseCredentials';
         const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
 
         const fargateService = new ApplicationLoadBalancedFargateService(this, 'LittilApi', {
@@ -70,19 +73,19 @@ export class ApiStack extends Stack {
                     DATASOURCE_HOST: props.database.host,
                     DATASOURCE_PORT: props.database.port,
                     DATASOURCE_DATABASE: props.database.name,
-                    QUARKUS_HTTP_CORS_ORIGINS: 'https://staging.littil.org',
+                    QUARKUS_HTTP_CORS_ORIGINS: props.littil.httpCorsOrigin,
                 },
                 secrets: {
                     DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
                     DATASOURCE_PASSWORD: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'password'),
-                    OIDC_CLIENT_ID: Secret.fromSecretsManager(littilBackendSecret, 'oidcClientId'),
-                    OIDC_CLIENT_SECRET: Secret.fromSecretsManager(littilBackendSecret, 'oidcClientSecret'),
-                    OIDC_TENANT: Secret.fromSecretsManager(littilBackendSecret, 'oidcTenant'),
-                    M2M_CLIENT_ID: Secret.fromSecretsManager(littilBackendSecret, 'm2mClientId'),
-                    M2M_CLIENT_SECRET: Secret.fromSecretsManager(littilBackendSecret, 'm2mClientSecret'),
-                    SMTP_HOST: Secret.fromSecretsManager(littilBackendSecret, 'smtpHost'),
-                    SMTP_USERNAME: Secret.fromSecretsManager(littilBackendSecret, 'smtpUsername'),
-                    SMTP_PASSWORD: Secret.fromSecretsManager(littilBackendSecret, 'smtpPassword'),
+                    OIDC_CLIENT_ID: Secret.fromSecretsManager(littilOidcSecret, 'oidcClientId'),
+                    OIDC_CLIENT_SECRET: Secret.fromSecretsManager(littilOidcSecret, 'oidcClientSecret'),
+                    OIDC_TENANT: Secret.fromSecretsManager(littilOidcSecret, 'oidcTenant'),
+                    M2M_CLIENT_ID: Secret.fromSecretsManager(littilOidcSecret, 'm2mClientId'),
+                    M2M_CLIENT_SECRET: Secret.fromSecretsManager(littilOidcSecret, 'm2mClientSecret'),
+                    SMTP_HOST: Secret.fromSecretsManager(littilSmtpSecret, 'smtpHost'),
+                    SMTP_USERNAME: Secret.fromSecretsManager(littilSmtpSecret, 'smtpUsername'),
+                    SMTP_PASSWORD: Secret.fromSecretsManager(littilSmtpSecret, 'smtpPassword'),
                 },
             },
             certificate,
@@ -93,14 +96,14 @@ export class ApiStack extends Stack {
             });
 
         /* ECS Exec. */
-        const ecsExecPolicy = new Policy(this, 'LITTIL-NL-staging-littil-api-ECSExec-Policy');
+        const ecsExecPolicy = new Policy(this, 'LITTIL-NL-' + props.littil.environment + '-littil-api-ECSExec-Policy');
         ecsExecPolicy.addStatements(
             allowEcsExecuteCommandStatement(fargateService.cluster.clusterArn, this.region, this.account),
             allowEcsDescribeTaskStatement(this.region, this.account),
         );
 
         /* ECS Exec users. */
-        const ecsExecUserName = 'LITTIL-NL-staging-littil-api-ECSExec-User';
+        const ecsExecUserName = 'LITTIL-NL-' + props.littil.environment + '-littil-api-ECSExec-User';
         const ecsExecUser = new User(this, ecsExecUserName, {userName: ecsExecUserName});
         ecsExecPolicy.attachToUser(ecsExecUser);
 

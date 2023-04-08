@@ -2,8 +2,10 @@ import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Repository, TagMutability } from 'aws-cdk-lib/aws-ecr';
 import { Effect, Policy, PolicyStatement, Role, User, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
+import { LittilEnvironmentSettings } from './littil-environment-settings';
 
 export interface EcrStackProps extends StackProps {
+    littil: LittilEnvironmentSettings;
     apiRepositoryNameExportName: string;
     apiRepositoryArnExportName: string;
 }
@@ -64,7 +66,7 @@ export class EcrStack extends Stack {
 
         /* Push pull user for manual pushing of images. */
         // TODO: Remove when automated from pipeline
-        const pushPullUser = new User(this, 'ManualPushPullUser', {userName: 'LITTIL-NL-staging-Ecr-Manual-PushPull'});
+        const pushPullUser = new User(this, 'ManualPushPullUser', {userName: 'LITTIL-NL-' + props.littil.environment + '-Ecr-Manual-PushPull'});
         pushPullPolicy.attachToUser(pushPullUser);
         loginToEcrPolicy.attachToUser(pushPullUser);
 
@@ -76,7 +78,7 @@ export class EcrStack extends Stack {
         const openIdConnectProviderArn = `arn:aws:iam::${accountId}:oidc-provider/${issuer}`;
 
         const ciPushRole = new Role(this, 'EcrCiPushRole', {
-            roleName: 'LITTIL-NL-staging-api-ecr-push',
+            roleName: 'LITTIL-NL-' + props.littil.environment + '-api-ecr-push',
             assumedBy: new WebIdentityPrincipal(openIdConnectProviderArn, {
                 StringLike: {
                     [`${issuer}:sub`]: `repo:${gitHubOrg}/${githubRepoName}:*`,

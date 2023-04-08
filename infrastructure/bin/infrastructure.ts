@@ -2,17 +2,36 @@
 import { App, Fn, StackProps } from 'aws-cdk-lib';
 import 'source-map-support/register';
 import { ApiStack, ApiStackProps } from '../lib/api-stack';
-import { CertificateStack } from '../lib/certificate-stack';
+import { CertificateStack, CertificateStackProps } from '../lib/certificate-stack';
 import { DatabaseStack, DatabaseStackProps } from '../lib/database-stack';
 import { EcrStack, EcrStackProps } from '../lib/ecr-stack';
+import { LittilEnvironmentSettings } from '../lib/littil-environment-settings';
 import { MaintenanceEcrStack } from '../lib/maintenance-ecr-stack';
+import { MaintenanceStack, MaintenanceStackProps } from '../lib/maintenance-stack';
 import { VpcStack } from '../lib/vpc-stack';
 
 const app = new App();
 
+const awsAccountId = app.node.tryGetContext('account');
+const littilEnvironment = app.node.tryGetContext('environment');
+if (littilEnvironment !== 'staging' && littilEnvironment !== 'production') {
+    throw new Error('environment needs to be staging or production');
+}
+
+// TODO: Lookup
+const vpcId = littilEnvironment === 'staging' ? 'vpc-0587b532bb62f5ccc' : '';
+
 const env = {
     region: 'eu-west-1',
-    account: app.node.tryGetContext('account'),
+    account: awsAccountId,
+};
+
+const littilDomain = littilEnvironment === 'staging' ? 'staging.littil.org' : 'littil.org';
+
+const littilEnvironmentSettings: LittilEnvironmentSettings = {
+    environment: littilEnvironment,
+    backendDomainName: 'api.' + littilDomain,
+    httpCorsOrigin: 'https://' + littilDomain,
 };
 
 const crossStackReferenceExportNames = {
@@ -27,14 +46,16 @@ const crossStackReferenceExportNames = {
     databaseSecurityGroup: 'databaseSecurityGroup',
 };
 
-const certificateStackProps = {
+const certificateStackProps: CertificateStackProps = {
     env,
+    littil: littilEnvironmentSettings,
     apiCertificateArnExportName: crossStackReferenceExportNames.apiCertificateArn,
 };
 new CertificateStack(app, 'ApiCertificatesStack', certificateStackProps);
 
 const apiEcrProps: EcrStackProps = {
     env,
+    littil: littilEnvironmentSettings,
     apiRepositoryNameExportName: crossStackReferenceExportNames.apiEcrRepositoryName,
     apiRepositoryArnExportName: crossStackReferenceExportNames.apiEcrRepositoryArn,
 };
@@ -52,8 +73,6 @@ const vpcStackProps: StackProps = {
 };
 new VpcStack(app, 'ApiVpcStack', vpcStackProps);
 
-const vpcId = 'vpc-0587b532bb62f5ccc';
-
 const databaseStackProps: DatabaseStackProps = {
     apiVpc: {
         id: vpcId,
@@ -67,6 +86,7 @@ const databaseStackProps: DatabaseStackProps = {
 new DatabaseStack(app, 'ApiDatabaseStack', databaseStackProps);
 
 const apiStackProps: ApiStackProps = {
+    littil: littilEnvironmentSettings,
     apiVpc: {
         id: vpcId,
     },
@@ -87,26 +107,32 @@ const apiStackProps: ApiStackProps = {
     },
 };
 new ApiStack(app, 'ApiStack', apiStackProps);
-/*
-const maintenanceProps: MaintenanceStackProps = {
-    env,
-    maintenanceContainer: {
-        enable: false,
-        imageTag: '1.0.2',
-        ecrRepository: {
-            name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
-            arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
+
+const enableMaintenanceContainer = app.node.tryGetContext('maintenance');
+if (enableMaintenanceContainer === 'true') {
+    const maintenanceProps: MaintenanceStackProps = {
+        env,
+        littil: littilEnvironmentSettings,
+        apiVpc: {
+            id: vpcId,
         },
-    },
-    database: {
-        host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
-        port: Fn.importValue(crossStackReferenceExportNames.databasePort),
-        name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-        vpcId,
-        securityGroup: {
-            id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+        maintenanceContainer: {
+            enable: false,
+            imageTag: '1.0.2',
+            ecrRepository: {
+                name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
+                arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
+            },
         },
-    },
-};
-new MaintenanceStack(app, 'MaintenanceServiceStack', maintenanceProps);
-*/
+        database: {
+            host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
+            port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+            name: Fn.importValue(crossStackReferenceExportNames.databaseName),
+            vpcId,
+            securityGroup: {
+                id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+            },
+        },
+    };
+    new MaintenanceStack(app, 'MaintenanceServiceStack', maintenanceProps);
+}

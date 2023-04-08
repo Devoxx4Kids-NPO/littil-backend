@@ -1,8 +1,10 @@
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Construct } from 'constructs';
+import { LittilEnvironmentSettings } from './littil-environment-settings';
 
 export interface CertificateStackProps extends StackProps {
+    littil: LittilEnvironmentSettings;
     apiCertificateArnExportName: string;
 }
 
@@ -11,7 +13,7 @@ export class CertificateStack extends Stack {
         super(scope, id, props);
 
         const certificateProps = {
-            domainName: 'api.staging.littil.org',
+            domainName: props.littil.backendDomainName,
             validation: CertificateValidation.fromDns(),
         };
         const certificate = new Certificate(this, 'ApiCertificate', certificateProps);

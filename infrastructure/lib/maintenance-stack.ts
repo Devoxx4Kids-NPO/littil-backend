@@ -6,8 +6,10 @@ import { Policy, User } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 import { allowEcsDescribeTaskStatement } from './iam/allowEcsDescribeTaskStatement';
 import { allowEcsExecuteCommandStatement } from './iam/allowEcsExecuteCommandStatement';
+import { LittilEnvironmentSettings } from './littil-environment-settings';
 
 export interface MaintenanceStackProps extends StackProps {
+    littil: LittilEnvironmentSettings;
     apiVpc: {
         id: string;
     };
@@ -36,7 +38,7 @@ export class MaintenanceStack extends Stack {
                 props: MaintenanceStackProps) {
         super(scope, id, props);
 
-        const ecsExecUserName = 'LITTIL-NL-staging-maintenance-ECSExec-User';
+        const ecsExecUserName = 'LITTIL-NL-' + props.littil.environment + '-maintenance-ECSExec-User';
         const ecsExecUser = new User(this, ecsExecUserName, {userName: ecsExecUserName});
 
         /* Database access container. */
@@ -89,7 +91,7 @@ export class MaintenanceStack extends Stack {
         databaseSecurityGroup.connections.allowFrom(fargateMySQLSecurityGroup, Port.allTcp());
 
         /* ECS Exec. */
-        const ecsExecPolicy = new Policy(this, 'LITTIL-NL-staging-maintenance-ECSExec-Policy');
+        const ecsExecPolicy = new Policy(this, 'LITTIL-NL-' + props.littil.environment + '-maintenance-ECSExec-Policy');
         ecsExecPolicy.addStatements(
             allowEcsExecuteCommandStatement(maintenanceFargateService.cluster.clusterArn, this.region, this.account),
             allowEcsDescribeTaskStatement(this.region, this.account),
