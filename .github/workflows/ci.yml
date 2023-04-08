@@ -24,6 +24,11 @@ jobs:
       - name: Save test results
         uses: scacap/action-surefire-report@v1
         if: ${{ github.actor != 'dependabot[bot]' }}
+      - name: Publish OpenAPI definitions
+        uses: actions/upload-artifact@v3
+        with:
+          name: openapi
+          path: target/generated/openapi.json
       - name: Publish code coverage to pull request
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: madrapps/jacoco-report@v1.3

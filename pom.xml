@@ -6,15 +6,15 @@
   <artifactId>backend</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <properties>
-      <compiler-plugin.version>3.10.1</compiler-plugin.version>
+      <compiler-plugin.version>3.11.0</compiler-plugin.version>
       <maven.compiler.release>17</maven.compiler.release>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
       <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-      <quarkus.platform.version>2.16.3.Final</quarkus.platform.version>
+      <quarkus.platform.version>2.16.6.Final</quarkus.platform.version>
       <quarkus.package.type>fast-jar</quarkus.package.type>
-      <surefire-plugin.version>3.0.0-M9</surefire-plugin.version>
+      <surefire-plugin.version>3.0.0</surefire-plugin.version>
       <sonar.host.url>https://sonarcloud.io</sonar.host.url>
       <sonar.organization>littil</sonar.organization>
       <sonar.projectKey>littil-backend</sonar.projectKey>
@@ -22,8 +22,8 @@
       <mapstruct.version>1.5.3.Final</mapstruct.version>
       <assertj.version>3.24.2</assertj.version>
       <archunit.version>1.0.1</archunit.version>
-      <jacoco.version>0.8.8</jacoco.version>
-      <auth0.version>1.44.2</auth0.version>
+      <jacoco.version>0.8.9</jacoco.version>
+      <auth0.version>2.1.0</auth0.version>
       <wiremock.version>2.35.0</wiremock.version>
   </properties>
   <dependencyManagement>
@@ -107,20 +107,6 @@
             <groupId>com.auth0</groupId>
             <artifactId>auth0</artifactId>
             <version>${auth0.version}</version>
-            <!-- The shipped version of okhttp has a critical CVE -->
-            <!-- Therefore we exclude it and import a newer version directly -->
-            <!-- See: https://security.snyk.io/vuln/SNYK-JAVA-COMSQUAREUPOKHTTP3-2958044 -->
-            <exclusions>
-                <exclusion>
-                    <groupId>com.squareup.okhttp3</groupId>
-                    <artifactId>okhttp</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -131,7 +117,7 @@
         <dependency>
             <groupId>org.passay</groupId>
             <artifactId>passay</artifactId>
-            <version>1.6.2</version>
+            <version>1.6.3</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -225,7 +211,7 @@
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok-mapstruct-binding</artifactId>
-              <version>0.1.0</version>
+              <version>0.2.0</version>
             </path>
             <path>
               <groupId>org.mapstruct</groupId>

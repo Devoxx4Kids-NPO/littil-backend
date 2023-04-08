@@ -89,6 +89,7 @@ public class ApplicationLifeCycle {
             return this.managementAPI
                     .users().listByEmail(email,new UserFilter())
                     .execute()
+                    .getBody()
                     .stream();
         } catch (Auth0Exception e) {
             log.error("unable to find {} in auth0, skipping this development user ", email, e);
