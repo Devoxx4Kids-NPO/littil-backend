@@ -81,10 +81,10 @@ public class ContactResource {
     }
 
     @POST
-    @Operation(summary = "Create or update a contact")
+    @Operation(summary = "Send and save a contact")
     @APIResponse(
             responseCode = "200",
-            description = "Contact successfully created or updated",
+            description = "Contact successfully sent and created",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(type = SchemaType.OBJECT, implementation = Contact.class)
@@ -100,9 +100,9 @@ public class ContactResource {
     )
     @APIResponse(
             responseCode = "500",
-            description = "Persistence error occurred. Failed to persist contact."
+            description = "error occurred. Failed to send or persist contact."
     )
-    public Response createOrUpdate(@NotNull @Valid ContactPostResource contact) {
+    public Response sendAndSave(@NotNull @Valid ContactPostResource contact) {
         Contact persistedContact = contactService.sendAndSave(contactMapper.toDomain(contact));
         URI uri = UriBuilder.fromResource(ContactResource.class)
                 .path("/" + persistedContact.getId()).build();
