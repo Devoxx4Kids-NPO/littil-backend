@@ -23,10 +23,10 @@ import java.util.UUID;
 public class ContactEntity extends AbstractAuditableEntity {
 
     @Id
-    @Column(name = "contact_id", columnDefinition = "BINARY(16)")
+    @Column(name = "id", columnDefinition = "BINARY(16)")
     private UUID id;
 
     @OneToOne
-    @JoinColumn(name = "recipient", referencedColumnName = "user_id")
+    @JoinColumn(name = "recipient_id", referencedColumnName = "user_id")
     private UserEntity recipient;
 }
