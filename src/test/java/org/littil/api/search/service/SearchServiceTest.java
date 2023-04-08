@@ -96,14 +96,17 @@ class SearchServiceTest {
         List<SchoolEntity> allSchools = List.of(school1, school2);
         GuestTeacherEntity teacher1 = getGuestTeacher(List.of("Scratch"));
         GuestTeacherEntity teacher2 = getGuestTeacher(new ArrayList<>());
+        List<GuestTeacherEntity> allTeachers = List.of(teacher1, teacher2);
 
-        List emptyList = new ArrayList<>();
+        List<Object> emptyList = new ArrayList<>();
 
         return Stream.of(
                 Arguments.of(List.of(school1), emptyList, Optional.of(UserType.SCHOOL), emptyList, 1),
                 Arguments.of(allSchools, emptyList, Optional.of(UserType.SCHOOL), emptyList, 2),
+                Arguments.of(allSchools, allTeachers, Optional.of(UserType.SCHOOL), emptyList, 2),
                 Arguments.of(emptyList, List.of(teacher1), Optional.of(UserType.GUEST_TEACHER), emptyList, 1),
-                Arguments.of(emptyList, List.of(teacher1, teacher2), Optional.of(UserType.GUEST_TEACHER), emptyList, 2),
+                Arguments.of(emptyList, allTeachers, Optional.of(UserType.GUEST_TEACHER), emptyList, 2),
+                Arguments.of(allSchools, allTeachers, Optional.of(UserType.GUEST_TEACHER), emptyList, 2),
                 Arguments.of(List.of(school1, school2), List.of(teacher1, teacher2), Optional.empty(), emptyList, 4),
                 Arguments.of(List.of(school1), List.of(teacher1, teacher2), Optional.of(UserType.GUEST_TEACHER), emptyList, 2),
                 Arguments.of(List.of(school1, school2), emptyList, Optional.of(UserType.SCHOOL), List.of("Scratch"), 1),
