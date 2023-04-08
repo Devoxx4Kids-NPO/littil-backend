@@ -35,6 +35,7 @@ import static org.mockito.Mockito.doReturn;
 @QuarkusTest
 class SearchServiceTest {
 
+    public static final int MAX_DISTANCE = 100;
     @Inject
     SearchService searchService;
     
@@ -72,7 +73,7 @@ class SearchServiceTest {
 
         doReturn(locationSearchResult).when(searchRepository).findLocationsOrderedByDistance(
                 eq(0.0), eq(0.0), anyInt(), anyInt(), anyInt(), anyString());
-        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, expectedUserType, expectedModules);
+        List<SearchResult> searchResults = searchService.getSearchResults(0.0, 0.0, expectedUserType,MAX_DISTANCE, expectedModules);
         assertNotNull(searchResults);
         assertEquals(expectedResults, searchResults.size());
 

@@ -26,28 +26,27 @@ public class SearchService {
     private final SearchRepository searchRepository;
     private final SearchMapper searchMapper;
     private static final int START_DISTANCE = 1;
-    private static final int MAX_DISTANCE = 10000;
-    private static final int LIMIT = 100;
+    private static final int LIMIT = 1000;
 
 
     public List<SearchResult> getSearchResults(final double latitude, final double longitude,
-                                               Optional<UserType> expectedUserType, List<String> expectedModules)  {
+                                               Optional<UserType> expectedUserType, int maxDistance, List<String> expectedModules)  {
         List<SearchResult> searchResults = new ArrayList<>();
         if(expectedUserType.isEmpty()) {
-                searchResults.addAll(getSearchResultForUserType(latitude, longitude, UserType.SCHOOL, expectedModules));
-                searchResults.addAll(getSearchResultForUserType(latitude, longitude, UserType.GUEST_TEACHER, expectedModules));
+                searchResults.addAll(getSearchResultForUserType(latitude, longitude, UserType.SCHOOL, maxDistance, expectedModules));
+                searchResults.addAll(getSearchResultForUserType(latitude, longitude, UserType.GUEST_TEACHER, maxDistance,  expectedModules));
         } else {
              searchResults = getSearchResultForUserType(latitude, longitude,
-             expectedUserType.get(), expectedModules);
+             expectedUserType.get(), maxDistance, expectedModules);
          }
         return searchResults;
     }
     private List<SearchResult> getSearchResultForUserType(final double latitude, final double longitude,
-                                               UserType expectedUserType, List<String> expectedModules) {
+                                                          UserType expectedUserType, int maxDistance, List<String> expectedModules) {
         String condition = getCondition(expectedUserType);
 
         List<LocationSearchResult> searchResults = searchRepository.findLocationsOrderedByDistance(
-                latitude, longitude, START_DISTANCE, MAX_DISTANCE, LIMIT, condition);
+                latitude, longitude, START_DISTANCE, maxDistance, LIMIT, condition);
         return mapSearchResults(searchResults, expectedUserType, expectedModules);
     }
 
@@ -59,7 +58,7 @@ public class SearchService {
     }
 
     private List<SearchResult> mapSearchResults(List<LocationSearchResult> locationSearchResults,
-                                                UserType expectedUserType, List<String> expectedModules) {
+                                                 UserType expectedUserType, List<String> expectedModules) {
         return switch(expectedUserType) {
             case SCHOOL -> mapLocationResultToSchoolSearchResult(locationSearchResults, expectedModules);
             case GUEST_TEACHER -> mapLocationResultToTeacherSearchResult(locationSearchResults, expectedModules);
@@ -94,6 +93,7 @@ public class SearchService {
         if (expectedModules.isEmpty()) {
             return true;
         }
+
         int nrOfMatchedModules = activeModules //
                 .stream() //
                 .map(Module::getName) //

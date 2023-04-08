@@ -31,7 +31,8 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 @TestHTTPEndpoint(SearchResource.class)
 @QuarkusTestResource(APIManagementMock.class)
 class SearchResourceTest {
-    
+
+    private static final int MAX_DISTANCE = 100;
     @InjectSpy
     SearchService searchService;
 
@@ -56,12 +57,13 @@ class SearchResourceTest {
              @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
      void givenGetAuthorzed_thenShouldReturnList() {
 
-        doReturn(new ArrayList<SearchResult>()).when(searchService).getSearchResults(anyDouble(), anyDouble(), any(Optional.class), anyList() );
+        doReturn(new ArrayList<SearchResult>()).when(searchService).getSearchResults(anyDouble(), anyDouble(), any(Optional.class), anyInt(), anyList());
         List<SearchResult> result = given() //
                  .when() //
                  .queryParam("lat", 0.0)
                  .queryParam("lon", 0.0)
                  .queryParam("userType", UserType.SCHOOL.getLabel())
+                 .queryParam("maxDistance",MAX_DISTANCE)
                  .get() //
                  .then() //
                  .statusCode(200)
@@ -82,6 +84,7 @@ class SearchResourceTest {
                 .queryParam("lat", 0.0)
                 .queryParam("lon", 0.0)
                 .queryParam("userType", "")
+                .queryParam("maxDistance", MAX_DISTANCE)
                 .get() //
                 .then() //
                 .statusCode(200)
@@ -106,6 +109,7 @@ class SearchResourceTest {
                 .queryParam("lon", 0.0)
                 .queryParam("userType", "")
                 .queryParam("expectedModules", List.of("Scratch"))
+                .queryParam("maxDistance", MAX_DISTANCE)
                 .get() //
                 .then() //
                 .statusCode(200);

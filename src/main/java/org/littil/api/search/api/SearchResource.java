@@ -41,7 +41,7 @@ public class SearchResource {
 
     @GET
     @Path("/")
-    @Operation(summary = "Fetch a list of teachers or school ordered by distance.test", description ="test")
+    @Operation(summary = "Fetch a list of teachers or school ordered by distance")
     @APIResponse(
             responseCode = "200",
             description = "Fetch a list of teachers or school ordered by distance",
@@ -61,6 +61,7 @@ public class SearchResource {
     public Response get(@QueryParam("lat")  double latitude,
                         @QueryParam("long") double longitude,
                         @QueryParam("userType") String userTypeInput,
+                        @QueryParam("maxDistance") int maxDistance,
                         @QueryParam("expectedModules") List<String> expectedModules) {
 
         if (!validModules(expectedModules)) {
@@ -69,7 +70,7 @@ public class SearchResource {
 
         }
         Optional<UserType> expectedUserType = UserType.findByLabel(userTypeInput);
-        List<SearchResult> searchResults = searchService.getSearchResults(latitude, longitude, expectedUserType, expectedModules);
+        List<SearchResult> searchResults = searchService.getSearchResults(latitude, longitude, expectedUserType, maxDistance, expectedModules);
         return Response.ok(searchResults).build();
     }
 
