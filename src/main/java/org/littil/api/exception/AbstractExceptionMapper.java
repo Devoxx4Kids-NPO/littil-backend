@@ -22,7 +22,7 @@ public class AbstractExceptionMapper<T extends Throwable> implements ExceptionMa
     @Override
     public Response toResponse(T e) {
         UUID errorId = UUID.randomUUID();
-        log.error("error[{},{}] errorId: {}",this.status,e.getClass().getSimpleName(), errorId, e);
+        log.error("mapping {} to {}, errorId: {}",e.getClass().getSimpleName(),this.status, errorId, e);
         Stream<ErrorResponse.ErrorMessage> messages = build(e);
         return Response.status(this.status)
                 .entity(new ErrorResponse(errorId.toString(),messages.toList()))
