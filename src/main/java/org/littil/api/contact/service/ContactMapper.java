@@ -1,7 +1,7 @@
 package org.littil.api.contact.service;
 
-import org.littil.api.contact.repository.ContactEntity;
 import org.littil.api.contact.api.ContactPostResource;
+import org.littil.api.contact.repository.ContactEntity;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
