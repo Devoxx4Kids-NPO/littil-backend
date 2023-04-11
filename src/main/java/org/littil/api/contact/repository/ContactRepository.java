@@ -8,11 +8,18 @@ import java.util.stream.Stream;
 
 @ApplicationScoped
 public class ContactRepository implements PanacheRepositoryBase<ContactEntity, UUID> {
-    public Stream<ContactEntity> findByCreatedBy(final UUID id) {
-        return find("created_by", id).stream();
+    public Stream<ContactEntity> findByCreatedBy(final UUID userId) {
+        return find("created_by", userId).stream();
     }
 
-    public Stream<ContactEntity> findByRecipientId(final UUID id) {
-        return find("recipient.id", id).stream();
+    public Stream<ContactEntity> findByRecipientId(final UUID userId) {
+        return find("recipient.id", userId).stream();
+    }
+
+    public Stream<ContactEntity> findAllByCreatedByOrRecipientId(final UUID userId) {
+        return Stream.concat(
+                findByCreatedBy(userId),
+                findByRecipientId(userId)
+        );
     }
 }

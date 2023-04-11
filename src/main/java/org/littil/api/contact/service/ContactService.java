@@ -49,15 +49,9 @@ public class ContactService {
 
     public List<Contact> findAll() {
         return tokenHelper.currentUserId()
-                .map(this::findAllByCreatedByOrRecipient)
-                .orElseGet(Collections::emptyList);
-    }
-
-    private List<Contact> findAllByCreatedByOrRecipient(UUID userId) {
-        return Stream.concat(
-                        this.repository.findByCreatedBy(userId),
-                        this.repository.findByRecipientId(userId)
-                ).map(this.mapper::toDomain)
+                .stream()
+                .flatMap(this.repository::findAllByCreatedByOrRecipientId)
+                .map(this.mapper::toDomain)
                 .toList();
     }
 }
