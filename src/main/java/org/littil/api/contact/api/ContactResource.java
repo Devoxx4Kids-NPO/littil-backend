@@ -6,11 +6,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.littil.api.auth.TokenHelper;
-import org.littil.api.auth.authz.SchoolSecured;
 import org.littil.api.contact.service.Contact;
 import org.littil.api.contact.service.ContactMapper;
 import org.littil.api.contact.service.ContactService;
@@ -23,11 +20,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Path("/api/v1/contacts")
 @RequestScoped
@@ -58,27 +51,6 @@ public class ContactResource {
         return Response.ok(contacts).build();
     }
 
-    @GET
-    @Path("{id}")
-    @Operation(summary = "Fetch a specific contact by Id")
-    @APIResponse(
-            responseCode = "200",
-            description = "Contact with Id found.",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = Contact.class)
-            )
-    )
-    @APIResponse(
-            responseCode = "404",
-            description = "Contact with specific Id was not found."
-    )
-    public Response get(@Parameter(name = "id", required = true) @PathParam("id") final UUID id) {
-        Optional<Contact> contact = contactService.getContactBy(id);
-        return contact.map(r -> Response.ok(r).build())
-                .orElseGet(() -> Response.status(Response.Status.NOT_FOUND).build());
-    }
-
     @POST
     @Operation(summary = "Send and save a contact")
     @APIResponse(
@@ -102,9 +74,9 @@ public class ContactResource {
             description = "error occurred. Failed to send or persist contact."
     )
     public Response sendAndSave(@NotNull @Valid ContactPostResource contact) {
-        Contact persistedContact = contactService.sendAndSave(contactMapper.toDomain(contact));
-        URI uri = UriBuilder.fromResource(ContactResource.class)
-                .path("/" + persistedContact.getId()).build();
-        return Response.ok(uri).entity(persistedContact).build();
+        return contactService.sendAndSave(contactMapper.toDomain(contact))
+                .map(Response::ok)
+                .orElseGet(() -> Response.status(Response.Status.INTERNAL_SERVER_ERROR))
+                .build();
     }
 }
