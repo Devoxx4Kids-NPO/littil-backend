@@ -5,39 +5,33 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 public class AbstractExceptionMapper<T extends Throwable> implements ExceptionMapper<T> {
-    private final Response.Status status;
-    private final boolean generateId;
     private final Logger log;
-
+    private final Response.Status status;
     protected AbstractExceptionMapper(Response.Status status) {
-        this(status,true);
-
-    }
-    protected AbstractExceptionMapper(Response.Status status, boolean generateId) {
         this.log = LoggerFactory.getLogger(getClass());
         this.status = status;
-        this.generateId = generateId;
     }
 
-    protected Stream<ErrorResponse.ErrorMessage> build(T e) {
-        return Stream.of(new ErrorResponse.ErrorMessage(e.getMessage()));
+    protected ErrorResponse build(T e) {
+        return new ErrorResponse(UUID.randomUUID().toString(), List.of(new ErrorResponse.ErrorMessage(e.getMessage())));
     }
 
     @Override
     public Response toResponse(T e) {
-        Optional<UUID> errorId = this.generateId?Optional.of(UUID.randomUUID()):Optional.empty();
-        errorId.ifPresentOrElse(
+        ErrorResponse body = build(e);
+        Optional.ofNullable(body.getErrorId())
+                .ifPresentOrElse(
                 id -> log.error("mapping {}, errorId: {}",this.status.getStatusCode(), id, e),
                 () -> log.debug("mapping {}",this.status.getStatusCode(),e));
-        Stream<ErrorResponse.ErrorMessage> messages = build(e);
         return Response.status(this.status)
-                .entity(new ErrorResponse(errorId.map(Objects::toString).orElse(null),messages.toList()))
+                .entity(body)
                 .build();
     }
 }
