@@ -7,7 +7,6 @@ import javax.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Provider
 @Slf4j

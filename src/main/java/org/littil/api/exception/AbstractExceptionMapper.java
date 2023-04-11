@@ -6,10 +6,8 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 public class AbstractExceptionMapper<T extends Throwable> implements ExceptionMapper<T> {
     private final Logger log;
