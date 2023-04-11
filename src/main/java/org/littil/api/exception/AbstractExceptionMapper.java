@@ -32,10 +32,9 @@ public class AbstractExceptionMapper<T extends Throwable> implements ExceptionMa
     @Override
     public Response toResponse(T e) {
         Optional<UUID> errorId = this.generateId?Optional.of(UUID.randomUUID()):Optional.empty();
-        String exceptionType = e.getClass().getSimpleName();
         errorId.ifPresentOrElse(
-                id -> log.error("mapping {} to {}, errorId: {}",exceptionType,this.status, errorId, e),
-                () -> log.debug("mapping {} to {}",exceptionType,this.status,e));
+                id -> log.error("mapping {}, errorId: {}",this.status.getStatusCode(), id, e),
+                () -> log.debug("mapping {}",this.status.getStatusCode(),e));
         Stream<ErrorResponse.ErrorMessage> messages = build(e);
         return Response.status(this.status)
                 .entity(new ErrorResponse(errorId.map(Objects::toString).orElse(null),messages.toList()))
