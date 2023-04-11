@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Slf4j
 public class AbstractExceptionMapper<T extends Throwable> implements ExceptionMapper<T> {
@@ -15,16 +15,17 @@ public class AbstractExceptionMapper<T extends Throwable> implements ExceptionMa
         this.status = status;
     }
 
-    protected List<ErrorResponse.ErrorMessage> build(T e) {
-        return List.of(new ErrorResponse.ErrorMessage(e.getMessage()));
+    protected Stream<ErrorResponse.ErrorMessage> build(T e) {
+        return Stream.of(new ErrorResponse.ErrorMessage(e.getMessage()));
     }
 
     @Override
     public Response toResponse(T e) {
-        ErrorResponse body = new ErrorResponse(UUID.randomUUID().toString(),build(e));
-        log.error("error[{},{}] errorId: {}",this.status,e.getClass().getSimpleName(), body.getErrorId(), e);
+        UUID errorId = UUID.randomUUID();
+        log.error("error[{},{}] errorId: {}",this.status,e.getClass().getSimpleName(), errorId, e);
+        Stream<ErrorResponse.ErrorMessage> messages = build(e);
         return Response.status(this.status)
-                .entity(body)
+                .entity(new ErrorResponse(errorId.toString(),messages.toList()))
                 .build();
     }
 }

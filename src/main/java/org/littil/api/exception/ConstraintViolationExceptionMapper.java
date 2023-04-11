@@ -3,7 +3,7 @@ package org.littil.api.exception;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import java.util.List;
+import java.util.stream.Stream;
 
 @Provider
 public class ConstraintViolationExceptionMapper extends AbstractExceptionMapper<ConstraintViolationException> {
@@ -13,10 +13,9 @@ public class ConstraintViolationExceptionMapper extends AbstractExceptionMapper<
     }
 
     @Override
-    protected List<ErrorResponse.ErrorMessage> build(ConstraintViolationException e) {
+    protected Stream<ErrorResponse.ErrorMessage> build(ConstraintViolationException e) {
         return e.getConstraintViolations()
                 .stream()
-                .map(constraintViolation -> new ErrorResponse.ErrorMessage(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()))
-                .toList();
+                .map(constraintViolation -> new ErrorResponse.ErrorMessage(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()));
     }
 }
