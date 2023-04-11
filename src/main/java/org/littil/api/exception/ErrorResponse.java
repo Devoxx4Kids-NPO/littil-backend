@@ -7,21 +7,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @EqualsAndHashCode
 @NoArgsConstructor
+@AllArgsConstructor
 public class ErrorResponse {
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String errorId;
     private List<ErrorMessage> errors;
-
-    public ErrorResponse(List<ErrorMessage> errors) {
-        this.errorId = UUID.randomUUID().toString();
-        this.errors = errors;
-    }
 
     @Getter
     @EqualsAndHashCode

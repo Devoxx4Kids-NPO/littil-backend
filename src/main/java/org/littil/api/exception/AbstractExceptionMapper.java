@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 public class AbstractExceptionMapper<T extends Throwable> implements ExceptionMapper<T> {
@@ -20,8 +21,8 @@ public class AbstractExceptionMapper<T extends Throwable> implements ExceptionMa
 
     @Override
     public Response toResponse(T e) {
-        ErrorResponse body = new ErrorResponse(build(e));
-        log.error("error[{}] errorId {}",this.status, body.getErrorId(), e);
+        ErrorResponse body = new ErrorResponse(UUID.randomUUID().toString(),build(e));
+        log.error("error[{},{}] errorId: {}",this.status,e.getClass().getSimpleName(), body.getErrorId(), e);
         return Response.status(this.status)
                 .entity(body)
                 .build();
