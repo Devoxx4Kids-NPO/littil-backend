@@ -1,0 +1,8 @@
+Beste meneer/mevrouw,
+
+{contactMessage}
+
+Contact gegevens: {contactMedium}
+
+Met vriendelijke groet,
+Littil

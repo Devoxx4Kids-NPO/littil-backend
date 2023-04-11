@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.contact.repository.ContactEntity;
 import org.littil.api.contact.repository.ContactRepository;
+import org.littil.api.mail.MailService;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
@@ -26,23 +27,30 @@ public class ContactService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final TokenHelper tokenHelper;
+    private final MailService mailService;
 
     @Transactional
     public Optional<Contact> sendAndSave(Contact contact) {
         ContactEntity contactEntity = mapper.toEntity(contact);
+        Optional<UserEntity> created = tokenHelper.currentUserId()
+                .flatMap(this.userService::getUserById)
+                .map(userMapper::toEntity);
         Optional<UserEntity> recipient = userService.getUserById(contact.getRecipient())
                 .map(userMapper::toEntity);
-        if(recipient.isPresent()) {
+        if(created.isPresent() && recipient.isPresent()) {
+            contactEntity.set
             contactEntity.setRecipient(recipient.get());
         } else {
             log.warn("unable get recipient for {}",contact.getRecipient());
             return Optional.empty();
         }
+        contactEntity.setId(UUID.randomUUID());
+        mailService.sendContactMail();
         // FIXME: send email to recipient
         // FIXME: send email to sender
         // set createdBy? -> probably quarkus
         // set createdOn? -> probably quarkus
-        contactEntity.setId(UUID.randomUUID());
+
         repository.persist(contactEntity);
         return Optional.of(mapper.toDomain(contactEntity));
     }

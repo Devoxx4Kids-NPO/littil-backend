@@ -15,10 +15,11 @@ public class MailService {
     @CheckedTemplate
     static class Templates {
         public static native MailTemplate.MailTemplateInstance welcome(String userEmail, String temporaryPassword);
+        public static native MailTemplate.MailTemplateInstance contact(String contactMessage, String contactMedium);
     }
 
     public void sendWelcomeMail(User user, String password) {
-        log.info("sending mail to {}", user.getEmailAddress());
+        log.info("sending welcome mail to {}", user.getEmailAddress());
         //todo now sending only NL mails
         UniSubscribe<Void> uni = Templates.welcome(user.getEmailAddress(), password)
                 .to(user.getEmailAddress())
@@ -28,7 +29,23 @@ public class MailService {
         try {
             uni.asCompletionStage().get();
         } catch (InterruptedException | ExecutionException e) {
-            log.info("mailing failed! ", e);
+            log.info("mailing to user {} failed! ",user.getId(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendContactMail(String recipientEmail, String contactMessage, String contactMedium) {
+        log.info("sending contact mail to {}", recipientEmail);
+        //todo now sending only NL mails
+        UniSubscribe<Void> uni = Templates.contact(contactMessage,contactMedium)
+                .to(recipientEmail)
+                .subject("Contactverzoek voor Littil") //todo make subject configurable?
+                .send().subscribe();
+        //todo fix handling
+        try {
+            uni.asCompletionStage().get();
+        } catch (InterruptedException | ExecutionException e) {
+            log.info("mailing to user {} failed! ",recipientEmail, e);
             throw new RuntimeException(e);
         }
     }
