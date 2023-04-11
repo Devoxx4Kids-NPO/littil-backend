@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @EqualsAndHashCode
@@ -17,17 +18,8 @@ public class ErrorResponse {
     private String errorId;
     private List<ErrorMessage> errors;
 
-    public ErrorResponse(String errorId, ErrorMessage errorMessage) {
-        this.errorId = errorId;
-        this.errors = List.of(errorMessage);
-    }
-
-    public ErrorResponse(ErrorMessage errorMessage) {
-        this(null, errorMessage);
-    }
-
     public ErrorResponse(List<ErrorMessage> errors) {
-        this.errorId = null;
+        this.errorId = UUID.randomUUID().toString();
         this.errors = errors;
     }
 

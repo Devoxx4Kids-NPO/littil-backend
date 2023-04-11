@@ -13,10 +13,10 @@ public class ConstraintViolationExceptionMapper extends AbstractExceptionMapper<
     }
 
     @Override
-    protected ErrorResponse build(ConstraintViolationException e) {
-        List<ErrorResponse.ErrorMessage> errorMessages = e.getConstraintViolations().stream()
+    protected List<ErrorResponse.ErrorMessage> build(ConstraintViolationException e) {
+        return e.getConstraintViolations()
+                .stream()
                 .map(constraintViolation -> new ErrorResponse.ErrorMessage(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage()))
                 .toList();
-        return new ErrorResponse(errorMessages);
     }
 }
