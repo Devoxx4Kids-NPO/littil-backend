@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public class ConstraintViolationExceptionMapper extends AbstractExceptionMapper<ConstraintViolationException> {
 
     public ConstraintViolationExceptionMapper() {
-        super(Response.Status.BAD_REQUEST);
+        super(Response.Status.BAD_REQUEST, false);
     }
 
     @Override
