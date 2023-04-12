@@ -177,6 +177,11 @@
             <artifactId>jakarta.json</artifactId>
             <version>1.1.6</version>
         </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.logging.cloudwatch</groupId>
+            <artifactId>quarkus-logging-cloudwatch</artifactId>
+            <version>5.6.0</version>
+        </dependency>
     </dependencies>
   <build>
     <plugins>

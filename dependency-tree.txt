@@ -3,7 +3,6 @@ org.littil:backend:jar:0.1.0-SNAPSHOT
 |  +- io.quarkus:quarkus-vertx:jar:2.16.6.Final:compile
 |  |  +- io.quarkus:quarkus-netty:jar:2.16.6.Final:compile
 |  |  |  +- io.netty:netty-codec:jar:4.1.86.Final:compile
-|  |  |  |  \- io.netty:netty-common:jar:4.1.86.Final:compile
 |  |  |  +- io.netty:netty-codec-http:jar:4.1.86.Final:compile
 |  |  |  +- io.netty:netty-codec-http2:jar:4.1.86.Final:compile
 |  |  |  +- io.netty:netty-handler:jar:4.1.86.Final:compile
@@ -131,7 +130,6 @@ org.littil:backend:jar:0.1.0-SNAPSHOT
 |  |  |  |  +- org.jboss.resteasy:resteasy-core-spi:jar:4.7.7.Final:compile
 |  |  |  |  \- com.ibm.async:asyncutil:jar:0.1.0:compile
 |  |  |  \- com.sun.activation:jakarta.activation:jar:1.2.1:compile
-|  |  +- io.quarkus:quarkus-apache-httpclient:jar:2.16.6.Final:compile
 |  |  +- io.quarkus:quarkus-rest-client-config:jar:2.16.6.Final:compile
 |  |  |  \- org.eclipse.microprofile.rest.client:microprofile-rest-client-api:jar:2.0:compile
 |  |  +- org.jboss.resteasy:resteasy-client-microprofile:jar:4.7.7.Final:compile
@@ -366,4 +364,28 @@ org.littil:backend:jar:0.1.0-SNAPSHOT
 |  +- commons-fileupload:commons-fileupload:jar:1.4:test
 |  \- commons-io:commons-io:jar:2.11.0:compile
 +- org.projectlombok:lombok:jar:1.18.26:provided
-\- org.glassfish:jakarta.json:jar:1.1.6:compile
++- org.glassfish:jakarta.json:jar:1.1.6:compile
+\- io.quarkiverse.logging.cloudwatch:quarkus-logging-cloudwatch:jar:5.6.0:compile
+   +- io.quarkus:quarkus-apache-httpclient:jar:2.16.6.Final:compile
+   +- io.quarkiverse.amazonservices:quarkus-amazon-common:jar:1.6.1:compile
+   |  +- software.amazon.awssdk:sdk-core:jar:2.19.22:compile
+   |  |  \- software.amazon.awssdk:profiles:jar:2.19.22:compile
+   |  +- software.amazon.awssdk:aws-core:jar:2.19.22:compile
+   |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+   |  +- software.amazon.awssdk:regions:jar:2.19.22:compile
+   |  +- software.amazon.awssdk:auth:jar:2.19.22:compile
+   |  \- software.amazon.awssdk:http-client-spi:jar:2.19.22:compile
+   +- software.amazon.awssdk:cloudwatchlogs:jar:2.19.31:compile
+   |  +- software.amazon.awssdk:aws-json-protocol:jar:2.19.31:compile
+   |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.19.31:compile
+   |  +- software.amazon.awssdk:protocol-core:jar:2.19.31:compile
+   |  +- software.amazon.awssdk:annotations:jar:2.19.31:compile
+   |  +- software.amazon.awssdk:utils:jar:2.19.31:compile
+   |  +- software.amazon.awssdk:metrics-spi:jar:2.19.31:compile
+   |  +- software.amazon.awssdk:json-utils:jar:2.19.31:compile
+   |  +- software.amazon.awssdk:endpoints-spi:jar:2.19.31:compile
+   |  +- software.amazon.awssdk:apache-client:jar:2.19.31:runtime
+   |  \- software.amazon.awssdk:netty-nio-client:jar:2.19.31:runtime
+   |     +- io.netty:netty-common:jar:4.1.86.Final:compile
+   |     \- io.netty:netty-transport-classes-epoll:jar:4.1.86.Final:runtime
+   \- co.elastic.logging:ecs-logging-core:jar:1.5.0:compile
