@@ -37,7 +37,7 @@ public class SchoolModuleResource {
     SchoolModuleService schoolModuleService;
 
     @GET
-    @Path("{school_id}/modules")
+    @Path("{id}/modules")
     @Operation(summary = "Fetch the list of modules for a specific school")
     @APIResponse(
             responseCode = "200",
@@ -55,13 +55,13 @@ public class SchoolModuleResource {
             responseCode = "401",
             description = "Current user is not owner of this school"
     )
-    public Response getSchoolModules(@Parameter(name = "school_id", required = true) @PathParam("school_id") final UUID id) {
+    public Response getSchoolModules(@Parameter(name = "school_id", required = true) @PathParam("id") final UUID id) {
         List<Module> schoolModules = schoolModuleService.getSchoolModulesBySchoolId(id);
         return  Response.ok(schoolModules).build();
     }
 
     @DELETE
-    @Path("{school_id}/modules/{module_id}")
+    @Path("{id}/modules/{module_id}")
     @Operation(summary = "Delete a module with an id for a given school")
     @APIResponse(
             responseCode = "200",
@@ -76,17 +76,17 @@ public class SchoolModuleResource {
             responseCode = "401",
             description = "Current user is not owner of this school"
     )
-    public Response deleteSchoolModule(@Parameter(name = "school_id", required = true) @PathParam("school_id") UUID school_id,
+    public Response deleteSchoolModule(@Parameter(name = "school_id", required = true) @PathParam("id") UUID school_id,
                                        @Parameter(name = "module_id", required = true) @PathParam("module_id") UUID module_id) {
         schoolModuleService.deleteSchoolModule(school_id, module_id);
         return Response.ok().build();
     }
 
     @POST
-    @Path("{school_id}/modules")
+    @Path("{id}/modules")
     @Operation(summary = "Add an existing module to the list of modules for a specific school")
     @APIResponse(
-            responseCode = "200",
+            responseCode = "201",
             description = "Successfully added the module for the given school.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
@@ -97,7 +97,7 @@ public class SchoolModuleResource {
     @APIResponse(
             responseCode = "401",
             description = "Current user is not owner of this school"
-    )public Response saveSchoolModule(@Parameter(name = "school_id", required = true) @PathParam("school_id") UUID schoolId,  @NotNull @Valid Module module) {
+    )public Response saveSchoolModule(@Parameter(name = "school_id", required = true) @PathParam("id") UUID schoolId,  @NotNull @Valid Module module) {
         schoolModuleService.save(schoolId, module);
         return Response.status(Response.Status.CREATED).build();
     }
