@@ -45,6 +45,19 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-oidc</artifactId>
+            <!-- exlude graal-sdk because of vulnerability in quarkus-oidc version 2.16.6-FINAL -->
+            <exclusions>
+                <exclusion>
+                  <groupId>org.graalvm.sdk</groupId>
+                  <artifactId>graal-sdk</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- override graal-sdk because of vulnerability in version 22.3.0 -->
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>22.3.2</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
