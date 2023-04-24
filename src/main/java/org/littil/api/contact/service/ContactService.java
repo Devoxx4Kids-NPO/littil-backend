@@ -12,11 +12,9 @@ import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @ApplicationScoped
 @RequiredArgsConstructor
@@ -32,26 +30,19 @@ public class ContactService {
     @Transactional
     public Optional<Contact> sendAndSave(Contact contact) {
         ContactEntity contactEntity = mapper.toEntity(contact);
-        Optional<UserEntity> created = tokenHelper.currentUserId()
-                .flatMap(this.userService::getUserById)
+        Optional<UserEntity> recipient = userService
+                .getUserById(contact.getRecipient())
                 .map(userMapper::toEntity);
-        Optional<UserEntity> recipient = userService.getUserById(contact.getRecipient())
-                .map(userMapper::toEntity);
-        if(created.isPresent() && recipient.isPresent()) {
-            contactEntity.set
+        if(recipient.isPresent()) {
             contactEntity.setRecipient(recipient.get());
         } else {
             log.warn("unable get recipient for {}",contact.getRecipient());
             return Optional.empty();
         }
         contactEntity.setId(UUID.randomUUID());
-        mailService.sendContactMail();
-        // FIXME: send email to recipient
-        // FIXME: send email to sender
-        // set createdBy? -> probably quarkus
-        // set createdOn? -> probably quarkus
-
         repository.persist(contactEntity);
+        mailService.sendContactMail(contactEntity.getRecipient().getEmailAddress(),contact.getMessage(),contact.getMedium());
+        // FIXME: send email to sender
         return Optional.of(mapper.toDomain(contactEntity));
     }
 
