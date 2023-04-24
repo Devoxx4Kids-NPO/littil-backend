@@ -2,7 +2,6 @@ package org.littil.api.mail;
 
 import io.quarkus.mailer.MailTemplate;
 import io.quarkus.qute.CheckedTemplate;
-import io.smallrye.mutiny.groups.UniSubscribe;
 import lombok.extern.slf4j.Slf4j;
 import org.littil.api.user.service.User;
 
@@ -19,33 +18,26 @@ public class MailService {
     }
 
     public void sendWelcomeMail(User user, String password) {
-        log.info("sending welcome mail to {}", user.getEmailAddress());
-        //todo now sending only NL mails
-        UniSubscribe<Void> uni = Templates.welcome(user.getEmailAddress(), password)
-                .to(user.getEmailAddress())
-                .subject("Welkom bij Littil") //todo make subject configurable?
-                .send().subscribe();
-        //todo fix handling
-        try {
-            uni.asCompletionStage().get();
-        } catch (InterruptedException | ExecutionException e) {
-            log.info("mailing to user {} failed! ",user.getId(), e);
-            throw new RuntimeException(e);
-        }
+        send(Templates.welcome(user.getEmailAddress(), password),user.getEmailAddress(),"Welkom bij Littil");
     }
 
-    public void sendContactMail(String recipientEmail, String contactMessage, String contactMedium) {
-        log.info("sending contact mail to {}", recipientEmail);
-        //todo now sending only NL mails
-        UniSubscribe<Void> uni = Templates.contact(contactMessage,contactMedium)
-                .to(recipientEmail)
-                .subject("Contactverzoek voor Littil") //todo make subject configurable?
-                .send().subscribe();
-        //todo fix handling
+    public void sendContactMail(String recipient, String contactMessage, String contactMedium) {
+        send(Templates.contact(contactMessage,contactMedium),recipient,"Contactverzoek voor Littil");
+    }
+
+    private void send(MailTemplate.MailTemplateInstance template,String recipient,String subject) {
+        log.info("sending {} to {}",template, recipient);
         try {
-            uni.asCompletionStage().get();
+            template
+                    .to(recipient)
+                    .subject(subject)//todo make subject configurable?
+                    .send()
+                    .subscribe()
+                    .asCompletionStage()
+                    .get();
         } catch (InterruptedException | ExecutionException e) {
-            log.info("mailing to user {} failed! ",recipientEmail, e);
+            //todo fix handling
+            log.warn("mailing {} to {} failed ",template,recipient, e);
             throw new RuntimeException(e);
         }
     }
