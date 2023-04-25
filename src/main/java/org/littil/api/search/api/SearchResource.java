@@ -66,7 +66,7 @@ public class SearchResource {
 
         if (!validModules(expectedModules)) {
             return Response.status(Response.Status.BAD_REQUEST) //
-                 .entity(new ErrorResponse(null,new ErrorResponse.ErrorMessage(MODULES_NOT_VALID))).build();
+                 .entity(new ErrorResponse(null,List.of(new ErrorResponse.ErrorMessage(MODULES_NOT_VALID)))).build();
 
         }
         Optional<UserType> expectedUserType = UserType.findByLabel(userTypeInput);
