@@ -20,6 +20,7 @@
       <sonar.projectKey>littil-backend</sonar.projectKey>
       <lombok.version>1.18.26</lombok.version>
       <mapstruct.version>1.5.5.Final</mapstruct.version>
+      <graal-sdk.version>22.3.2</graal-sdk.version>
       <assertj.version>3.24.2</assertj.version>
       <archunit.version>1.0.1</archunit.version>
       <jacoco.version>0.8.9</jacoco.version>
@@ -45,19 +46,6 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-oidc</artifactId>
-            <!-- exlude graal-sdk because of vulnerability in quarkus-oidc version 2.16.6-FINAL -->
-            <exclusions>
-                <exclusion>
-                  <groupId>org.graalvm.sdk</groupId>
-                  <artifactId>graal-sdk</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- override graal-sdk because of vulnerability in version 22.3.0 -->
-        <dependency>
-            <groupId>org.graalvm.sdk</groupId>
-            <artifactId>graal-sdk</artifactId>
-            <version>22.3.2</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
