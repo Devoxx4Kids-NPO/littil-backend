@@ -41,10 +41,4 @@ public interface GuestTeacherMapper {
     @Mapping(source = "location.postalCode", target = "postalCode")
     GuestTeacher updateDomainFromEntity(GuestTeacherEntity entity, @MappingTarget GuestTeacher domain);
 
-    List<Module> toDomain(List<GuestTeacherModuleEntity> modules);
-
-    @Mapping(source = "module.id", target = "id")
-    @Mapping(source = "module.name", target = "name")
-    Module toDomain(GuestTeacherModuleEntity entity);
-
 }

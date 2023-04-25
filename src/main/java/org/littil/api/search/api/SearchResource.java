@@ -9,6 +9,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.authz.GuestTeacherSecured;
 import org.littil.api.exception.ErrorResponse;
+import org.littil.api.module.service.Module;
+import org.littil.api.module.service.ModuleService;
 import org.littil.api.search.service.SearchResult;
 import org.littil.api.search.service.SearchService;
 
@@ -17,7 +19,6 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,8 +31,13 @@ import java.util.Optional;
 @Tag(name = "Search", description = "CRUD Operations")
 public class SearchResource {
 
+    static final String MODULES_NOT_VALID = "List of modules contain invalid module(s)";
+
     @Inject
     SearchService searchService;
+
+    @Inject
+    ModuleService moduleService;
 
     @GET
     @Path("/")
@@ -52,19 +58,28 @@ public class SearchResource {
                     schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
             )
     )
-    public Response get(@QueryParam("lat") double latitude,
+    public Response get(@QueryParam("lat")  double latitude,
                         @QueryParam("long") double longitude,
-                        @QueryParam("userType") String userTypeInput) {
-        List<SearchResult> searchResults = new ArrayList<>();
-        Optional<UserType> expectedUserType = UserType.findByLabel(userTypeInput);
-        if(expectedUserType.isEmpty()) {
-            searchResults.addAll(searchService.getSearchResults(latitude, longitude, UserType.SCHOOL));
-            searchResults.addAll(searchService.getSearchResults(latitude, longitude, UserType.GUEST_TEACHER));
-        } else {
-            searchResults = searchService.getSearchResults(latitude, longitude,
-                    expectedUserType.get());
+                        @QueryParam("userType") String userTypeInput,
+                        @QueryParam("maxDistance") int maxDistance,
+                        @QueryParam("expectedModules") List<String> expectedModules) {
+
+        if (!validModules(expectedModules)) {
+            return Response.status(Response.Status.BAD_REQUEST) //
+                 .entity(new ErrorResponse(null,new ErrorResponse.ErrorMessage(MODULES_NOT_VALID))).build();
+
         }
+        Optional<UserType> expectedUserType = UserType.findByLabel(userTypeInput);
+        List<SearchResult> searchResults = searchService.getSearchResults(latitude, longitude, expectedUserType, maxDistance, expectedModules);
         return Response.ok(searchResults).build();
+    }
+
+    private boolean validModules(List<String> expectedModules) {
+        List<String> activeModules = moduleService.findAll().stream().map(Module::getName).toList();
+        return expectedModules.stream() //
+                .filter(name -> !activeModules.contains(name)) //
+                .toList() //
+                .size() == 0;
     }
 
 }

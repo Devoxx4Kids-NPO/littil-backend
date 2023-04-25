@@ -30,6 +30,4 @@ public class GuestTeacher {
 
     private EnumSet<DayOfWeek> availability;
 
-    private List<Module> modules = new ArrayList<>();
-
 }
