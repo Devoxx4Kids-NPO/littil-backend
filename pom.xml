@@ -51,6 +51,11 @@
             <artifactId>graal-sdk</artifactId>
             <version>22.3.2</version>
         </dependency>
+        <dependency><!-- override jose4j because of vulnerability in version 0.9.2 (via quarkus-oidc) -->
+            <groupId>org.bitbucket.b_c</groupId>
+            <artifactId>jose4j</artifactId>
+            <version>0.9.3</version>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-flyway</artifactId>
