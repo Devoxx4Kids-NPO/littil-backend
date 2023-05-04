@@ -22,7 +22,7 @@ import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 import org.littil.mock.coordinates.service.WireMockSearchService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
 import java.util.Optional;

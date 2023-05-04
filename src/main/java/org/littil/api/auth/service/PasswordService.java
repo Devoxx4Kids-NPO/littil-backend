@@ -6,9 +6,9 @@ import org.passay.EnglishCharacterData;
 import org.passay.PasswordGenerator;
 import org.passay.PasswordValidator;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 

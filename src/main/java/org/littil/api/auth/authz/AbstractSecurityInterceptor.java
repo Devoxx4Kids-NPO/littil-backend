@@ -8,12 +8,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthorizationType;
 
-import javax.inject.Inject;
-import javax.json.JsonString;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.inject.Inject;
+import jakarta.json.JsonString;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;

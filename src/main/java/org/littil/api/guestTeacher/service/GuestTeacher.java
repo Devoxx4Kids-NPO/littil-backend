@@ -3,7 +3,7 @@ package org.littil.api.guestTeacher.service;
 import lombok.Data;
 import org.littil.api.module.service.Module;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.EnumSet;

@@ -13,10 +13,10 @@ import org.littil.api.school.repository.SchoolModuleEntity;
 import org.littil.api.school.repository.SchoolModuleRepository;
 import org.littil.api.school.repository.SchoolRepository;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.NotFoundException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

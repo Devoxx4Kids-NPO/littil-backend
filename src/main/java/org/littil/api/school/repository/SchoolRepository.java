@@ -4,8 +4,8 @@ import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
