@@ -78,7 +78,7 @@ a `LITTIL-<country>-<env>-littil-backend-Cdk-User` user.
 To deploy:
 
 ```bash
-npm run cdk:staging:deploy  --context environment=<env> --context account=<account>  --profile=<profile>
+npm run cdk:deploy  --context environment=<env> --context account=<account>  --profile=<profile>
 ```
 
 # AWS CLI
