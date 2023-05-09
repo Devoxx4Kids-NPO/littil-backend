@@ -53,8 +53,8 @@ export class ApiStack extends Stack {
 
         const certificate = Certificate.fromCertificateArn(this, 'ApiCertificate', props.apiCertificateArn);
 
-        const littilOidcSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendSecret', 'littil/backend/' + props.littil.environment + '/oidc');
-        const littilSmtpSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendSecret', 'littil/backend/' + props.littil.environment + '/smtp');
+        const littilOidcSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilOidcSecret', 'littil/backend/' + props.littil.environment + '/oidc');
+        const littilSmtpSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilSmtpSecret', 'littil/backend/' + props.littil.environment + '/smtp');
 
         const littilDatabaseSecretName = 'littil/backend/' + props.littil.environment + '/databaseCredentials';
         const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
