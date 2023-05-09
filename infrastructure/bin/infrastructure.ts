@@ -5,6 +5,7 @@ import { ApiStack, ApiStackProps } from '../lib/api-stack';
 import { CertificateStack, CertificateStackProps } from '../lib/certificate-stack';
 import { DatabaseStack, DatabaseStackProps } from '../lib/database-stack';
 import { EcrStack, EcrStackProps } from '../lib/ecr-stack';
+import { isLittilEnvironment, LittilEnvironment } from '../lib/littil-environment';
 import { LittilEnvironmentSettings } from '../lib/littil-environment-settings';
 import { MaintenanceEcrStack } from '../lib/maintenance-ecr-stack';
 import { MaintenanceStack, MaintenanceStackProps } from '../lib/maintenance-stack';
@@ -14,19 +15,24 @@ const app = new App();
 
 const awsAccountId = app.node.tryGetContext('account');
 const littilEnvironment = app.node.tryGetContext('environment');
-if (littilEnvironment !== 'staging' && littilEnvironment !== 'production') {
-    throw new Error('environment needs to be staging or production');
+if (!isLittilEnvironment(littilEnvironment)) {
+    throw new Error('environment needs to be of type LittilEnvironment');
 }
 
 // TODO: Lookup
-const vpcId = littilEnvironment === 'staging' ? 'vpc-0587b532bb62f5ccc' : '';
+//  Lookup is already performed in the stacks. Perhaps we can look up by name instead of ID so we can use the same identifier for staging and production?
+const vpcId = littilEnvironment === LittilEnvironment.staging
+    ? 'vpc-0587b532bb62f5ccc'
+    : '';
 
 const env = {
     region: 'eu-west-1',
     account: awsAccountId,
 };
 
-const littilDomain = littilEnvironment === 'staging' ? 'staging.littil.org' : 'littil.org';
+const littilDomain = littilEnvironment !== LittilEnvironment.production
+    ? littilEnvironment + '.littil.org'
+    : 'littil.org';
 
 const littilEnvironmentSettings: LittilEnvironmentSettings = {
     environment: littilEnvironment,
@@ -53,6 +59,7 @@ const certificateStackProps: CertificateStackProps = {
 };
 new CertificateStack(app, 'ApiCertificatesStack', certificateStackProps);
 
+// TODO: Deploy ECR stack to shared account (don't create a separate ECR repository for staging and production)
 const apiEcrProps: EcrStackProps = {
     env,
     littil: littilEnvironmentSettings,

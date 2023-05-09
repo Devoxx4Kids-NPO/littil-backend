@@ -1,5 +1,7 @@
+import { LittilEnvironment } from './littil-environment';
+
 export interface LittilEnvironmentSettings {
-    environment: 'staging' | 'production';
+    environment: LittilEnvironment;
     httpCorsOrigin: string;
     backendDomainName: string;
 }

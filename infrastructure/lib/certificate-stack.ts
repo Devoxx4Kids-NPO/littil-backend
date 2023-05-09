@@ -22,9 +22,5 @@ export class CertificateStack extends Stack {
             exportName: props.apiCertificateArnExportName,
             value: certificate.certificateArn
         });
-
-        new CfnOutput(this, 'ApiCertificatesStack:ExportsOutputRefApiCertificate1D5B2B3BC42B0A73', {
-            value: certificate.certificateArn,
-        });
     }
 }
