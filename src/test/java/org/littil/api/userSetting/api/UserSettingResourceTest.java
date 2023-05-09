@@ -218,7 +218,7 @@ class UserSettingResourceTest {
                 .statusCode(500)
                 .extract().as(ErrorResponse.class);
 
-        assertThat(errorResponse.getErrorId()).isNull();
+        assertThat(errorResponse.getErrorId()).isNotNull();
         assertThat(errorResponse.getErrors())
                 .isNotNull()
                 .hasSize(1)
