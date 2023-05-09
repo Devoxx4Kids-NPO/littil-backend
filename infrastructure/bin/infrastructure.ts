@@ -14,6 +14,10 @@ import { VpcStack } from '../lib/vpc-stack';
 const app = new App();
 
 const awsAccountId = app.node.tryGetContext('account');
+if (!awsAccountId) {
+    throw new Error('Please supply the ID of the AWS account this stack needs to be build for');
+}
+
 const littilEnvironment = app.node.tryGetContext('environment');
 if (!isLittilEnvironment(littilEnvironment)) {
     throw new Error('environment needs to be of type LittilEnvironment');
