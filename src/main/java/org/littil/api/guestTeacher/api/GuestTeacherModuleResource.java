@@ -6,7 +6,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.authz.GuestTeacherSecured;
@@ -55,7 +54,7 @@ public class GuestTeacherModuleResource {
             responseCode = "401",
             description = "Current user is not owner of this guestTeacher"
     )
-    public Response getGuestTeacherModules(@Parameter(name = "guestTeacher_id", required = true) @PathParam("id") final UUID id) {
+    public Response getGuestTeacherModules(@PathParam("id") final UUID id) {
         List<Module> guestTeacherModules = guestTeacherModuleService.getGuestTeacherModulesByGuestTeacherId(id);
         return  Response.ok(guestTeacherModules).build();
     }
@@ -76,9 +75,8 @@ public class GuestTeacherModuleResource {
             responseCode = "401",
             description = "Current user is not owner of this guestTeacher"
     )
-    public Response deleteGuestTeacherModule(@Parameter(name = "guestTeacher_id", required = true) @PathParam("id") UUID guestTeacher_id,
-                                       @Parameter(name = "module_id", required = true) @PathParam("module_id") UUID module_id) {
-        guestTeacherModuleService.deleteGuestTeacherModule(guestTeacher_id, module_id);
+    public Response deleteGuestTeacherModule(@PathParam("id") UUID id, @PathParam("module_id") UUID moduleId) {
+        guestTeacherModuleService.deleteGuestTeacherModule(id, moduleId);
         return Response.ok().build();
     }
 
@@ -97,8 +95,8 @@ public class GuestTeacherModuleResource {
     @APIResponse(
             responseCode = "401",
             description = "Current user is not owner of this guestTeacher"
-    )public Response saveGuestTeacherModule(@Parameter(name = "guestTeacher_id", required = true) @PathParam("id") UUID guestTeacherId,  @NotNull @Valid Module module) {
-        guestTeacherModuleService.save(guestTeacherId, module);
+    )public Response saveGuestTeacherModule(@PathParam("id") UUID id,  @NotNull @Valid Module module) {
+        guestTeacherModuleService.save(id, module);
         return Response.status(Response.Status.CREATED).build();
     }
 

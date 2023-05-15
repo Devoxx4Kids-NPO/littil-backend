@@ -6,7 +6,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.authz.SchoolSecured;
@@ -55,7 +54,7 @@ public class SchoolModuleResource {
             responseCode = "401",
             description = "Current user is not owner of this school"
     )
-    public Response getSchoolModules(@Parameter(name = "school_id", required = true) @PathParam("id") final UUID id) {
+    public Response getSchoolModules(@PathParam("id") final UUID id) {
         List<Module> schoolModules = schoolModuleService.getSchoolModulesBySchoolId(id);
         return  Response.ok(schoolModules).build();
     }
@@ -76,9 +75,9 @@ public class SchoolModuleResource {
             responseCode = "401",
             description = "Current user is not owner of this school"
     )
-    public Response deleteSchoolModule(@Parameter(name = "school_id", required = true) @PathParam("id") UUID school_id,
-                                       @Parameter(name = "module_id", required = true) @PathParam("module_id") UUID module_id) {
-        schoolModuleService.deleteSchoolModule(school_id, module_id);
+    public Response deleteSchoolModule(@PathParam("id") UUID id,
+                                       @PathParam("module_id") UUID module_id) {
+        schoolModuleService.deleteSchoolModule(id, module_id);
         return Response.ok().build();
     }
 
@@ -97,8 +96,8 @@ public class SchoolModuleResource {
     @APIResponse(
             responseCode = "401",
             description = "Current user is not owner of this school"
-    )public Response saveSchoolModule(@Parameter(name = "school_id", required = true) @PathParam("id") UUID schoolId,  @NotNull @Valid Module module) {
-        schoolModuleService.save(schoolId, module);
+    )public Response saveSchoolModule(@PathParam("id") UUID id, @NotNull @Valid Module module) {
+        schoolModuleService.save(id, module);
         return Response.status(Response.Status.CREATED).build();
     }
 
