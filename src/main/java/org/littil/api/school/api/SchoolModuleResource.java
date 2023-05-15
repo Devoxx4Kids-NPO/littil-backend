@@ -76,8 +76,8 @@ public class SchoolModuleResource {
             description = "Current user is not owner of this school"
     )
     public Response deleteSchoolModule(@PathParam("id") UUID id,
-                                       @PathParam("module_id") UUID module_id) {
-        schoolModuleService.deleteSchoolModule(id, module_id);
+                                       @PathParam("module_id") UUID moduleId) {
+        schoolModuleService.deleteSchoolModule(id, moduleId);
         return Response.ok().build();
     }
 
