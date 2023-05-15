@@ -18,17 +18,22 @@ public class MailService {
     }
 
     public void sendWelcomeMail(User user, String password) {
-        log.info("sending mail to {}", user.getEmailAddress());
-        //todo now sending only NL mails
-        UniSubscribe<Void> uni = Templates.welcome(user.getEmailAddress(), password)
-                .to(user.getEmailAddress())
-                .subject("Welkom bij Littil") //todo make subject configurable?
-                .send().subscribe();
-        //todo fix handling
+        send(Templates.welcome(user.getEmailAddress(), password),user.getEmailAddress(),"Welkom bij Littil");
+    }
+
+    private void send(MailTemplate.MailTemplateInstance template,String recipient,String subject) {
+        log.info("sending {} to {}",template, recipient);
         try {
-            uni.asCompletionStage().get();
+            template
+                    .to(recipient)
+                    .subject(subject)//todo make subject configurable?
+                    .send()
+                    .subscribe()
+                    .asCompletionStage()
+                    .get();
         } catch (InterruptedException | ExecutionException e) {
-            log.info("mailing failed! ", e);
+            //todo fix handling
+            log.warn("mailing {} to {} failed ",template,recipient, e);
             throw new RuntimeException(e);
         }
     }

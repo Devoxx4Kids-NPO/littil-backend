@@ -96,7 +96,7 @@ public class GuestTeacherModuleResourceTest
     void givenDeleteGuestTeacherModule_Unauthorized_thenShouldReturnForbidden() {
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{guestTeacher_id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
                 // guestTeacher.getId(), module.getId())
                 .then()
                 .statusCode(401);
@@ -109,7 +109,7 @@ public class GuestTeacherModuleResourceTest
     void givenDeleteGuestTeacherModule_forUnkwnownGuestTeacherId_thenShouldReturnNotFound() {
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{guestTeacher_id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
                 .then()
                 .statusCode(404);
     }
@@ -123,7 +123,7 @@ public class GuestTeacherModuleResourceTest
 
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{guestTeacher_id}/modules/{module_id}", guestTeacher.getId(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", guestTeacher.getId(), UUID.randomUUID())
                 .then()
                 .statusCode(404);
     }
@@ -145,7 +145,7 @@ public class GuestTeacherModuleResourceTest
 
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{guestTeacher_id}/modules/{module_id}", guestTeacher.getId(), module.getId())
+                .delete("/{id}/modules/{module_id}", guestTeacher.getId(), module.getId())
                 .then()
                 .statusCode(200);
     }

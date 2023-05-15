@@ -97,7 +97,7 @@ public class SchoolModuleResourceTest
     void givenDeleteSchoolModule_Unauthorized_thenShouldReturnForbidden() {
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{school_id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
                 .then()
                 .statusCode(401);
     }
@@ -123,7 +123,7 @@ public class SchoolModuleResourceTest
 
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{school_id}/modules/{module_id}", school.getId(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", school.getId(), UUID.randomUUID())
                 .then()
                 .statusCode(404);
     }
