@@ -6,7 +6,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.authz.GuestTeacherSecured;
@@ -37,7 +36,7 @@ public class GuestTeacherModuleResource {
     GuestTeacherModuleService guestTeacherModuleService;
 
     @GET
-    @Path("{guestTeacher_id}/modules")
+    @Path("{id}/modules")
     @Operation(summary = "Fetch the list of modules for a specific guestTeacher")
     @APIResponse(
             responseCode = "200",
@@ -55,13 +54,13 @@ public class GuestTeacherModuleResource {
             responseCode = "401",
             description = "Current user is not owner of this guestTeacher"
     )
-    public Response getGuestTeacherModules(@Parameter(name = "guestTeacher_id", required = true) @PathParam("guestTeacher_id") final UUID id) {
+    public Response getGuestTeacherModules(@PathParam("id") final UUID id) {
         List<Module> guestTeacherModules = guestTeacherModuleService.getGuestTeacherModulesByGuestTeacherId(id);
         return  Response.ok(guestTeacherModules).build();
     }
 
     @DELETE
-    @Path("{guestTeacher_id}/modules/{module_id}")
+    @Path("{id}/modules/{module_id}")
     @Operation(summary = "Delete a module with an id for a given guestTeacher")
     @APIResponse(
             responseCode = "200",
@@ -76,17 +75,16 @@ public class GuestTeacherModuleResource {
             responseCode = "401",
             description = "Current user is not owner of this guestTeacher"
     )
-    public Response deleteGuestTeacherModule(@Parameter(name = "guestTeacher_id", required = true) @PathParam("guestTeacher_id") UUID guestTeacher_id,
-                                       @Parameter(name = "module_id", required = true) @PathParam("module_id") UUID module_id) {
-        guestTeacherModuleService.deleteGuestTeacherModule(guestTeacher_id, module_id);
+    public Response deleteGuestTeacherModule(@PathParam("id") UUID id, @PathParam("module_id") UUID moduleId) {
+        guestTeacherModuleService.deleteGuestTeacherModule(id, moduleId);
         return Response.ok().build();
     }
 
     @POST
-    @Path("{guestTeacher_id}/modules")
+    @Path("{id}/modules")
     @Operation(summary = "Add an existing module to the list of modules for a specific guestTeacher")
     @APIResponse(
-            responseCode = "200",
+            responseCode = "201",
             description = "Successfully added the module for the given guestTeacher.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
@@ -97,8 +95,8 @@ public class GuestTeacherModuleResource {
     @APIResponse(
             responseCode = "401",
             description = "Current user is not owner of this guestTeacher"
-    )public Response saveGuestTeacherModule(@Parameter(name = "guestTeacher_id", required = true) @PathParam("guestTeacher_id") UUID guestTeacherId,  @NotNull @Valid Module module) {
-        guestTeacherModuleService.save(guestTeacherId, module);
+    )public Response saveGuestTeacherModule(@PathParam("id") UUID id,  @NotNull @Valid Module module) {
+        guestTeacherModuleService.save(id, module);
         return Response.status(Response.Status.CREATED).build();
     }
 
