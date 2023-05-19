@@ -238,6 +238,27 @@ class SchoolResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
+    void givenCreateNewSchoolForUserWithAuthorizations_thenShouldReturnWithStatusConflict() {
+        SchoolPostResource teacher = getDefaultSchool();
+
+        doReturn(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf")).when(tokenHelper).getCurrentUserId();
+        User createdUser = createAndSaveUser();
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
+        doNothing().when(authenticationService).addAuthorization(any(), any(), any());
+        doReturn(Boolean.TRUE).when(tokenHelper).hasUserAuthorizations();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(teacher)
+                .put()
+                .then()
+                .statusCode(409);
+    }
+
+    @Test
     @TestSecurity(user = "littil", roles = "schools")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })

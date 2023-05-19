@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -126,11 +127,15 @@ public class SchoolResource {
             description = "Current user is not owner of this school"
     )
     @APIResponse(
+            responseCode = "409",
+            description = "Current user already has authorizations"
+    )
+    @APIResponse(
             responseCode = "500",
             description = "Persistence error occurred. Failed to persist school."
     )
     public Response createOrUpdate(@NotNull @Valid SchoolPostResource school) {
-        if (tokenHelper.hasUserAuthorizations()) {
+        if (Objects.isNull(school.getId()) && tokenHelper.hasUserAuthorizations()) {
             return Response.status(Response.Status.CONFLICT)
                     .build();
         }
