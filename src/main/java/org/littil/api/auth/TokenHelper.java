@@ -1,5 +1,8 @@
 package org.littil.api.auth;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.littil.api.auth.service.AuthorizationType;
@@ -8,13 +11,17 @@ import org.littil.api.exception.AuthenticationException;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RequestScoped
 public class TokenHelper {
+
+    public static ObjectMapper objectMapper = new ObjectMapper();
 
     @Inject
     JsonWebToken accessToken;
@@ -54,7 +61,17 @@ public class TokenHelper {
     }
 
     private Map<String, List<String>> getUserAuthorizations() {
-        return getCustomClaim(authorizationsClaimName);
+        // todo : I do not like to use the mapper but the original code is causing a class cast exception
+        return mapAutorizations(getCustomClaim(authorizationsClaimName).toString());
+    }
+
+    private Map<String, List<String>> mapAutorizations (String authorizations) {
+        try {
+            return objectMapper.readValue(authorizations, Map.class);
+        } catch (JsonProcessingException e) {
+            log.error("Can not map authorizations", e);
+            return new HashMap<>();
+        }
     }
 
     private static boolean hasSchoolAuthorizations(Map<String, List<String>> authorizations) {
