@@ -30,7 +30,7 @@ class ContactResourceTest {
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenFindAll_thenShouldReturnMultipleContacts() {
+    void givenFindAll_thenShouldReturnOk() {
         given() //
                 .when() //
                 .get() //

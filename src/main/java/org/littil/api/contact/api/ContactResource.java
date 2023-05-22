@@ -47,7 +47,7 @@ public class ContactResource {
             )
     )
     public Response list() {
-        List<Contact> contacts = contactService.findAll();
+        List<Contact> contacts = contactService.findAllMyContacts();
         return Response.ok(contacts).build();
     }
 
@@ -74,7 +74,7 @@ public class ContactResource {
             description = "error occurred. Failed to send or persist contact."
     )
     public Response sendAndSave(@NotNull @Valid ContactPostResource contact) {
-        return contactService.sendAndSave(contactMapper.toDomain(contact))
+        return contactService.saveAndSend(contactMapper.toDomain(contact))
                 .map(Response::ok)
                 .orElseGet(() -> Response.status(Response.Status.INTERNAL_SERVER_ERROR))
                 .build();
