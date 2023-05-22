@@ -23,10 +23,14 @@ public class MailService {
                         .subject("Welkom bij Littil"));
     }
 
-    public void sendContactMail(String recipient, String contactMessage, String contactMedium) {
-        send(Templates.contact(contactMessage,contactMedium)
+    public void sendContactMail(String recipient, String contactMessage, String contactMedium, String cc) {
+        var template = Templates.contact(contactMessage,contactMedium)
                 .to(recipient)
-                .subject("Contactverzoek voor Littil"));
+                .subject("Contactverzoek voor Littil");
+        if(cc!=null) {
+            template = template.cc(cc);
+        }
+        send(template);
     }
 
     private void send(MailTemplate.MailTemplateInstance template) {

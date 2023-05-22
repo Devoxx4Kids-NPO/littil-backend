@@ -2,6 +2,7 @@ package org.littil.api.contact.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.contact.repository.ContactEntity;
 import org.littil.api.contact.repository.ContactRepository;
@@ -12,6 +13,7 @@ import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,9 @@ public class ContactService {
     private final UserMapper userMapper;
     private final TokenHelper tokenHelper;
     private final MailService mailService;
+    @Inject
+    @ConfigProperty(name = "org.littil.contact.cc_email")
+    Optional<String> ccEmail;
 
     @Transactional
     public Optional<Contact> saveAndSend(Contact contact) {
@@ -43,12 +48,12 @@ public class ContactService {
         contactEntity.setId(UUID.randomUUID());
         repository.persist(contactEntity);
         // send contact mail to contact recipient
-        mailService.sendContactMail(contactEntity.getRecipient().getEmailAddress(),contact.getMessage(),contact.getMedium());
+        mailService.sendContactMail(contactEntity.getRecipient().getEmailAddress(),contact.getMessage(),contact.getMedium(), this.ccEmail.orElse(null));
         // send contact mail to initiating user
         tokenHelper.currentUserId()
                 .flatMap(this.userService::getUserById)
                 .map(User::getEmailAddress)
-                .ifPresent(createdByAddress -> mailService.sendContactMail(createdByAddress,contact.getMessage(),contact.getMedium()));
+                .ifPresent(createdByAddress -> mailService.sendContactMail(createdByAddress,contact.getMessage(),contact.getMedium(),null));
         return Optional.of(mapper.toDomain(contactEntity));
     }
 

@@ -2,7 +2,6 @@ package org.littil.api.mail;
 
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MockMailbox;
-import io.quarkus.test.Mock;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +11,6 @@ import org.littil.TestFactory;
 import org.littil.api.user.service.User;
 
 import javax.inject.Inject;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,12 +51,23 @@ class MailServiceTest {
     })
     void testSendContactMail(String email,String message,String medium) {
         // sut
-        mailService.sendContactMail(email,message,medium);
+        mailService.sendContactMail(email,message,medium,null);
 
         // verify
         Mail sent = mailbox.getMessagesSentTo(email).stream().findFirst().get();
         assertEquals("Contactverzoek voor Littil",sent.getSubject());
         assertTrue(sent.getText().contains(message));
         assertTrue(sent.getText().contains(medium));
+    }
+
+    @Test
+    void testSendContactMailWithCc() {
+        // sut
+        mailService.sendContactMail("contact-mail@littil.org","bericht-met-cc","+31613371337","cc@littil.org");
+
+        // verify
+        assertEquals(2,mailbox.getTotalMessagesSent());
+        assertEquals(1,mailbox.getMessagesSentTo("contact-mail@littil.org").size());
+        assertEquals(1,mailbox.getMessagesSentTo("cc@littil.org").size());
     }
 }

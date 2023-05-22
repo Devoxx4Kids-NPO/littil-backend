@@ -116,6 +116,10 @@ quarkus:
       oauth2-implicit-authorization-url: ${org.littil.auth.tenant_uri}/authorize
 
 "%prod":
+  org:
+    littil:
+      contact:
+        ccEmail: "info@littil.org"
   quarkus:
     banner:
       enabled: false
