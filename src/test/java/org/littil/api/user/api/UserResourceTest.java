@@ -11,6 +11,7 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.user.service.User;
@@ -232,9 +233,7 @@ class UserResourceTest {
     }
 
     private User createAndSaveUser(String providerId) {
-        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
-        User user = new User();
-        user.setEmailAddress(emailAdress);
+        User user = TestFactory.createUser();
         user.setProviderId(providerId);
         return userService.createUser(user);
     }

@@ -5,6 +5,7 @@ import io.quarkus.test.junit.mockito.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
@@ -180,8 +181,7 @@ class GuestTeacherServiceTest {
         expectedGuestTeacher.setPostalCode(entity.getLocation().getPostalCode());
 
         final UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setId(userId);
+        User user = TestFactory.createUser(userId);
 
         doReturn(entity).when(mapper).toEntity(guestTeacher);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
@@ -207,7 +207,7 @@ class GuestTeacherServiceTest {
         final GuestTeacher guestTeacher = createGuestTeacher(null, firstName, surname, address, postalCode, locale);
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
 
-        doReturn(Optional.of(new User())).when(userService).getUserById(userId);
+        doReturn(Optional.of(TestFactory.createUser(userId))).when(userService).getUserById(userId);
         doReturn(entity).when(mapper).toEntity(guestTeacher);
         doNothing().when(locationRepository).persist(entity.getLocation());
         doReturn(false).when(repository).isPersistent(entity);

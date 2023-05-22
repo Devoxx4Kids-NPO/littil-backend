@@ -12,6 +12,7 @@ import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.user.service.User;
@@ -100,9 +101,6 @@ class ContactResourceTest {
     }
 
     private User createAndSaveUser() {
-        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
-        User user = new User();
-        user.setEmailAddress(emailAdress);
-        return userService.createUser(user);
+        return userService.createUser(TestFactory.createUser());
     }
 }

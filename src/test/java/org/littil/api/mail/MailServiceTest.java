@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.littil.TestFactory;
 import org.littil.api.user.service.User;
 
 import javax.inject.Inject;
@@ -34,8 +35,7 @@ class MailServiceTest {
             "welcome-mail-2@littil.org,pindakaasmetworst"
     })
     void testSendWelcomeMail(String email,String password) {
-        User user = new User();
-        user.setEmailAddress(email);
+        User user = TestFactory.createUser(email);
 
         // sut
         mailService.sendWelcomeMail(user,password);
@@ -52,9 +52,6 @@ class MailServiceTest {
             "contact-mail-2@littil.org,bericht-2,sender-mail@littil.org"
     })
     void testSendContactMail(String email,String message,String medium) {
-        User user = new User();
-        user.setEmailAddress(email);
-
         // sut
         mailService.sendContactMail(email,message,medium);
 
