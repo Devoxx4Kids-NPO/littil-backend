@@ -28,7 +28,7 @@ public class ContactService {
     private final MailService mailService;
 
     @Transactional
-    public Optional<Contact> sendAndSave(Contact contact) {
+    public Optional<Contact> saveAndSend(Contact contact) {
         ContactEntity contactEntity = mapper.toEntity(contact);
         Optional<UserEntity> recipient = userService
                 .getUserById(contact.getRecipient())
@@ -46,7 +46,7 @@ public class ContactService {
         return Optional.of(mapper.toDomain(contactEntity));
     }
 
-    public List<Contact> findAll() {
+    public List<Contact> findAllMyContacts() {
         return tokenHelper.currentUserId()
                 .stream()
                 .flatMap(this.repository::findAllByCreatedByOrRecipientId)
