@@ -35,7 +35,8 @@ class MailServiceTest {
             "welcome-mail-2@littil.org,pindakaasmetworst"
     })
     void testSendWelcomeMail(String email,String password) {
-        User user = TestFactory.createUser(email);
+        User user = TestFactory.createUser();
+        user.setEmailAddress(email);
 
         // sut
         mailService.sendWelcomeMail(user,password);

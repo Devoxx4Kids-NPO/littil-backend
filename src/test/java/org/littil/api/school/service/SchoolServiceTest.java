@@ -188,9 +188,9 @@ class SchoolServiceTest {
         school.setFirstName(contactPersonFirstName);
         school.setSurname(contactPersonSurname);
 
-        final UUID userId = UUID.randomUUID();
-        User user = TestFactory.createUser(userId);
-        
+        User user = TestFactory.createUser();
+        final UUID userId = user.getId();
+
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(true).when(repository).isPersistent(entity);
@@ -228,9 +228,10 @@ class SchoolServiceTest {
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
         entity.setContactPerson(contactPerson);
 
-        final UUID userId = UUID.randomUUID();
-        User user = TestFactory.createUser(userId);
-        
+
+        User user = TestFactory.createUser();
+        final UUID userId = user.getId();
+
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(false).when(repository).isPersistent(entity);

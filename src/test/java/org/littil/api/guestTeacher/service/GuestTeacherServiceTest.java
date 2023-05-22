@@ -180,8 +180,8 @@ class GuestTeacherServiceTest {
         expectedGuestTeacher.setAddress(entity.getLocation().getAddress());
         expectedGuestTeacher.setPostalCode(entity.getLocation().getPostalCode());
 
-        final UUID userId = UUID.randomUUID();
-        User user = TestFactory.createUser(userId);
+        User user = TestFactory.createUser();
+        final UUID userId = user.getId();
 
         doReturn(entity).when(mapper).toEntity(guestTeacher);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
@@ -197,7 +197,8 @@ class GuestTeacherServiceTest {
     @Test
     void givenSaveTeacherUnknownErrorOccurred_thenShouldThrowPersistenceException() {
         final UUID teacherId = UUID.randomUUID();
-        final UUID userId = UUID.randomUUID();
+        User user = TestFactory.createUser();
+        final UUID userId = user.getId();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
@@ -207,7 +208,7 @@ class GuestTeacherServiceTest {
         final GuestTeacher guestTeacher = createGuestTeacher(null, firstName, surname, address, postalCode, locale);
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
 
-        doReturn(Optional.of(TestFactory.createUser(userId))).when(userService).getUserById(userId);
+        doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(entity).when(mapper).toEntity(guestTeacher);
         doNothing().when(locationRepository).persist(entity.getLocation());
         doReturn(false).when(repository).isPersistent(entity);
