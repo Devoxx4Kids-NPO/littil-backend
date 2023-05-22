@@ -18,26 +18,27 @@ public class MailService {
     }
 
     public void sendWelcomeMail(User user, String password) {
-        send(Templates.welcome(user.getEmailAddress(), password),user.getEmailAddress(),"Welkom bij Littil");
+        send(Templates.welcome(user.getEmailAddress(), password)
+                        .to(user.getEmailAddress())
+                        .subject("Welkom bij Littil"));
     }
 
     public void sendContactMail(String recipient, String contactMessage, String contactMedium) {
-        send(Templates.contact(contactMessage,contactMedium),recipient,"Contactverzoek voor Littil");
+        send(Templates.contact(contactMessage,contactMedium)
+                .to(recipient)
+                .subject("Contactverzoek voor Littil"));
     }
 
-    private void send(MailTemplate.MailTemplateInstance template,String recipient,String subject) {
-        log.info("sending {} to {}",template, recipient);
+    private void send(MailTemplate.MailTemplateInstance template) {
+        log.info("sending {}",template);
         try {
             template
-                    .to(recipient)
-                    .subject(subject)//todo make subject configurable?
                     .send()
                     .subscribe()
                     .asCompletionStage()
                     .get();
         } catch (InterruptedException | ExecutionException e) {
-            //todo fix handling
-            log.warn("mailing {} to {} failed ",template,recipient, e);
+            log.warn("sending {} failed",template, e);
             throw new RuntimeException(e);
         }
     }
