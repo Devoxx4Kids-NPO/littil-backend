@@ -11,10 +11,12 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.contact.service.Contact;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
@@ -25,6 +27,7 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -71,6 +74,28 @@ class ContactResourceTest {
         var saved = sendAndSave(contact);
 
         assertThat(saved.getStatusCode()).isEqualTo(200);
+    }
+
+    @Disabled("cant get this working (yet)")
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenACreatedContactFindAll_thenShouldReturnAList() {
+        var contact = getContactPostResource(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf"),"michael@littil.org","Berichtje");
+        var saved = sendAndSave(contact);
+        doReturn(Optional.of(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf")))
+                .when(tokenHelper).currentUserId();
+        //FIXME: how to test? if we invoke findAllByCreatedByOrRecipientId directly in ContactResource with provided recipient id it does return values
+        var contacts = given() //
+                .when() //
+                .get() //
+                .then() //
+                .statusCode(200)
+                .extract().jsonPath().getList(".", Contact.class);
+
+        assertThat(contacts.size()).isEqualTo(1);
+        assertThat(contacts.get(0)).isNotNull();
     }
 
     private Response sendAndSave(ContactPostResource contact) {
