@@ -1,11 +1,12 @@
 package org.littil.api.search.service;
 
-import org.littil.api.guestTeacher.service.GuestTeacher;
-import org.littil.api.school.service.School;
+import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
+import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.search.api.UserType;
 import org.littil.api.search.repository.LocationSearchResult;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
 
 @Mapper(componentModel = "cdi")
 public interface SearchMapper {
@@ -16,7 +17,7 @@ public interface SearchMapper {
     @Mapping(source = "searchResult.longitude", target = "longitude")
     @Mapping(source = "searchResult.distance", target = "distance")
     @Mapping(source = "userType", target = "userType")
-    SearchResult toSchoolDomain(LocationSearchResult searchResult, School school, UserType userType);
+    SearchResult toSchoolDomain(LocationSearchResult searchResult, SchoolEntity school, UserType userType);
 
     @Mapping(source = "teacher.id", target = "id")
     @Mapping(target = "name", expression = "java(teacher.getFirstName() + \" \" + teacher.getPrefix() + \" \" + teacher.getSurname())")
@@ -24,5 +25,6 @@ public interface SearchMapper {
     @Mapping(source = "searchResult.longitude", target = "longitude")
     @Mapping(source = "searchResult.distance", target = "distance")
     @Mapping(source = "userType", target = "userType")
-    SearchResult toGuestTeacherDomain(LocationSearchResult searchResult, GuestTeacher teacher, UserType userType);
+    SearchResult toGuestTeacherDomain(LocationSearchResult searchResult, GuestTeacherEntity teacher, UserType userType);
+
 }

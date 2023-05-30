@@ -1,18 +1,23 @@
 package org.littil.api.search.api;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doReturn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.littil.api.exception.ErrorResponse;
+import org.littil.api.module.service.ModuleService;
 import org.littil.api.search.service.SearchResult;
 import org.littil.api.search.service.SearchService;
 import org.littil.mock.auth0.APIManagementMock;
+import org.littil.api.module.service.Module;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -26,11 +31,15 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 @TestHTTPEndpoint(SearchResource.class)
 @QuarkusTestResource(APIManagementMock.class)
 class SearchResourceTest {
-    
+
+    private static final int MAX_DISTANCE = 100;
     @InjectSpy
     SearchService searchService;
-    
-     @Test
+
+    @InjectSpy
+    ModuleService moduleService;
+
+    @Test
     void givenGetUnauthorized_thenShouldReturnForbidden() {
         given() //
                 .when() //
@@ -47,13 +56,14 @@ class SearchResourceTest {
      @OidcSecurity(claims = {
              @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
      void givenGetAuthorzed_thenShouldReturnList() {
-        
-        doReturn(new ArrayList<>()).when(searchService).getSearchResults(anyDouble(), anyDouble(), any(UserType.class) );
+
+        doReturn(new ArrayList<SearchResult>()).when(searchService).getSearchResults(anyDouble(), anyDouble(), any(Optional.class), anyInt(), anyList());
         List<SearchResult> result = given() //
                  .when() //
                  .queryParam("lat", 0.0)
                  .queryParam("lon", 0.0)
                  .queryParam("userType", UserType.SCHOOL.getLabel())
+                 .queryParam("maxDistance",MAX_DISTANCE)
                  .get() //
                  .then() //
                  .statusCode(200)
@@ -74,10 +84,66 @@ class SearchResourceTest {
                 .queryParam("lat", 0.0)
                 .queryParam("lon", 0.0)
                 .queryParam("userType", "")
+                .queryParam("maxDistance", MAX_DISTANCE)
                 .get() //
                 .then() //
                 .statusCode(200)
                 .extract()
                 .jsonPath().getList(".", SearchResult.class);
     }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetAuthorzed_withValidModules_thenShouldReturnList() {
+
+        Module module = new Module();
+        module.setName("Scratch");
+        module.setId(UUID.randomUUID());
+
+        doReturn(List.of(module)).when(moduleService).findAll();
+        given() //
+                .when() //
+                .queryParam("lat", 0.0)
+                .queryParam("lon", 0.0)
+                .queryParam("userType", "")
+                .queryParam("expectedModules", List.of("Scratch"))
+                .queryParam("maxDistance", MAX_DISTANCE)
+                .get() //
+                .then() //
+                .statusCode(200);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetAuthorzed_withIncorrectModules_thenShouldReturnBadRequest() {
+
+        Module module = new Module();
+        module.setName("Scratch");
+        module.setId(UUID.randomUUID());
+
+        doReturn(List.of(module)).when(moduleService).findAll();
+        ErrorResponse errorResponse = given() //
+                .when() //
+                .queryParam("lat", 0.0)
+                .queryParam("lon", 0.0)
+                .queryParam("userType", "")
+                .queryParam("expectedModules", List.of("wrongModuleName"))
+                .get() //
+                .then() //
+                .statusCode(400)
+                .extract().as(ErrorResponse.class);
+
+        assertThat(errorResponse.getErrorId()).isNull();
+        assertThat(errorResponse.getErrors())
+                .isNotNull()
+                .hasSize(1)
+                .contains(
+                        new ErrorResponse.ErrorMessage(null, SearchResource.MODULES_NOT_VALID)
+                );
+    }
+
 }
