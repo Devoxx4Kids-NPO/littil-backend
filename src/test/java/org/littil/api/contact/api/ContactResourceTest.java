@@ -77,6 +77,17 @@ class ContactResourceTest {
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenCreateIncompleteContact_thenShouldReturn400() {
+        var leegContact = getContactPostResource(null," "," ");
+        var saved = sendAndSave(leegContact);
+
+        assertThat(saved.getStatusCode()).isEqualTo(400);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenACreatedContactFindAll_thenShouldReturnAList() {
         var contact = getContactPostResource(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf"),"michael@littil.org","Berichtje");
         sendAndSave(contact);
@@ -97,7 +108,6 @@ class ContactResourceTest {
                 .body(contact)
                 .post()
                 .then()
-                .statusCode(200)
                 .extract()
                 .response();
     }
