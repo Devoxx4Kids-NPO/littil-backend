@@ -28,6 +28,8 @@ quarkus:
       generation: none
   log:
     level: INFO
+    cloudwatch:
+      enabled: false
   swagger-ui:
     oauth-client-id: ${OIDC_CLIENT_ID:oidc_client_id}
   smallrye-openapi:
@@ -124,3 +126,6 @@ quarkus:
       password: ${DATASOURCE_PASSWORD:littil}
       jdbc:
         url: jdbc:mariadb://${DATASOURCE_HOST:localhost}:${DATASOURCE_PORT:3306}/${DATASOURCE_DATABASE:littil}
+    log:
+      cloudwatch:
+        enabled: true

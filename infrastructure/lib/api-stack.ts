@@ -4,7 +4,8 @@ import { Port, SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
-import { Policy, User } from 'aws-cdk-lib/aws-iam';
+import { CfnAccessKey, Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
+import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { allowEcsDescribeTaskStatement } from './iam/allowEcsDescribeTaskStatement';
@@ -56,6 +57,30 @@ export class ApiStack extends Stack {
         const littilDatabaseSecretName = 'littil/backend/databaseCredentials';
         const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
 
+        const littilBackendCloudwatchLoggingUser = new User(this, 'CloudwatchLoggingUser', {
+            userName: 'LITTIL-NL-staging-backend-Cloudwatch'
+        });
+        const loggingAccessKey = new CfnAccessKey(this, 'CloudwatchLoggingAccessKey', {
+            userName: littilBackendCloudwatchLoggingUser.userName,
+        });
+        const cloudwatchLogGroup = new LogGroup(this, 'BackendLogGroup', {
+            logGroupName: 'BackendQuarkusLogs',
+        });
+        const cloudwatchLoggingStatement = new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: [
+                'logs:DescribeLogStreams',
+                'logs:CreateLogStream',
+                'logs:PutLogEvents',
+            ],
+            resources: [
+                cloudwatchLogGroup.logGroupArn,
+            ],
+        });
+        const loggingPolicy = new Policy(this, 'QuarkusCloudwatchLoggingPolicy');
+        loggingPolicy.addStatements(cloudwatchLoggingStatement);
+        loggingPolicy.attachToUser(littilBackendCloudwatchLoggingUser);
+
         const fargateService = new ApplicationLoadBalancedFargateService(this, 'LittilApi', {
             vpc,
             memoryLimitMiB: 512,
@@ -71,6 +96,11 @@ export class ApiStack extends Stack {
                     DATASOURCE_PORT: props.database.port,
                     DATASOURCE_DATABASE: props.database.name,
                     QUARKUS_HTTP_CORS_ORIGINS: 'https://staging.littil.org',
+                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_ID: loggingAccessKey.ref,
+                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_SECRET: loggingAccessKey.attrSecretAccessKey,
+                    QUARKUS_LOG_CLOUDWATCH_LOG_GROUP: cloudwatchLogGroup.logGroupName,
+                    QUARKUS_LOG_CLOUDWATCH_REGION: this.region,
+                    QUARKUS_LOG_CLOUDWATCH_LOG_STREAM_NAME: 'quarkus-logs',
                 },
                 secrets: {
                     DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
