@@ -90,7 +90,7 @@ class ContactResourceTest {
                 .statusCode(200)
                 .extract().jsonPath().getList(".", Contact.class);
 
-        assertThat(contacts.size()).isEqualTo(0);
+        assertThat(contacts.isEmpty()).isFalse();
     }
 
     private Response sendAndSave(ContactPostResource contact) {
@@ -115,9 +115,9 @@ class ContactResourceTest {
 
     private User createAndSaveUser() {
         User user =  userService.createUser(TestFactory.createUser());
-        doReturn(user.getId())
+        doReturn(Optional.of(user.getId()))
                 .when(tokenHelper)
-                .getCurrentUserId();
+                .currentUserId();
         doReturn(Optional.of(user))
                 .when(userService)
                 .getUserById(any(UUID.class));
