@@ -10,6 +10,7 @@ import org.littil.api.exception.AuthenticationException;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.json.JsonString;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,12 @@ public class TokenHelper {
         return accessToken.getClaim(claimNamespace.concat(claimName));
     }
 
+    public Map<String, List<JsonString>> getAuthorizations() {
+        Map<String, List<JsonString>> authorizations = getCustomClaim(authorizationsClaimName);
+        return Optional.ofNullable(authorizations)
+                .orElse(Collections.emptyMap());
+    }
+
     public Optional<UUID> currentUserId() {
         String userId = getCustomClaim(userIdClaimName);
         return Optional.ofNullable(userId)
@@ -56,29 +63,20 @@ public class TokenHelper {
     }
 
     public Boolean hasUserAuthorizations() {
-        final Map<String, List<String>> authorizations = Optional.ofNullable(getUserAuthorizations()).orElse(Collections.emptyMap());
+        final Map<String, List<JsonString>> authorizations = getAuthorizations();
         return hasSchoolAuthorizations(authorizations) || hasGuestTeacherAuthorizations(authorizations);
     }
 
-    private Map<String, List<String>> getUserAuthorizations() {
-        // todo : I do not like to use the mapper but the original code is causing a class cast exception
-        return mapAutorizations(getCustomClaim(authorizationsClaimName).toString());
+    private static boolean hasAuthorizations(AuthorizationType type,Map<String, List<?>> authorizations) {
+        List<?> result = authorizations.getOrDefault(type.getTokenValue(),Collections.emptyList());
+        return !result.isEmpty();
     }
 
-    private Map<String, List<String>> mapAutorizations (String authorizations) {
-        try {
-            return objectMapper.readValue(authorizations, Map.class);
-        } catch (JsonProcessingException e) {
-            log.error("Can not map authorizations", e);
-            return new HashMap<>();
-        }
-    }
-
-    private static boolean hasSchoolAuthorizations(Map<String, List<String>> authorizations) {
+    private static boolean hasSchoolAuthorizations(Map<String, List<JsonString>> authorizations) {
         return AuthorizationType.SCHOOL.authorizationIds(authorizations).findAny().isPresent();
     }
 
-    private static boolean hasGuestTeacherAuthorizations(Map<String, List<String>> authorizations) {
+    private static boolean hasGuestTeacherAuthorizations(Map<String, List<JsonString>> authorizations) {
         return AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations).findAny().isPresent();
     }
 }
