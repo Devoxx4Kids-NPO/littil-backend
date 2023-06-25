@@ -19,6 +19,12 @@ class AuthorizationTypeTest {
         assertEquals(0,result.count());
     }
 
+    @ParameterizedTest
+    @EnumSource(AuthorizationType.class)
+    void hasAny(AuthorizationType type) {
+        assertFalse(type.hasAny(Collections.emptyMap()));
+    }
+
     @Test
     void authorizationIdsOnSchool() {
         String id = "9beae92a-c735-454d-9535-20a54b411b5c";
@@ -30,8 +36,8 @@ class AuthorizationTypeTest {
     @Test
     void authorizationIdsOnGuestTeacher() {
         String id = "9beae92a-c735-454d-9535-20a54b411b5c";
-        Map<String,List<String>> authorizations = Map.of("guest_teachers", List.of(id));
+        Map<String, List<String>> authorizations = Map.of("guest_teachers", List.of(id));
 
-        assertEquals(Optional.of(UUID.fromString(id)),AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations).findFirst());
+        assertEquals(Optional.of(UUID.fromString(id)), AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations).findFirst());
     }
 }

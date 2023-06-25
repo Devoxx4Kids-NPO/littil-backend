@@ -4,7 +4,6 @@ import io.quarkus.arc.Priority;
 import io.quarkus.security.UnauthorizedException;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthorizationType;
 
@@ -29,10 +28,6 @@ public abstract class AbstractSecurityInterceptor implements ContainerRequestFil
     @Inject
     TokenHelper tokenHelper;
 
-    @Inject
-    @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
-    String authorizationsClaimName;
-
     @Override
     public void filter(ContainerRequestContext ctx) throws IOException {
         if (ctx.getMethod().equals("GET") || ctx.getMethod().equals("PUT")) {
@@ -52,7 +47,7 @@ public abstract class AbstractSecurityInterceptor implements ContainerRequestFil
             throw new IllegalArgumentException("Whoops we dit not expect this amount of parameters");
         }
         Optional<String> resourceId = resourceIds.stream().findFirst();
-        Map<String, List<JsonString>> authorizations = tokenHelper.getCustomClaim(authorizationsClaimName);
+        Map<String, List<JsonString>> authorizations = tokenHelper.getAuthorizations();
 
         checkIfAuthorized(UUID.fromString(resourceId.get()), authorizations);
     }
