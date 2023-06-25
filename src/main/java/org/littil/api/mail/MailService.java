@@ -23,9 +23,9 @@ public class MailService {
                         .subject("Welkom bij Littil"));
     }
 
-    public void sendContactMail(String recipient, String contactMessage, String contactMedium, String cc) {
+    public void sendContactMail(String recipientEmailAddress, String contactMessage, String contactMedium, String cc) {
         var template = Templates.contact(contactMessage,contactMedium)
-                .to(recipient)
+                .to(recipientEmailAddress)
                 .subject("Contactverzoek voor Littil");
         if(cc!=null) {
             template = template.cc(cc);
