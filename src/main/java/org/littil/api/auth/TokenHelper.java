@@ -67,16 +67,11 @@ public class TokenHelper {
         return hasSchoolAuthorizations(authorizations) || hasGuestTeacherAuthorizations(authorizations);
     }
 
-    private static boolean hasAuthorizations(AuthorizationType type,Map<String, List<?>> authorizations) {
-        List<?> result = authorizations.getOrDefault(type.getTokenValue(),Collections.emptyList());
-        return !result.isEmpty();
-    }
-
     private static boolean hasSchoolAuthorizations(Map<String, List<JsonString>> authorizations) {
-        return AuthorizationType.SCHOOL.authorizationIds(authorizations).findAny().isPresent();
+        return AuthorizationType.SCHOOL.hasAny(authorizations);
     }
 
     private static boolean hasGuestTeacherAuthorizations(Map<String, List<JsonString>> authorizations) {
-        return AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations).findAny().isPresent();
+        return AuthorizationType.GUEST_TEACHER.hasAny(authorizations);
     }
 }
