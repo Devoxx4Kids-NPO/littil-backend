@@ -1,7 +1,5 @@
 package org.littil.api.auth;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -12,7 +10,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.json.JsonString;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,9 +18,6 @@ import java.util.UUID;
 @Slf4j
 @RequestScoped
 public class TokenHelper {
-
-    public static ObjectMapper objectMapper = new ObjectMapper();
-
     @Inject
     JsonWebToken accessToken;
 
