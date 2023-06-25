@@ -1,5 +1,7 @@
 Beste meneer/mevrouw,
 
+Er is iemand die contact met U wilt opnemen. De persoon heeft de volgende melding voor U:
+
 {contactMessage}
 
 Contact gegevens: {contactMedium}
