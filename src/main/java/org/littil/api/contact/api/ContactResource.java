@@ -46,6 +46,10 @@ public class ContactResource {
                     schema = @Schema(type = SchemaType.ARRAY, implementation = Contact.class)
             )
     )
+    @APIResponse(
+            responseCode = "401",
+            description = "Not authenticated"
+    )
     public Response list() {
         List<Contact> contacts = contactService.findAllMyContacts();
         return Response.ok(contacts).build();
@@ -68,6 +72,10 @@ public class ContactResource {
                     mediaType = MediaType.APPLICATION_JSON,
                     schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
             )
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "Not authenticated"
     )
     @APIResponse(
             responseCode = "500",
