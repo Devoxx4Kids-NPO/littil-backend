@@ -10,8 +10,6 @@ import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
@@ -27,7 +25,6 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -113,7 +110,7 @@ class ContactResourceTest {
         return contact;
     }
 
-    private User createAndSaveUser() {
+    private void createAndSaveUser() {
         User user =  userService.createUser(TestFactory.createUser());
         doReturn(Optional.of(user.getId()))
                 .when(tokenHelper)
@@ -124,6 +121,5 @@ class ContactResourceTest {
         doNothing()
                 .when(authenticationService)
                 .addAuthorization(any(), any(), any());
-        return user;
     }
 }
