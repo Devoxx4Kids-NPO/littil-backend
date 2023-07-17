@@ -1,10 +1,13 @@
 Beste meneer/mevrouw,
 
-Er is iemand die contact met U wilt opnemen. De persoon heeft de volgende melding voor U:
+U staat geregistreerd op ons LITTIL platform. Er is iemand die contact met u wilt opnemen voor een gastles. De persoon heeft de volgende melding voor u:
 
 {contactMessage}
 
 Contact gegevens: {contactMedium}
 
 Met vriendelijke groet,
-Littil
+
+LITTIL
+
+Heeft u vragen naar aanleiding van deze mail, neem dan contact op met info@littil.org
