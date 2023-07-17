@@ -23,7 +23,7 @@ import java.util.Optional;
 public class SearchService {
 
     private final GuestTeacherRepository teacherRepository;
-    private final SchoolRepository schoolReposityory;
+    private final SchoolRepository schoolRepository;
     private final SearchRepository searchRepository;
     private final SearchMapper searchMapper;
     private static final int START_DISTANCE = 1;
@@ -70,7 +70,7 @@ public class SearchService {
         List<SearchResult> searchResults = new ArrayList<>();
 
         for(LocationSearchResult location : locationSearchResults) {
-            Optional<SchoolEntity> school = schoolReposityory.findByLocationId(location.getId());
+            Optional<SchoolEntity> school = schoolRepository.findByLocationId(location.getId());
             // we assume that school has alle modules activated
             school.ifPresent(schoolEntity -> searchResults.add(searchMapper.toSchoolDomain(location, schoolEntity, UserType.SCHOOL)));
         }
