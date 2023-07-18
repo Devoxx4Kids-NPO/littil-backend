@@ -119,31 +119,28 @@ const apiStackProps: ApiStackProps = {
 };
 new ApiStack(app, 'ApiStack', apiStackProps);
 
-const enableMaintenanceContainer = app.node.tryGetContext('maintenance');
-if (enableMaintenanceContainer === 'true') {
-    const maintenanceProps: MaintenanceStackProps = {
-        env,
-        littil: littilEnvironmentSettings,
-        apiVpc: {
-            id: vpcId,
+const maintenanceProps: MaintenanceStackProps = {
+    env,
+    littil: littilEnvironmentSettings,
+    apiVpc: {
+        id: vpcId,
+    },
+    maintenanceContainer: {
+        enable: false,
+        imageTag: '1.0.2',
+        ecrRepository: {
+            name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
+            arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
         },
-        maintenanceContainer: {
-            enable: false,
-            imageTag: '1.0.2',
-            ecrRepository: {
-                name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
-                arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
-            },
+    },
+    database: {
+        host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
+        port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+        name: Fn.importValue(crossStackReferenceExportNames.databaseName),
+        vpcId,
+        securityGroup: {
+            id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
         },
-        database: {
-            host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
-            port: Fn.importValue(crossStackReferenceExportNames.databasePort),
-            name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-            vpcId,
-            securityGroup: {
-                id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
-            },
-        },
-    };
-    new MaintenanceStack(app, 'MaintenanceServiceStack', maintenanceProps);
-}
+    },
+};
+new MaintenanceStack(app, 'MaintenanceServiceStack', maintenanceProps);
