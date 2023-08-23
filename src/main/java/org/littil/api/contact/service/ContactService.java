@@ -45,7 +45,8 @@ public class ContactService {
             log.warn("unable get recipient for {}",contact.getRecipient());
             return Optional.empty();
         }
-        contactEntity.setId(UUID.randomUUID());
+        UUID id = UUID.randomUUID();
+        contactEntity.setId(id);
         repository.persist(contactEntity);
         // send contact mail to contact recipient
         mailService.sendContactMail(contactEntity.getRecipient().getEmailAddress(),contact.getMessage(),contact.getMedium(), this.ccEmail.orElse(null));
@@ -54,7 +55,8 @@ public class ContactService {
                 .flatMap(this.userService::getUserById)
                 .map(User::getEmailAddress)
                 .ifPresent(createdByAddress -> mailService.sendContactMail(createdByAddress,contact.getMessage(),contact.getMedium(),null));
-        return Optional.of(mapper.toDomain(contactEntity));
+        return repository.findByContactEntityId(id)
+                        .map(mapper::toDomain);
     }
 
     public List<Contact> findAllMyContacts() {

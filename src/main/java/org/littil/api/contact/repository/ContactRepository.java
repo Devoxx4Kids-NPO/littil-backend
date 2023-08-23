@@ -3,6 +3,7 @@ package org.littil.api.contact.repository;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -21,5 +22,9 @@ public class ContactRepository implements PanacheRepositoryBase<ContactEntity, U
                 findByCreatedBy(userId),
                 findByRecipientId(userId)
         );
+    }
+
+    public Optional<ContactEntity> findByContactEntityId(final UUID id) {
+        return find("id", id).firstResultOptional();
     }
 }
