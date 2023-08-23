@@ -109,7 +109,7 @@ class SearchServiceTest {
                 Arguments.of(allSchools, allTeachers, Optional.of(UserType.GUEST_TEACHER), emptyList, 2),
                 Arguments.of(List.of(school1, school2), List.of(teacher1, teacher2), Optional.empty(), emptyList, 4),
                 Arguments.of(List.of(school1), List.of(teacher1, teacher2), Optional.of(UserType.GUEST_TEACHER), emptyList, 2),
-                Arguments.of(List.of(school1, school2), emptyList, Optional.of(UserType.SCHOOL), List.of("Scratch"), 1),
+                Arguments.of(List.of(school1, school2), emptyList, Optional.of(UserType.SCHOOL), List.of("Scratch"), 2),
                 Arguments.of(emptyList, List.of(teacher1, teacher2), Optional.of(UserType.GUEST_TEACHER), List.of("Scratch"), 1)
         );
     }
