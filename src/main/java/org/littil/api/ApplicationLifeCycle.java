@@ -33,7 +33,7 @@ public class ApplicationLifeCycle {
     // use locations from public places like city town hall, police station, railway station, etc.
     private static final Map<String, Location> DEV_USERS = Map.of(
             "info@littil.org", new Location(), //
-            "testdocent1@littil.org", createLocationForDevUser("De Passage 100", "1101 AX"), // Ziggo Dome
+            "testdocent1@littil.org", createLocationForDevUser("De Passage 100", "1101 AX"), //
             "testdocent2@littil.org", createLocationForDevUser("Colosseum 65", "7521 PP"), //
             "testdocent3@littil.org", createLocationForDevUser("Mosae Forum 10",  "6211 DW"), //
             "testschool1@littil.org", createLocationForDevUser("Prinses Irenepad 1", "2595 BG"), //
