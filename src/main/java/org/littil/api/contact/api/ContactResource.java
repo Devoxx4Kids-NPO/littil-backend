@@ -8,7 +8,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
-import org.littil.api.contact.service.Contact;
 import org.littil.api.contact.service.ContactMapper;
 import org.littil.api.contact.service.ContactService;
 import org.littil.api.exception.ErrorResponse;
@@ -43,7 +42,7 @@ public class ContactResource {
             description = "Get all my contacts",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.ARRAY, implementation = Contact.class)
+                    schema = @Schema(type = SchemaType.ARRAY, implementation = ContactResponse.class)
             )
     )
     @APIResponse(
@@ -51,7 +50,10 @@ public class ContactResource {
             description = "Not authenticated"
     )
     public Response list() {
-        List<Contact> contacts = contactService.findAllMyContacts();
+        List<ContactResponse> contacts = contactService.findAllMyContacts()
+                .stream()
+                .map(contactMapper::toResponse)
+                .toList();
         return Response.ok(contacts).build();
     }
 
@@ -62,7 +64,7 @@ public class ContactResource {
             description = "Contact successfully sent and created",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = Contact.class)
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = ContactResponse.class)
             )
     )
     @APIResponse(
@@ -83,6 +85,7 @@ public class ContactResource {
     )
     public Response sendAndSave(@NotNull @Valid ContactPostResource contact) {
         return contactService.saveAndSend(contactMapper.toDomain(contact))
+                .map(contactMapper::toResponse)
                 .map(Response::ok)
                 .orElseGet(() -> Response.status(Response.Status.INTERNAL_SERVER_ERROR))
                 .build();
