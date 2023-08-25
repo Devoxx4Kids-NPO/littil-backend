@@ -13,10 +13,10 @@ import org.littil.api.module.repository.ModuleEntity;
 import org.littil.api.module.repository.ModuleRepository;
 import org.littil.api.module.service.Module;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.NotFoundException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +79,7 @@ public class GuestTeacherModuleService {
      *   get guestTeacherEntity and validate user
      */
     @NotNull
-    private GuestTeacherEntity getGuestTeacherEntity(@NotNull UUID guestTeacher_id) {
+    protected GuestTeacherEntity getGuestTeacherEntity(@NotNull UUID guestTeacher_id) {
         UUID userId = tokenHelper.getCurrentUserId();
         GuestTeacherEntity guestTeacher = guestTeacherRepository.findByIdOptional(guestTeacher_id)
                 .orElseThrow(() -> new NotFoundException("No GuestTeacher found for Id"));
@@ -96,7 +96,7 @@ public class GuestTeacherModuleService {
      *   get moduleEntity and validate
      */
     @NotNull
-    private ModuleEntity getModuleEntity(@NotNull Module module) {
+    protected ModuleEntity getModuleEntity(@NotNull Module module) {
         ModuleEntity moduleEntity = moduleRepository.findById(module.getId());
         if (moduleEntity == null ||
                 !moduleEntity.getName().equals(module.getName()) ||

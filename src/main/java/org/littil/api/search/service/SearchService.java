@@ -12,7 +12,7 @@ import org.littil.api.search.api.UserType;
 import org.littil.api.search.repository.LocationSearchResult;
 import org.littil.api.search.repository.SearchRepository;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

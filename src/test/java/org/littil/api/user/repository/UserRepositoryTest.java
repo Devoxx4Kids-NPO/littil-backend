@@ -26,7 +26,7 @@ class UserRepositoryTest {
                 = getDefaultUser(RandomStringUtils.randomAlphabetic(10), email);
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
-        doReturn(query).when(repository).find("email_address", email);
+        doReturn(query).when(repository).find("emailAddress", email);
         when(query.firstResultOptional()).thenReturn(userEntityOptional);
 
         final Optional<UserEntity> foundUser = repository.findByEmailAddress(email);
@@ -39,7 +39,7 @@ class UserRepositoryTest {
         String email = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
-        doReturn(query).when(repository).find("email_address", email);
+        doReturn(query).when(repository).find("emailAddress", email);
         when(query.firstResultOptional()).thenReturn(Optional.empty());
 
         final Optional<UserEntity> foundUser = repository.findByEmailAddress(email);
@@ -55,7 +55,7 @@ class UserRepositoryTest {
                 = getDefaultUser(providerId, RandomStringUtils.randomAlphabetic(10) + "@littil.org");
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
-        doReturn(query).when(repository).find("provider_id", providerId);
+        doReturn(query).when(repository).find("providerId", providerId);
         when(query.firstResultOptional()).thenReturn(userEntityOptional);
 
         final Optional<UserEntity> foundUser = repository.findByProviderId(providerId);
@@ -68,7 +68,7 @@ class UserRepositoryTest {
         String providerId = RandomStringUtils.randomAlphabetic(10);
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
-        doReturn(query).when(repository).find("provider_id", providerId);
+        doReturn(query).when(repository).find("providerId", providerId);
         when(query.firstResultOptional()).thenReturn(Optional.empty());
 
         final Optional<UserEntity> foundUser = repository.findByProviderId(providerId);

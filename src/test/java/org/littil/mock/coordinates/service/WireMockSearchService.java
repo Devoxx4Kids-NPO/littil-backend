@@ -12,6 +12,8 @@ import java.util.Objects;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
+import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
 
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
@@ -24,13 +26,13 @@ public class WireMockSearchService implements QuarkusTestResourceLifecycleManage
 
     @Override
     public Map<String, String> start() {
-        wireMockServer = new WireMockServer(options().dynamicPort()
+        wireMockServer = new WireMockServer(options()
+                .dynamicPort()
                 .extensions(new ResponseTemplateTransformer(false)));
-        
         wireMockServer.start();
         stubbing();
         return Collections.singletonMap("quarkus.rest-client.\"org.littil.api.coordinates.service.SearchService\".url",
-                wireMockServer.baseUrl());
+                wireMockServer.baseUrl() + "/");
     }
 
     @Override

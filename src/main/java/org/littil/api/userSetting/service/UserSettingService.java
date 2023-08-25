@@ -5,12 +5,12 @@ import lombok.NonNull;
 import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.PersistenceException;
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-import javax.ws.rs.NotFoundException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

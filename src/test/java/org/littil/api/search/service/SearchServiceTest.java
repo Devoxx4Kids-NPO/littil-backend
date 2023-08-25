@@ -18,7 +18,7 @@ import org.littil.api.search.api.UserType;
 import org.littil.api.search.repository.LocationSearchResult;
 import org.littil.api.search.repository.SearchRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;

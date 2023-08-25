@@ -12,7 +12,7 @@
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
       <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-      <quarkus.platform.version>2.16.7.Final</quarkus.platform.version>
+      <quarkus.platform.version>3.0.4.Final</quarkus.platform.version>
       <quarkus.package.type>fast-jar</quarkus.package.type>
       <surefire-plugin.version>3.1.2</surefire-plugin.version>
       <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -84,7 +84,11 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-rest-client-jackson</artifactId>
+            <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-reactive</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -114,6 +118,12 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-health</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-netty-deployment</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
@@ -189,14 +199,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
-            <version>1.1.6</version>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
+            <version>1.1.4</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.logging.cloudwatch</groupId>
             <artifactId>quarkus-logging-cloudwatch</artifactId>
-            <version>5.6.0</version>
+            <version>6.3.0</version>
         </dependency>
     </dependencies>
   <build>
