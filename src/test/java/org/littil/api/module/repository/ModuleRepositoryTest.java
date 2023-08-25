@@ -2,7 +2,7 @@ package org.littil.api.module.repository;
 
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;

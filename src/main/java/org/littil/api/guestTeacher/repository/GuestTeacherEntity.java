@@ -8,8 +8,8 @@ import org.littil.api.auditing.repository.AbstractAuditableEntity;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.user.repository.UserEntity;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import java.time.DayOfWeek;
 import java.util.HashSet;
 import java.util.List;

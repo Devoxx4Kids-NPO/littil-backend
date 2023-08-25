@@ -2,7 +2,7 @@ package org.littil.api.school.api;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.UUID;
 
 @Data

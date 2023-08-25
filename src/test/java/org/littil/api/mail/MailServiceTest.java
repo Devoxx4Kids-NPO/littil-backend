@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.littil.TestFactory;
 import org.littil.api.user.service.User;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -27,7 +27,7 @@ class UserSettingRepositoryTest {
         final List<UserSettingEntity> userSettings = List.of(new UserSettingEntity(userId, RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10)));
 
         final PanacheQuery<UserSettingEntity> query = mock(PanacheQuery.class);
-        doReturn(query).when(repository).find("user_id", userId);
+        doReturn(query).when(repository).find("userId", userId);
         when(query.list()).thenReturn(userSettings);
 
         final List<UserSettingEntity> foundUserSettings = repository.findAllByUserId(userId);

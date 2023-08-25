@@ -6,9 +6,9 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.AuthenticationException;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.json.JsonString;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.json.JsonString;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

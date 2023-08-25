@@ -18,8 +18,8 @@ import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.user.service.UserService;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
