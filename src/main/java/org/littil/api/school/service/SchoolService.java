@@ -10,6 +10,7 @@ import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.contactPerson.repository.ContactPersonRepository;
 import org.littil.api.exception.ServiceException;
+import org.littil.api.location.Location;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
@@ -113,14 +114,14 @@ public class SchoolService {
     }
 
     @Transactional
-    public void createAndPersistDevData(UUID id, UUID userId) {
+    public void createAndPersistDevData(UUID id, UUID userId, String email, Location location) {
         School school = new School();
-        school.setName("Dev School");
-        school.setAddress("Lutulistate 41");
-        school.setPostalCode("6716NT");
-        school.setSurname("Nederland");
-        school.setFirstName("LITTIL");
-        school.setPrefix("Devoxx4Kids");
+        school.setName("Dev School " + email.split("@")[0]);
+        school.setAddress(location.getAddress() == null ? "Lutulistate 41" : location.getAddress());
+        school.setPostalCode(location.getPostalCode() == null ? "6716NT" : location.getPostalCode());
+        school.setSurname(email.split("@")[1]);
+        school.setFirstName(email.split("@")[0]);
+        school.setPrefix("");
         var entity = this.mapper.toEntity(school);
         entity.setId(id);
         entity.setCreatedBy(new UserId(userId));
