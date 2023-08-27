@@ -28,7 +28,7 @@ import java.util.Optional;
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
 @GuestTeacherSecured
-@Tag(name = "Search", description = "CRUD Operations")
+@Tag(name = "Search", description = "Read Operations")
 public class SearchResource {
 
     static final String MODULES_NOT_VALID = "List of modules contain invalid module(s)";

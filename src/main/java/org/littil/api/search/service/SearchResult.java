@@ -14,6 +14,9 @@ public class SearchResult {
     @NotEmpty(message = "{SearchResult.id.required}")
     private UUID id;
 
+    @NotEmpty(message = "{SearchResult.userId.required}")
+    private UUID userId;
+
     @NotEmpty(message = "{SearchResult.name.required}")
     private String name;
 
