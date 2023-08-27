@@ -2,7 +2,6 @@ package org.littil.api.mail;
 
 import io.quarkus.mailer.MailTemplate;
 import io.quarkus.qute.CheckedTemplate;
-import io.smallrye.mutiny.groups.UniSubscribe;
 import lombok.extern.slf4j.Slf4j;
 import org.littil.api.user.service.User;
 
@@ -15,25 +14,35 @@ public class MailService {
     @CheckedTemplate
     static class Templates {
         public static native MailTemplate.MailTemplateInstance welcome(String userEmail, String temporaryPassword);
+        public static native MailTemplate.MailTemplateInstance contact(String contactMessage, String contactMedium);
     }
 
     public void sendWelcomeMail(User user, String password) {
-        send(Templates.welcome(user.getEmailAddress(), password),user.getEmailAddress(),"Welkom bij Littil");
+        send(Templates.welcome(user.getEmailAddress(), password)
+                        .to(user.getEmailAddress())
+                        .subject("Welkom bij Littil"));
     }
 
-    private void send(MailTemplate.MailTemplateInstance template,String recipient,String subject) {
-        log.info("sending {} to {}",template, recipient);
+    public void sendContactMail(String recipientEmailAddress, String contactMessage, String contactMedium, String cc) {
+        var template = Templates.contact(contactMessage,contactMedium)
+                .to(recipientEmailAddress)
+                .subject("Contactverzoek voor Littil");
+        if(cc!=null) {
+            template = template.cc(cc);
+        }
+        send(template);
+    }
+
+    private void send(MailTemplate.MailTemplateInstance template) {
+        log.info("sending {}",template);
         try {
             template
-                    .to(recipient)
-                    .subject(subject)//todo make subject configurable?
                     .send()
                     .subscribe()
                     .asCompletionStage()
                     .get();
         } catch (InterruptedException | ExecutionException e) {
-            //todo fix handling
-            log.warn("mailing {} to {} failed ",template,recipient, e);
+            log.warn("sending {} failed",template, e);
             throw new RuntimeException(e);
         }
     }

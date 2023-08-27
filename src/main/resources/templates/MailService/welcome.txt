@@ -2,8 +2,17 @@ Beste meneer/mevrouw,
 
 Welkom!
 
+Bedankt voor het registreren bij LITTIL.
+
+Hieronder zijn uw gebruikersgegevens te vinden, met een tijdelijk wachtwoord.
+
 Uw email-adres: {userEmail}
 Uw tijdelijke wachtwoord: {temporaryPassword}
 
+Om de registratie te voltooien, dient u hiermee in te loggen om het wachtwoord te wijzigen en de resterende stappen van de registratie af te ronden.
+
 Met vriendelijke groet,
-Littil
+
+LITTIL
+
+Heeft u vragen naar aanleiding van deze mail, neem dan contact op met info@littil.org

@@ -5,6 +5,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
@@ -187,10 +188,9 @@ class SchoolServiceTest {
         school.setFirstName(contactPersonFirstName);
         school.setSurname(contactPersonSurname);
 
-        final UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setId(userId);
-        
+        User user = TestFactory.createUser();
+        final UUID userId = user.getId();
+
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(true).when(repository).isPersistent(entity);
@@ -228,10 +228,10 @@ class SchoolServiceTest {
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
         entity.setContactPerson(contactPerson);
 
-        final UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setId(userId);
-        
+
+        User user = TestFactory.createUser();
+        final UUID userId = user.getId();
+
         doReturn(entity).when(mapper).toEntity(school);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(false).when(repository).isPersistent(entity);

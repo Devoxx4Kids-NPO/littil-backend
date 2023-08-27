@@ -12,6 +12,7 @@ import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.authz.GuestTeacherSecurityInterceptor;
 import org.littil.api.auth.service.AuthenticationService;
@@ -195,13 +196,7 @@ public class GuestTeacherModuleResourceTest
 
     private User createAndSaveUser(UUID userId) {
         Optional<User> user = userService.getUserById(userId);
-        if (user.isPresent()) {
-            return user.get();
-        }
-            User newUser = new User();
-            newUser.setId(userId);
-            newUser.setEmailAddress(RandomStringUtils.randomAlphabetic(10) + "@littil.org");
-            return userService.createUser(newUser);
+        return user.orElseGet(() -> userService.createUser(TestFactory.createUser(userId)));
     }
 
     private GuestTeacher getDefaultGuestTeacher() {
