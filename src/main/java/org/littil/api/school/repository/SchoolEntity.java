@@ -8,9 +8,9 @@ import org.littil.api.contactPerson.repository.ContactPersonEntity;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.user.repository.UserEntity;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 

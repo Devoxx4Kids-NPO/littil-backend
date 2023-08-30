@@ -4,10 +4,10 @@ import org.littil.api.coordinates.service.Coordinates;
 import org.littil.api.coordinates.service.CoordinatesService;
 import org.littil.api.location.LocationConstants;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import java.util.Optional;
 
 @ApplicationScoped

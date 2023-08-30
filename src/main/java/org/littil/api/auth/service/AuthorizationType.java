@@ -1,6 +1,6 @@
 package org.littil.api.auth.service;
 
-import javax.json.JsonString;
+import jakarta.json.JsonString;
 import java.util.*;
 import java.util.stream.Stream;
 

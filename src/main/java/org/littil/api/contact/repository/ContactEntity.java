@@ -1,12 +1,12 @@
 package org.littil.api.contact.repository;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
 import org.littil.api.user.repository.UserEntity;
 
-import javax.persistence.*;
 import java.util.UUID;
 
 @Data

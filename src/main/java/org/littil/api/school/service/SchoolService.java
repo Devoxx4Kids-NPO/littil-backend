@@ -20,11 +20,11 @@ import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.PersistenceException;
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-import javax.ws.rs.NotFoundException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.PersistenceException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;

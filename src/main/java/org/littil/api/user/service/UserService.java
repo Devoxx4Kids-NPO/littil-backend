@@ -13,9 +13,9 @@ import org.littil.api.mail.MailService;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
-import javax.ws.rs.NotFoundException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

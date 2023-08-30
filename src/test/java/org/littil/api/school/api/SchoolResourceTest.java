@@ -24,7 +24,7 @@ import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 import org.littil.mock.coordinates.service.WireMockSearchService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;

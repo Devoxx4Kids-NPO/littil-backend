@@ -17,10 +17,10 @@ import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 
-import javax.inject.Inject;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
+import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;

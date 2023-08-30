@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.littil.api.search.api.UserType;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.UUID;
 
 @Data
