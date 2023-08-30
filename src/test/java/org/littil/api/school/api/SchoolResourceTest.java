@@ -3,14 +3,13 @@ package org.littil.api.school.api;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
@@ -276,18 +275,18 @@ class SchoolResourceTest {
     @TestSecurity(user = "littil", roles = "schools")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    @Disabled("fails on 401, my guess wrongly mocked")
     void givenDeleteSchoolById_thenShouldDeleteSuccessfully() {
         SchoolPostResource school = getDefaultSchool();
         School savedSchool = saveSchool(school);
 
-        doReturn(withSchoolAuthorization(savedSchool.getId())).when(tokenHelper).getCustomClaim(any());
+        doReturn(withSchoolAuthorization(savedSchool.getId())).when(tokenHelper).getAuthorizations();
 
         given()
                 .contentType(ContentType.JSON)
                 .delete("/{id}", savedSchool.getId())
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+        ;
 
         given()
                 .contentType(ContentType.JSON)

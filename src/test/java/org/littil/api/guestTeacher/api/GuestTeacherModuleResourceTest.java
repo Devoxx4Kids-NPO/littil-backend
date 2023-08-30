@@ -3,8 +3,9 @@ package org.littil.api.guestTeacher.api;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
+import io.quarkus.test.junit.mockito.MockitoConfig;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
@@ -50,7 +51,8 @@ public class GuestTeacherModuleResourceTest
     TokenHelper tokenHelper;
     @InjectMock
     AuthenticationService authenticationService;
-    @InjectMock(convertScopes=true)
+    @InjectMock
+    @MockitoConfig(convertScopes=true)
     GuestTeacherSecurityInterceptor guestTeacherSecurityInterceptor;
 
     @BeforeEach
