@@ -1,7 +1,7 @@
 package org.littil.api.userSetting.service;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.api.userSetting.repository.UserSettingEntity;
