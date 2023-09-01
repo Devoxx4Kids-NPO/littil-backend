@@ -31,7 +31,7 @@ jobs:
           path: target/generated/openapi.json
       - name: Publish code coverage to pull request
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: madrapps/jacoco-report@v1.3
+        uses: madrapps/jacoco-report@v1.4
         with:
           paths: ${{ github.workspace }}/target/jacoco-report/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
