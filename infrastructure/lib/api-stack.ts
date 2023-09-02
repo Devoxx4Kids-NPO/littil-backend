@@ -92,9 +92,9 @@ export class ApiStack extends Stack {
         });
         fargateService.targetGroup
             .configureHealthCheck({
-                enabled: false,
-                // path: '/q/health',
-                // healthyHttpCodes: '200',
+                // enabled: false,
+                path: '/q/health',
+                healthyHttpCodes: '200',
             });
 
         /* ECS Exec. */

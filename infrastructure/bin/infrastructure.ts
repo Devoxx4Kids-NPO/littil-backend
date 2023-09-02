@@ -81,7 +81,7 @@ new VpcStack(app, 'ApiVpcStack', vpcStackProps);
 // TODO: Lookup
 //  Lookup is already performed in the stacks. Perhaps we can look up by name instead of ID so we can use the same identifier for staging and production?
 const vpcId = littilEnvironment === LittilEnvironment.staging
-    ? 'vpc-0587b532bb62f5ccc'
+    ? 'vpc-05e8c988f613cb71d'
     : '';
 
 const databaseStackProps: DatabaseStackProps = {
