@@ -3,7 +3,7 @@ package org.littil.api.guestTeacher.api;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
@@ -11,6 +11,7 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.exception.ErrorResponse;
@@ -22,7 +23,7 @@ import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 import org.littil.mock.coordinates.service.WireMockSearchService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
 import java.util.Optional;
@@ -33,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.littil.Helper.getErrorMessage;
 import static org.littil.Helper.withGuestTeacherAuthorization;
-import static org.littil.Helper.withSchoolAuthorization;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -194,8 +194,29 @@ class GuestTeacherResourceTest {
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
+    void givenCreateNewTeacherForUserWithAuthorizations_thenShouldReturnWithStatusConflict() {
+        GuestTeacherPostResource teacher = getGuestTeacherPostResource();
+
+        doReturn(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf")).when(tokenHelper).getCurrentUserId();
+        User createdUser = createAndSaveUser();
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
+        doNothing().when(authenticationService).addAuthorization(any(), any(), any());
+        doReturn(Boolean.TRUE).when(tokenHelper).hasUserAuthorizations();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(teacher)
+                .put()
+                .then()
+                .statusCode(409);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenDeleteNonExistingTeacherById_thenShouldReturnUnauthorized() {
-        doReturn(withSchoolAuthorization()).when(tokenHelper).getCustomClaim(any());
+        doReturn(withGuestTeacherAuthorization()).when(tokenHelper).getCustomClaim(any());
         given()
                 .when()
                 .delete("/{id}", UUID.randomUUID())
@@ -211,7 +232,7 @@ class GuestTeacherResourceTest {
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
 
-        doReturn(withGuestTeacherAuthorization(saved.getId())).when(tokenHelper).getCustomClaim(any());
+        doReturn(withGuestTeacherAuthorization(saved.getId())).when(tokenHelper).getAuthorizations();
 
         given()
                 .contentType(ContentType.JSON)
@@ -312,10 +333,7 @@ class GuestTeacherResourceTest {
     }
 
     private User createAndSaveUser() {
-        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
-        User user = new User();
-        user.setEmailAddress(emailAdress);
-        return userService.createUser(user);
+        return userService.createUser(TestFactory.createUser());
     }
 
     private void mockGetCurrentUserId(UUID guestTeacherId) {

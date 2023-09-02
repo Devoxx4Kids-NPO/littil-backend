@@ -13,10 +13,10 @@ import org.littil.api.school.repository.SchoolModuleEntity;
 import org.littil.api.school.repository.SchoolModuleRepository;
 import org.littil.api.school.repository.SchoolRepository;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.NotFoundException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -79,7 +79,7 @@ public class SchoolModuleService {
      *   get schoolEntity and validate user
      */
     @NotNull
-    private SchoolEntity getSchoolEntity(@NotNull UUID school_id) {
+    protected SchoolEntity getSchoolEntity(@NotNull UUID school_id) {
         UUID userId = tokenHelper.getCurrentUserId();
         SchoolEntity school = schoolRepository.findByIdOptional(school_id)
                 .orElseThrow(() -> new NotFoundException("No School found for Id"));
@@ -96,7 +96,7 @@ public class SchoolModuleService {
      *   get moduleEntity and validate
      */
     @NotNull
-    private ModuleEntity getModuleEntity(@NotNull Module module) {
+    protected ModuleEntity getModuleEntity(@NotNull Module module) {
         ModuleEntity moduleEntity = moduleRepository.findById(module.getId());
         if (moduleEntity == null ||
                 !moduleEntity.getName().equals(module.getName()) ||

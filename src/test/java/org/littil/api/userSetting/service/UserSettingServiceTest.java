@@ -1,15 +1,15 @@
 package org.littil.api.userSetting.service;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
 
-import javax.inject.Inject;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.NotFoundException;
+import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
+import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

@@ -2,7 +2,7 @@ package org.littil.api.guestTeacher.api;
 
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
 import java.util.UUID;

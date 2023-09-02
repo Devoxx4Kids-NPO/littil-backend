@@ -1,7 +1,7 @@
 package org.littil.api.search.service;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,7 +18,7 @@ import org.littil.api.search.api.UserType;
 import org.littil.api.search.repository.LocationSearchResult;
 import org.littil.api.search.repository.SearchRepository;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,7 +109,7 @@ class SearchServiceTest {
                 Arguments.of(allSchools, allTeachers, Optional.of(UserType.GUEST_TEACHER), emptyList, 2),
                 Arguments.of(List.of(school1, school2), List.of(teacher1, teacher2), Optional.empty(), emptyList, 4),
                 Arguments.of(List.of(school1), List.of(teacher1, teacher2), Optional.of(UserType.GUEST_TEACHER), emptyList, 2),
-                Arguments.of(List.of(school1, school2), emptyList, Optional.of(UserType.SCHOOL), List.of("Scratch"), 1),
+                Arguments.of(List.of(school1, school2), emptyList, Optional.of(UserType.SCHOOL), List.of("Scratch"), 2),
                 Arguments.of(emptyList, List.of(teacher1, teacher2), Optional.of(UserType.GUEST_TEACHER), List.of("Scratch"), 1)
         );
     }

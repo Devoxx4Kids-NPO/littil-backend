@@ -2,8 +2,8 @@ package org.littil.api.module.service;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.validation.constraints.NotEmpty;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.UUID;
 
 @Data

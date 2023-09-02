@@ -3,8 +3,9 @@ package org.littil.api.guestTeacher.api;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
+import io.quarkus.test.junit.mockito.MockitoConfig;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
@@ -12,6 +13,7 @@ import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.authz.GuestTeacherSecurityInterceptor;
 import org.littil.api.auth.service.AuthenticationService;
@@ -23,7 +25,7 @@ import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,7 +51,8 @@ public class GuestTeacherModuleResourceTest
     TokenHelper tokenHelper;
     @InjectMock
     AuthenticationService authenticationService;
-    @InjectMock(convertScopes=true)
+    @InjectMock
+    @MockitoConfig(convertScopes=true)
     GuestTeacherSecurityInterceptor guestTeacherSecurityInterceptor;
 
     @BeforeEach
@@ -96,7 +99,7 @@ public class GuestTeacherModuleResourceTest
     void givenDeleteGuestTeacherModule_Unauthorized_thenShouldReturnForbidden() {
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{guestTeacher_id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
                 // guestTeacher.getId(), module.getId())
                 .then()
                 .statusCode(401);
@@ -109,7 +112,7 @@ public class GuestTeacherModuleResourceTest
     void givenDeleteGuestTeacherModule_forUnkwnownGuestTeacherId_thenShouldReturnNotFound() {
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{guestTeacher_id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
                 .then()
                 .statusCode(404);
     }
@@ -123,7 +126,7 @@ public class GuestTeacherModuleResourceTest
 
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{guestTeacher_id}/modules/{module_id}", guestTeacher.getId(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", guestTeacher.getId(), UUID.randomUUID())
                 .then()
                 .statusCode(404);
     }
@@ -145,7 +148,7 @@ public class GuestTeacherModuleResourceTest
 
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{guestTeacher_id}/modules/{module_id}", guestTeacher.getId(), module.getId())
+                .delete("/{id}/modules/{module_id}", guestTeacher.getId(), module.getId())
                 .then()
                 .statusCode(200);
     }
@@ -195,13 +198,7 @@ public class GuestTeacherModuleResourceTest
 
     private User createAndSaveUser(UUID userId) {
         Optional<User> user = userService.getUserById(userId);
-        if (user.isPresent()) {
-            return user.get();
-        }
-            User newUser = new User();
-            newUser.setId(userId);
-            newUser.setEmailAddress(RandomStringUtils.randomAlphabetic(10) + "@littil.org");
-            return userService.createUser(newUser);
+        return user.orElseGet(() -> userService.createUser(TestFactory.createUser(userId)));
     }
 
     private GuestTeacher getDefaultGuestTeacher() {

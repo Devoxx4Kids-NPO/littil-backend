@@ -1,10 +1,11 @@
 package org.littil.api.guestTeacher.service;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
@@ -16,10 +17,10 @@ import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 
-import javax.inject.Inject;
-import javax.persistence.PersistenceException;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
+import jakarta.inject.Inject;
+import jakarta.persistence.PersistenceException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -179,9 +180,8 @@ class GuestTeacherServiceTest {
         expectedGuestTeacher.setAddress(entity.getLocation().getAddress());
         expectedGuestTeacher.setPostalCode(entity.getLocation().getPostalCode());
 
-        final UUID userId = UUID.randomUUID();
-        User user = new User();
-        user.setId(userId);
+        User user = TestFactory.createUser();
+        final UUID userId = user.getId();
 
         doReturn(entity).when(mapper).toEntity(guestTeacher);
         doReturn(Optional.of(user)).when(userService).getUserById(userId);
@@ -197,7 +197,8 @@ class GuestTeacherServiceTest {
     @Test
     void givenSaveTeacherUnknownErrorOccurred_thenShouldThrowPersistenceException() {
         final UUID teacherId = UUID.randomUUID();
-        final UUID userId = UUID.randomUUID();
+        User user = TestFactory.createUser();
+        final UUID userId = user.getId();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
@@ -207,7 +208,7 @@ class GuestTeacherServiceTest {
         final GuestTeacher guestTeacher = createGuestTeacher(null, firstName, surname, address, postalCode, locale);
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
 
-        doReturn(Optional.of(new User())).when(userService).getUserById(userId);
+        doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(entity).when(mapper).toEntity(guestTeacher);
         doNothing().when(locationRepository).persist(entity.getLocation());
         doReturn(false).when(repository).isPersistent(entity);

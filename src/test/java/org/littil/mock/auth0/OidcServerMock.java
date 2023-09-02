@@ -5,7 +5,7 @@ import com.github.tomakehurst.wiremock.core.Options;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 import java.util.Collections;
 import java.util.Map;
 

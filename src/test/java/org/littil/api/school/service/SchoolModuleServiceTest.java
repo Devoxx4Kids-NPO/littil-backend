@@ -2,7 +2,7 @@ package org.littil.api.school.service;
 
 import io.quarkus.security.UnauthorizedException;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auth.TokenHelper;
@@ -18,8 +18,8 @@ import org.littil.api.user.repository.UserEntity;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

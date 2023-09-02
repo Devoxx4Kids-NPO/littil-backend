@@ -15,16 +15,17 @@ import org.littil.api.guestTeacher.service.GuestTeacher;
 import org.littil.api.guestTeacher.service.GuestTeacherMapper;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -112,12 +113,16 @@ public class GuestTeacherResource {
             description = "No Teacher found for id provided"
     )
     @APIResponse(
+            responseCode = "409",
+            description = "Current user already has authorizations"
+    )
+    @APIResponse(
             responseCode = "500",
             description = "Persistence error occurred. Failed to persist teacher.",
             content = @Content(mediaType = MediaType.APPLICATION_JSON)
     )
     public Response createOrUpdate(@NotNull @Valid GuestTeacherPostResource guestTeacher) {
-        if (tokenHelper.hasUserAuthorizations()) {
+        if (Objects.isNull(guestTeacher.getId())  && tokenHelper.hasUserAuthorizations()) {
             return Response.status(Response.Status.CONFLICT)
                     .build();
         }

@@ -10,13 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
+import org.littil.api.location.Location;
 import org.littil.api.school.service.SchoolService;
 import org.littil.api.user.service.UserService;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,15 +30,17 @@ import java.util.stream.Stream;
 public class ApplicationLifeCycle {
 
     //TODO: make this configurable for other purposes (e2e tests for example)
-    private static final List<String> DEV_USERS = List.of(
-            "info@littil.org",
-            "testdocent1@littil.org",
-            "testdocent2@littil.org",
-            "testdocent3@littil.org",
-            "testschool1@littil.org",
-            "testschool2@littil.org",
-            "testschool3@littil.org"
+    // use locations from public places like city town hall, police station, railway station, etc.
+    private static final Map<String, Location> DEV_USERS = Map.of(
+            "info@littil.org", new Location(), //
+            "testdocent1@littil.org", createLocationForDevUser("De Passage 100", "1101 AX"), //
+            "testdocent2@littil.org", createLocationForDevUser("Colosseum 65", "7521 PP"), //
+            "testdocent3@littil.org", createLocationForDevUser("Mosae Forum 10",  "6211 DW"), //
+            "testschool1@littil.org", createLocationForDevUser("Prinses Irenepad 1", "2595 BG"), //
+            "testschool2@littil.org", createLocationForDevUser("Marco Pololaan 6", "3526 GJ"), //
+            "testschool3@littil.org", createLocationForDevUser("Sint Jansstraat 4", "9712 JN") //
     );
+
 
     @Inject
     @ConfigProperty(name = "org.littil.devservices.devdata", defaultValue = "false")
@@ -71,16 +74,19 @@ public class ApplicationLifeCycle {
 
     void persistDevData() {
         log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production.");
-        DEV_USERS.stream()
+        DEV_USERS.entrySet().stream()
                 .flatMap(this::persistDevUserData)
                 .forEach(email -> log.info("Created {} user for development purposes", email));
         log.info("Added general LiTTiL users for development purposes. You can login via email-addresses and the default password to the dev tenant.");
     }
 
     @Transactional(Transactional.TxType.REQUIRES_NEW)
-    Stream<String> persistDevUserData(String email) {
+    Stream<String> persistDevUserData(Map.Entry<String, Location> emailLocationEntry) {
+        String email = emailLocationEntry.getKey();
+        Location location = emailLocationEntry.getValue();
+
            return this.findAuth0User(email)
-                .map(this::createAndPersistDevData)
+                .map(user -> createAndPersistDevData(user,location))
                 .flatMap(Optional::stream);
     }
 
@@ -97,7 +103,7 @@ public class ApplicationLifeCycle {
         }
     }
 
-    protected Optional<String> createAndPersistDevData(User user) {
+    protected Optional<String> createAndPersistDevData(User user, Location location) {
         var appMetaData = Optional.ofNullable(user)
                 .map(User::getAppMetadata)
                 .filter(data -> data.containsKey(this.userIdClaimName))
@@ -111,10 +117,10 @@ public class ApplicationLifeCycle {
         }
         var userId = UUID.fromString(String.valueOf(appMetaData.get(this.userIdClaimName)));
         var authorizations = (Map<String, List<String>>) appMetaData.get(this.authorizationsClaimName);
-        return createAndPersistDevData(userId, auth0id, user.getEmail(), authorizations);
+        return createAndPersistDevData(userId, auth0id, user.getEmail(), authorizations, location);
     }
 
-    protected Optional<String> createAndPersistDevData(UUID userId, String auth0id, String email, Map<String, List<String>> authorizations) {
+    protected Optional<String> createAndPersistDevData(UUID userId, String auth0id, String email, Map<String, List<String>> authorizations, Location location) {
         if (this.userService.getUserById(userId).isPresent()) {
             log.warn("Not creating user[{}] for dev; An user with id {} already exists", auth0id, userId);
             return Optional.empty();
@@ -127,9 +133,18 @@ public class ApplicationLifeCycle {
 
         this.userService.createAndPersistDevData(userId, auth0id, email);
         AuthorizationType.SCHOOL.authorizationIds(authorizations)
-                .findFirst().ifPresent(schoolId -> schoolService.createAndPersistDevData(schoolId, userId));
+                .findFirst().ifPresent(schoolId -> schoolService.createAndPersistDevData(schoolId, userId, email, location));
         AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations)
-                .findFirst().ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId, userId));
+                .findFirst().ifPresent(teacherId -> guestTeacherService.createAndPersistDevData(teacherId, userId, email,location));
         return Optional.of(email);
     }
+
+    private static Location createLocationForDevUser(String address, String postalCode) {
+        Location location = new Location();
+        location.setCountry("Nederland");
+        location.setAddress(address);
+        location.setPostalCode(postalCode);
+        return location;
+    }
+
 }

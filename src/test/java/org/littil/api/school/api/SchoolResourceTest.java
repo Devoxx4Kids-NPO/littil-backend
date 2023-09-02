@@ -3,7 +3,7 @@ package org.littil.api.school.api;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
@@ -11,6 +11,7 @@ import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.exception.ErrorResponse;
@@ -22,7 +23,7 @@ import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 import org.littil.mock.coordinates.service.WireMockSearchService;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -238,6 +239,27 @@ class SchoolResourceTest {
     }
 
     @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
+    void givenCreateNewSchoolForUserWithAuthorizations_thenShouldReturnWithStatusConflict() {
+        SchoolPostResource teacher = getDefaultSchool();
+
+        doReturn(UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf")).when(tokenHelper).getCurrentUserId();
+        User createdUser = createAndSaveUser();
+        doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
+        doNothing().when(authenticationService).addAuthorization(any(), any(), any());
+        doReturn(Boolean.TRUE).when(tokenHelper).hasUserAuthorizations();
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(teacher)
+                .put()
+                .then()
+                .statusCode(409);
+    }
+
+    @Test
     @TestSecurity(user = "littil", roles = "schools")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
@@ -257,13 +279,14 @@ class SchoolResourceTest {
         SchoolPostResource school = getDefaultSchool();
         School savedSchool = saveSchool(school);
 
-        doReturn(withSchoolAuthorization(savedSchool.getId())).when(tokenHelper).getCustomClaim(any());
+        doReturn(withSchoolAuthorization(savedSchool.getId())).when(tokenHelper).getAuthorizations();
 
         given()
                 .contentType(ContentType.JSON)
                 .delete("/{id}", savedSchool.getId())
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+        ;
 
         given()
                 .contentType(ContentType.JSON)
@@ -346,11 +369,7 @@ class SchoolResourceTest {
     }
 
     private User createAndSaveUser() {
-        String emailAdress = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
-        User user = new User();
-        user.setEmailAddress(emailAdress);
-
-        return userService.createUser(user);
+        return userService.createUser(TestFactory.createUser());
     }
 
     private String getErrorMessage(String key) {

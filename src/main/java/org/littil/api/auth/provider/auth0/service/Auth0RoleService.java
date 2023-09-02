@@ -8,8 +8,8 @@ import com.auth0.json.mgmt.roles.RolesPage;
 import com.auth0.net.Response;
 import org.littil.api.auth.provider.auth0.exception.Auth0RoleException;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

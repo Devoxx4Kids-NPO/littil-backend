@@ -14,11 +14,11 @@ import org.littil.api.module.service.ModuleService;
 import org.littil.api.search.service.SearchResult;
 import org.littil.api.search.service.SearchService;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +28,7 @@ import java.util.Optional;
 @Consumes(MediaType.APPLICATION_JSON)
 @Authenticated
 @GuestTeacherSecured
-@Tag(name = "Search", description = "CRUD Operations")
+@Tag(name = "Search", description = "Read Operations")
 public class SearchResource {
 
     static final String MODULES_NOT_VALID = "List of modules contain invalid module(s)";

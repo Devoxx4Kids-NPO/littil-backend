@@ -10,6 +10,7 @@ import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
+import org.littil.api.location.Location;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.user.repository.UserEntity;
@@ -17,12 +18,12 @@ import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.PersistenceException;
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.PersistenceException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
 import java.time.DayOfWeek;
 import java.util.EnumSet;
 import java.util.List;
@@ -118,12 +119,12 @@ public class GuestTeacherService {
     }
 
     @Transactional
-    public void createAndPersistDevData(UUID id, UUID userId) {
+    public void createAndPersistDevData(UUID id, UUID userId, String email, Location location) {
         GuestTeacher teacher = new GuestTeacher();
-        teacher.setAddress("Lutulistate 41");
-        teacher.setPostalCode("6716NT");
-        teacher.setSurname("Nederland");
-        teacher.setFirstName("LITTIL");
+        teacher.setAddress(location.getAddress() == null ? "Lutulistate 41" : location.getAddress());
+        teacher.setPostalCode(location.getPostalCode() == null ? "6716NT" : location.getPostalCode());
+        teacher.setSurname(email.split("@")[1]);
+        teacher.setFirstName(email.split("@")[0]);
         teacher.setPrefix("Devoxx4Kids");
         teacher.setAvailability(EnumSet.of(DayOfWeek.TUESDAY,DayOfWeek.THURSDAY));
         var entity = this.mapper.toEntity(teacher);

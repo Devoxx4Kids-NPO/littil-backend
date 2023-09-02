@@ -1,21 +1,23 @@
 package org.littil.api.auth;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.AuthenticationException;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.json.JsonString;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RequestScoped
 public class TokenHelper {
-
     @Inject
     JsonWebToken accessToken;
 
@@ -35,6 +37,12 @@ public class TokenHelper {
         return accessToken.getClaim(claimNamespace.concat(claimName));
     }
 
+    public Map<String, List<JsonString>> getAuthorizations() {
+        Map<String, List<JsonString>> authorizations = getCustomClaim(authorizationsClaimName);
+        return Optional.ofNullable(authorizations)
+                .orElse(Collections.emptyMap());
+    }
+
     public Optional<UUID> currentUserId() {
         String userId = getCustomClaim(userIdClaimName);
         return Optional.ofNullable(userId)
@@ -49,19 +57,15 @@ public class TokenHelper {
     }
 
     public Boolean hasUserAuthorizations() {
-        final Map<String, List<String>> authorizations = Optional.ofNullable(getUserAuthorizations()).orElse(Collections.emptyMap());
+        final Map<String, List<JsonString>> authorizations = getAuthorizations();
         return hasSchoolAuthorizations(authorizations) || hasGuestTeacherAuthorizations(authorizations);
     }
 
-    private Map<String, List<String>> getUserAuthorizations() {
-        return getCustomClaim(authorizationsClaimName);
+    private static boolean hasSchoolAuthorizations(Map<String, List<JsonString>> authorizations) {
+        return AuthorizationType.SCHOOL.hasAny(authorizations);
     }
 
-    private static boolean hasSchoolAuthorizations(Map<String, List<String>> authorizations) {
-        return AuthorizationType.SCHOOL.authorizationIds(authorizations).findAny().isPresent();
-    }
-
-    private static boolean hasGuestTeacherAuthorizations(Map<String, List<String>> authorizations) {
-        return AuthorizationType.GUEST_TEACHER.authorizationIds(authorizations).findAny().isPresent();
+    private static boolean hasGuestTeacherAuthorizations(Map<String, List<JsonString>> authorizations) {
+        return AuthorizationType.GUEST_TEACHER.hasAny(authorizations);
     }
 }

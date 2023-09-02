@@ -1,9 +1,7 @@
 package org.littil.api.auth.service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import jakarta.json.JsonString;
+import java.util.*;
 import java.util.stream.Stream;
 
 public enum AuthorizationType {
@@ -22,9 +20,18 @@ public enum AuthorizationType {
         return tokenValue;
     }
 
+    public boolean hasAny(Map<String, List<JsonString>> authorizations)  {
+        return authorizations(authorizations)
+                .anyMatch(Objects::nonNull);
+    }
+
     public Stream<UUID> authorizationIds(Map<String, List<String>> authorizations) {
-        return authorizations.getOrDefault(getTokenValue(), Collections.emptyList())
-                .stream()
+        return authorizations(authorizations)
                 .map(UUID::fromString);
+    }
+
+    private <T> Stream<T> authorizations(Map<String, List<T>> authorizations) {
+        return authorizations.getOrDefault(getTokenValue(), Collections.emptyList())
+                .stream();
     }
 }

@@ -4,7 +4,7 @@ import lombok.*;
 import org.littil.api.auditing.repository.AbstractAuditableEntity;
 import org.littil.api.module.repository.ModuleEntity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.UUID;
 
 @Data

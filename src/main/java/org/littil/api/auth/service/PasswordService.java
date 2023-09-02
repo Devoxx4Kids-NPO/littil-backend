@@ -1,14 +1,14 @@
 package org.littil.api.auth.service;
 
+import jakarta.annotation.PostConstruct;
 import org.passay.CharacterData;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 import org.passay.PasswordGenerator;
 import org.passay.PasswordValidator;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 
