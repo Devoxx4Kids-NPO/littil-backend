@@ -97,7 +97,11 @@ public class SchoolService {
         school.ifPresentOrElse(repository::delete, () -> {
             throw new NotFoundException();
         });
-        authenticationService.removeAuthorization(userId, AuthorizationType.SCHOOL, id);
+        if (tokenHelper.getNumberOfAuthorizations() == 1) {
+            userService.deleteUser(userId);
+        } else {
+            authenticationService.removeAuthorization(userId, AuthorizationType.SCHOOL, id);
+        }
     }
 
     School update(@Valid School school) {

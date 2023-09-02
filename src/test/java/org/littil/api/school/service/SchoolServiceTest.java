@@ -274,7 +274,7 @@ class SchoolServiceTest {
     }
     
     @Test
-    void givenDeleteSchool_thenShouldDeleteSchool() {
+    void givenDeleteSchool_thenShouldDeleteSchoolAndUser() {
         final UUID schoolId = UUID.randomUUID();
         final String name = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
@@ -295,10 +295,43 @@ class SchoolServiceTest {
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
+        doReturn(1).when(tokenHelper).getNumberOfAuthorizations();
 
         schoolService.deleteSchool(schoolId, userId);
 
         then(repository).should().delete(entity);
+        then(authenticationService).shouldHaveNoInteractions();
+        then(userService).should().deleteUser(userId);
+    }
+
+    @Test
+    void givenDeleteSchool_thenShouldDeleteSchoolAndNotDeleteUser() {
+        final UUID schoolId = UUID.randomUUID();
+        final String name = RandomStringUtils.randomAlphabetic(10);
+        final String address = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
+        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
+        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+
+        final UUID userId = UUID.randomUUID();
+
+        final School school = new School();
+        school.setId(schoolId);
+        school.setName(name);
+        school.setAddress(address);
+        school.setFirstName(contactPersonFirstName);
+        school.setSurname(contactPersonSurname);
+        school.setPostalCode(postalCode);
+
+        final SchoolEntity entity = createSchoolEntity(schoolId, name);
+
+        doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
+        doReturn(2).when(tokenHelper).getNumberOfAuthorizations();
+
+        schoolService.deleteSchool(schoolId, userId);
+
+        then(repository).should().delete(entity);
+        then(userService).shouldHaveNoInteractions();
         then(authenticationService).should().removeAuthorization(userId, AuthorizationType.SCHOOL, schoolId);
     }
 
