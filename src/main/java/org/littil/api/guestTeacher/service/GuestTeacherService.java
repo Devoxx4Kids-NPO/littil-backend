@@ -5,13 +5,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.littil.api.auditing.repository.UserId;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
 import org.littil.api.location.Location;
-import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
@@ -42,14 +42,10 @@ public class GuestTeacherService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final AuthenticationService authenticationService;
+    private final TokenHelper tokenHelper;
 
     public Optional<GuestTeacher> getTeacherById(@NonNull final UUID id) {
         return repository.findByIdOptional(id).map(mapper::toDomain);
-    }
-
-    public Optional<GuestTeacher> getTeacherByLocation(@NonNull final UUID locationId) {
-        LocationEntity location = locationRepository.findById(locationId);
-        return repository.findByLocation(location).map(mapper::toDomain);
     }
 
     public List<GuestTeacher> findAll() {
@@ -86,12 +82,16 @@ public class GuestTeacherService {
     }
 
     @Transactional
-    public void deleteTeacher(@NonNull final UUID id, UUID userId) {
+    public void deleteGuestTeacher(@NonNull final UUID id, UUID userId) {
         Optional<GuestTeacherEntity> teacher = repository.findByIdOptional(id);
         teacher.ifPresentOrElse(repository::delete, () -> {
             throw new NotFoundException();
         });
-        authenticationService.removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, id);
+        if (tokenHelper.getNumberOfAuthorizations() < 2) {
+            userService.deleteUser(userId);
+        } else {
+            authenticationService.removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, id);
+        }
     }
 
     GuestTeacher update(@Valid GuestTeacher guestTeacher, UUID userId) {

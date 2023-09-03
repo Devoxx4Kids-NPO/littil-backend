@@ -68,4 +68,13 @@ public class TokenHelper {
     private static boolean hasGuestTeacherAuthorizations(Map<String, List<JsonString>> authorizations) {
         return AuthorizationType.GUEST_TEACHER.hasAny(authorizations);
     }
+
+    public int getNumberOfAuthorizations() {
+        return getAuthorizations().entrySet()
+                .stream()
+                .map(Map.Entry::getValue)
+                .map(List::size)
+                .mapToInt(Integer::intValue)
+                .sum();
+    }
 }

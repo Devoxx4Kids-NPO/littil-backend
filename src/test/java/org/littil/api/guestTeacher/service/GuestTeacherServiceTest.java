@@ -6,6 +6,7 @@ import io.quarkus.test.junit.mockito.InjectSpy;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
@@ -47,6 +48,8 @@ class GuestTeacherServiceTest {
     GuestTeacherRepository repository;
     @InjectMock
     AuthenticationService authenticationService;
+    @InjectMock
+    TokenHelper tokenHelper;
 
     @InjectSpy
     GuestTeacherMapper mapper;
@@ -237,7 +240,7 @@ class GuestTeacherServiceTest {
 
 
     @Test
-    void givenDeleteTeacher_thenShouldDeleteTeacher() {
+    void givenDeleteGuestTeacher_thenShouldDeleteTeacherAndUser() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
         final String surname = RandomStringUtils.randomAlphabetic(10);
@@ -251,15 +254,41 @@ class GuestTeacherServiceTest {
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
+        doReturn(1).when(tokenHelper).getNumberOfAuthorizations();
 
-        service.deleteTeacher(teacherId, userId);
+        service.deleteGuestTeacher(teacherId, userId);
 
         then(repository).should().delete(entity);
-        then(authenticationService).should().removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, teacherId);
+        then(authenticationService).shouldHaveNoInteractions();
+        then(userService).should().deleteUser(userId);
     }
 
     @Test
-    void givenDeleteUnknownTeacher_thenShouldThrowNotFoundException() {
+    void givenDeleteGuestTeacher_thenShouldDeleteTeacherAndNotDeleteUser() {
+        final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final String surname = RandomStringUtils.randomAlphabetic(10);
+        final String firstName = RandomStringUtils.randomAlphabetic(10);
+
+        final GuestTeacher guestTeacher = new GuestTeacher();
+        guestTeacher.setId(teacherId);
+        guestTeacher.setSurname(surname);
+        guestTeacher.setFirstName(firstName);
+
+        final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
+
+        doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
+        doReturn(2).when(tokenHelper).getNumberOfAuthorizations();
+
+        service.deleteGuestTeacher(teacherId, userId);
+
+        then(repository).should().delete(entity);
+        then(authenticationService).should().removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, teacherId);
+        then(userService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void givenDeleteUnknownGuestTeacher_thenShouldThrowNotFoundException() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
 
@@ -268,12 +297,12 @@ class GuestTeacherServiceTest {
         when(repository.findByIdOptional(teacherId)).thenReturn(Optional.empty());
         verifyNoMoreInteractions(repository);
 
-        assertThrows(NotFoundException.class, () -> service.deleteTeacher(teacherId, userId));
+        assertThrows(NotFoundException.class, () -> service.deleteGuestTeacher(teacherId, userId));
     }
 
     @Test
-    void givenDeleteNullTeacher_thenShouldThrowNullPointer() {
-        assertThrows(NullPointerException.class, () -> service.deleteTeacher(null, null));
+    void givenDeleteNullGuestTeacher_thenShouldThrowNullPointer() {
+        assertThrows(NullPointerException.class, () -> service.deleteGuestTeacher(null, null));
     }
 
     @Test

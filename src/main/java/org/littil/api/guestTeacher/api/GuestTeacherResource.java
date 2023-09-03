@@ -151,7 +151,7 @@ public class GuestTeacherResource {
             description = "Current user is not owner of this guest teacher profile"
     )
     public Response delete(@PathParam("id") UUID id) {
-        guestTeacherService.deleteTeacher(id, tokenHelper.getCurrentUserId());
+        guestTeacherService.deleteGuestTeacher(id, tokenHelper.getCurrentUserId());
         return Response.ok().build();
     }
 }
