@@ -11,7 +11,6 @@ import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.contactPerson.repository.ContactPersonRepository;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.location.Location;
-import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
@@ -50,11 +49,6 @@ public class SchoolService {
 
     public Optional<School> getSchoolById(@NonNull final UUID id) {
         return repository.findByIdOptional(id).map(mapper::toDomain);
-    }
-
-    public Optional<School> getSchoolByLocation(@NonNull final UUID locationId) {
-        LocationEntity location = locationRepository.findById(locationId);
-        return repository.findByLocation(location).map(mapper::toDomain);
     }
 
     public List<School> findAll() {
@@ -97,7 +91,7 @@ public class SchoolService {
         school.ifPresentOrElse(repository::delete, () -> {
             throw new NotFoundException();
         });
-        if (tokenHelper.getNumberOfAuthorizations() == 1) {
+        if (tokenHelper.getNumberOfAuthorizations() < 2) {
             userService.deleteUser(userId);
         } else {
             authenticationService.removeAuthorization(userId, AuthorizationType.SCHOOL, id);
