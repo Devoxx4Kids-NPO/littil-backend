@@ -21,4 +21,3 @@ This repository contains the API backend for the LITTIL platform based on Quarku
 Please
 read [the following guide](https://devoxx4kids-npo.github.io/littil-documentation/platform/local-development/set-up-backend-environment/)
 about how to set up your local development environment.
-
