@@ -10,7 +10,6 @@ import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
@@ -19,6 +18,7 @@ import org.littil.api.exception.ErrorResponse;
 import org.littil.api.school.repository.SchoolEntity;
 import org.littil.api.school.repository.SchoolRepository;
 import org.littil.api.school.service.School;
+import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
@@ -276,12 +276,21 @@ class SchoolResourceTest {
     @TestSecurity(user = "littil", roles = "schools")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    @Disabled("disabled for now")
     void givenDeleteSchoolById_thenShouldDeleteSuccessfully() {
         SchoolPostResource school = getDefaultSchool();
         School savedSchool = saveSchool(school);
 
+        Optional<SchoolEntity> savedEntity = schoolRepository.findBySchoolNameLike(savedSchool.getName())
+                .stream().findFirst();
+        UUID userId = Optional.ofNullable(savedEntity)
+                .map(Optional::get)
+                .map(SchoolEntity::getUser)
+                .map(UserEntity::getId)
+                .orElse(UUID.randomUUID());  // test will fail
+        User user = TestFactory.createUser(userId);
         doReturn(withSchoolAuthorization(savedSchool.getId())).when(tokenHelper).getAuthorizations();
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+        doReturn(Optional.of(user)).when(userService).getUserById(user.getId());
 
         given()
                 .contentType(ContentType.JSON)
