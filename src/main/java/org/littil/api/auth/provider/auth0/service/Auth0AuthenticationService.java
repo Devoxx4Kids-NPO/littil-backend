@@ -1,5 +1,6 @@
 package org.littil.api.auth.provider.auth0.service;
 
+import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.APIException;
@@ -7,6 +8,8 @@ import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.roles.Role;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
+import com.auth0.net.client.Auth0HttpClient;
+import com.auth0.net.client.DefaultHttpClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -33,12 +36,26 @@ import java.util.UUID;
 public class Auth0AuthenticationService implements AuthenticationService {
 
     private final Auth0UserMapper auth0UserMapper;
+    AuthAPI authAPI;
     ManagementAPI managementAPI;
     Auth0RoleService roleService;
     UserService userService;
 
     @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
     String authorizationsClaimName;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
+    String clientId;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.auth.machine2machine.client.secret")
+    String clientSecret;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.auth.tenant_uri")
+    String tenantUri;
+
 
     private String getAuth0IdFor(UUID littilUserId) {
         Optional<org.littil.api.user.service.User> userById = userService.getUserById(littilUserId);
@@ -73,6 +90,15 @@ public class Auth0AuthenticationService implements AuthenticationService {
                 throw new Auth0DuplicateUserException("User already exists for" + authUser.getEmailAddress());
             }
             User user = managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute().getBody();
+
+            Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
+
+
+            // send email for password reset (manditory) - can also be done from login screen
+            var response  = authAPI.resetPassword(authUser.getEmailAddress(), "Username-Password-Authentication").execute();
+            // todo handle exception ?
+            System.out.println ("#### " + response.toString());
+
             return getAuthUser(user);
         } catch (Auth0Exception exception) {
             throw new Auth0UserException("Could not create user for email " + authUser.getEmailAddress(), exception);

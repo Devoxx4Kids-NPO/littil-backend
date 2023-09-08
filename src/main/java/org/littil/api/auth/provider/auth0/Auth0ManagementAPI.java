@@ -46,6 +46,9 @@ public class Auth0ManagementAPI {
     @Inject
     DefaultTenantConfigResolver defaultTenantConfigResolver;
 
+    @Inject
+    AuthAPI authAPI;
+
     @Produces
     public ManagementAPI produceManagementAPI() throws Auth0Exception {
         String audience = getAudienceFromOidcTenantConfig();
@@ -53,7 +56,8 @@ public class Auth0ManagementAPI {
         Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
 
         // todo if not present throw exception
-        AuthAPI authAPI = AuthAPI.newBuilder(tenantUri, clientId, clientSecret)
+//        AuthAPI
+        authAPI = AuthAPI.newBuilder(tenantUri, clientId, clientSecret)
                 .withHttpClient(auth0HttpClient)
                 .build();
         TokenRequest authRequest = authAPI.requestToken(audience);
