@@ -13,6 +13,7 @@ import org.littil.api.exception.ServiceException;
 import org.littil.api.location.Location;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
+import org.littil.api.school.repository.SchoolModuleRepository;
 import org.littil.api.school.repository.SchoolRepository;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
@@ -24,6 +25,7 @@ import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.NotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,6 +37,7 @@ import java.util.UUID;
 public class SchoolService {
 
     private final SchoolRepository repository;
+    private final SchoolModuleRepository moduleRepository;
     private final LocationRepository locationRepository;
     private final ContactPersonRepository contactPersonRepository;
     private final SchoolMapper mapper;
@@ -88,7 +91,12 @@ public class SchoolService {
     @Transactional
     public void deleteSchool(@NonNull final UUID id, UUID userId) {
         Optional<SchoolEntity> school = repository.findByIdOptional(id);
-        school.ifPresentOrElse(repository::delete, () -> {
+        school.ifPresentOrElse(schoolEntity -> {
+            Optional.ofNullable(schoolEntity.getModules())
+                    .orElse(new ArrayList<>())
+                    .forEach(moduleRepository::delete);
+            repository.delete(schoolEntity);
+        }, () -> {
             throw new NotFoundException();
         });
         if (tokenHelper.getNumberOfAuthorizations() < 2) {

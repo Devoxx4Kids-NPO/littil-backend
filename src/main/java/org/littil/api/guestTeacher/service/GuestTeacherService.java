@@ -10,6 +10,7 @@ import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
+import org.littil.api.guestTeacher.repository.GuestTeacherModuleRepository;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
 import org.littil.api.location.Location;
 import org.littil.api.location.repository.LocationRepository;
@@ -25,6 +26,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +39,7 @@ import java.util.UUID;
 public class GuestTeacherService {
 
     private final GuestTeacherRepository repository;
+    private final GuestTeacherModuleRepository moduleRepository;
     private final LocationRepository locationRepository;
     private final GuestTeacherMapper mapper;
     private final UserService userService;
@@ -84,7 +87,12 @@ public class GuestTeacherService {
     @Transactional
     public void deleteGuestTeacher(@NonNull final UUID id, UUID userId) {
         Optional<GuestTeacherEntity> teacher = repository.findByIdOptional(id);
-        teacher.ifPresentOrElse(repository::delete, () -> {
+        teacher.ifPresentOrElse(teacherEntity -> {
+            Optional.ofNullable(teacherEntity.getModules())
+                    .orElse(new ArrayList<>())
+                    .forEach(moduleRepository::delete);
+            repository.delete(teacherEntity);
+        }, () -> {
             throw new NotFoundException();
         });
         if (tokenHelper.getNumberOfAuthorizations() < 2) {
