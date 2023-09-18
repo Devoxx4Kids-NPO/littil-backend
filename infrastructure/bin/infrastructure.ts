@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { App, Fn, StackProps } from 'aws-cdk-lib';
 import 'source-map-support/register';
+import { ApiEc2Stack, ApiEc2StackProps } from '../lib/api-ec2-stack';
 import { ApiStack, ApiStackProps } from '../lib/api-stack';
 import { CertificateStack, CertificateStackProps } from '../lib/certificate-stack';
 import { DatabaseStack, DatabaseStackProps } from '../lib/database-stack';
@@ -81,7 +82,7 @@ new VpcStack(app, 'ApiVpcStack', vpcStackProps);
 // TODO: Lookup
 //  Lookup is already performed in the stacks. Perhaps we can look up by name instead of ID so we can use the same identifier for staging and production?
 const vpcId = littilEnvironment === LittilEnvironment.staging
-    ? 'vpc-05e8c988f613cb71d'
+    ? 'vpc-0ea0163b370393de5'
     : '';
 
 const databaseStackProps: DatabaseStackProps = {
@@ -95,6 +96,20 @@ const databaseStackProps: DatabaseStackProps = {
     databaseSecurityGroupIdExportName: crossStackReferenceExportNames.databaseSecurityGroup,
 };
 new DatabaseStack(app, 'ApiDatabaseStack', databaseStackProps);
+
+const apiEc2StackProps: ApiEc2StackProps = {
+    apiVpc: {
+        id: vpcId,
+    },
+    env,
+    database: {
+        port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+        securityGroup: {
+            id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+        },
+    },
+};
+new ApiEc2Stack(app, 'ApiEc2Stack', apiEc2StackProps);
 
 const apiStackProps: ApiStackProps = {
     littil: littilEnvironmentSettings,

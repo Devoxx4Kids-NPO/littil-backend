@@ -62,6 +62,7 @@ export class DatabaseStack extends Stack {
         };
 
         const database = new DatabaseInstance(this, 'LittilApiDatabase', databaseProperties);
+
         new CfnOutput(this, 'databaseHost', {
             value: database.instanceEndpoint.hostname,
             exportName: props.databaseHostExportName,

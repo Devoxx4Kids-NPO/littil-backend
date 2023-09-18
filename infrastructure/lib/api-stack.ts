@@ -60,6 +60,7 @@ export class ApiStack extends Stack {
         const littilDatabaseSecretName = 'littil/backend/' + props.littil.environment + '/databaseCredentials';
         const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
 
+        /* TODO: Extract to separate stack. */
         const littilBackendCloudwatchLoggingUser = new User(this, 'CloudwatchLoggingUser', {
             userName: 'LITTIL-NL-staging-backend-Cloudwatch'
         });
