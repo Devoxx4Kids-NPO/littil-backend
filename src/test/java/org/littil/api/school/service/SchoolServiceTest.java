@@ -14,6 +14,8 @@ import org.littil.api.exception.ServiceException;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
 import org.littil.api.school.repository.SchoolEntity;
+import org.littil.api.school.repository.SchoolModuleEntity;
+import org.littil.api.school.repository.SchoolModuleRepository;
 import org.littil.api.school.repository.SchoolRepository;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
@@ -48,6 +50,8 @@ class SchoolServiceTest {
 
     @InjectMock
     SchoolRepository repository;
+    @InjectMock
+    SchoolModuleRepository moduleRepository;
 
     @InjectMock
     SchoolMapper mapper;
@@ -274,7 +278,7 @@ class SchoolServiceTest {
     }
     
     @Test
-    void givenDeleteSchool_thenShouldDeleteSchoolAndUser() {
+    void givenDeleteSchoolWithModules_thenShouldDeleteSchoolAndUser() {
         final UUID schoolId = UUID.randomUUID();
         final String name = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
@@ -293,6 +297,10 @@ class SchoolServiceTest {
         school.setPostalCode(postalCode);
 
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
+        final SchoolModuleEntity moduleEntity = new SchoolModuleEntity();
+        moduleEntity.setId(UUID.randomUUID());
+        moduleEntity.setSchool(entity);
+        entity.setModules(List.of(moduleEntity));
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
         doReturn(1).when(tokenHelper).getNumberOfAuthorizations();
@@ -300,12 +308,14 @@ class SchoolServiceTest {
         schoolService.deleteSchool(schoolId, userId);
 
         then(repository).should().delete(entity);
+        then(moduleRepository).should().delete(moduleEntity);
+        then(moduleRepository).shouldHaveNoMoreInteractions();
         then(authenticationService).shouldHaveNoInteractions();
         then(userService).should().deleteUser(userId);
     }
 
     @Test
-    void givenDeleteSchool_thenShouldDeleteSchoolAndNotDeleteUser() {
+    void givenDeleteSchoolWithoutModules_thenShouldDeleteSchoolAndNotDeleteUser() {
         final UUID schoolId = UUID.randomUUID();
         final String name = RandomStringUtils.randomAlphabetic(10);
         final String address = RandomStringUtils.randomAlphabetic(10);
@@ -324,6 +334,7 @@ class SchoolServiceTest {
         school.setPostalCode(postalCode);
 
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
+        entity.setModules(null);
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
         doReturn(2).when(tokenHelper).getNumberOfAuthorizations();
@@ -331,6 +342,7 @@ class SchoolServiceTest {
         schoolService.deleteSchool(schoolId, userId);
 
         then(repository).should().delete(entity);
+        then(moduleRepository).shouldHaveNoInteractions();
         then(userService).shouldHaveNoInteractions();
         then(authenticationService).should().removeAuthorization(userId, AuthorizationType.SCHOOL, schoolId);
     }
