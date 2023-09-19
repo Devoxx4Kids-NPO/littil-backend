@@ -90,7 +90,7 @@ public class UserService {
         Optional<UserEntity> user = repository.findByIdOptional(id);
         user.ifPresentOrElse(userEntity -> {
             authenticationService.deleteUser(userEntity.getId());
-            repository.delete(userEntity);
+            repository.deleteById(userEntity.getId());
         }, () -> {
             throw new NotFoundException();
         });

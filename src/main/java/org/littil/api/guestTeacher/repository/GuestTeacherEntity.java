@@ -39,7 +39,7 @@ public class GuestTeacherEntity extends AbstractAuditableEntity {
     @Column(name = "prefix")
     private String prefix;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "location", referencedColumnName = "location_id")
     private LocationEntity location;
 

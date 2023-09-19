@@ -6,10 +6,13 @@ import io.quarkus.test.junit.mockito.InjectSpy;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
+import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.exception.ServiceException;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
+import org.littil.api.guestTeacher.repository.GuestTeacherModuleEntity;
+import org.littil.api.guestTeacher.repository.GuestTeacherModuleRepository;
 import org.littil.api.guestTeacher.repository.GuestTeacherRepository;
 import org.littil.api.location.repository.LocationEntity;
 import org.littil.api.location.repository.LocationRepository;
@@ -46,7 +49,11 @@ class GuestTeacherServiceTest {
     @InjectMock
     GuestTeacherRepository repository;
     @InjectMock
+    GuestTeacherModuleRepository moduleRepository;
+    @InjectMock
     AuthenticationService authenticationService;
+    @InjectMock
+    TokenHelper tokenHelper;
 
     @InjectSpy
     GuestTeacherMapper mapper;
@@ -237,29 +244,53 @@ class GuestTeacherServiceTest {
 
 
     @Test
-    void givenDeleteTeacher_thenShouldDeleteTeacher() {
+    void givenDeleteGuestTeacherWithModules_thenShouldDeleteTeacherAndUser() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
 
-        final GuestTeacher guestTeacher = new GuestTeacher();
-        guestTeacher.setId(teacherId);
-        guestTeacher.setSurname(surname);
-        guestTeacher.setFirstName(firstName);
-
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
+        final GuestTeacherModuleEntity moduleEntity = new GuestTeacherModuleEntity();
+        moduleEntity.setId(UUID.randomUUID());
+        moduleEntity.setGuestTeacher(entity);
+        entity.setModules(List.of(moduleEntity));
 
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
+        doReturn(1).when(tokenHelper).getNumberOfAuthorizations();
 
-        service.deleteTeacher(teacherId, userId);
+        service.deleteGuestTeacher(teacherId, userId);
 
         then(repository).should().delete(entity);
-        then(authenticationService).should().removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, teacherId);
+        then(moduleRepository).should().delete(moduleEntity);
+        then(moduleRepository).shouldHaveNoMoreInteractions();
+        then(authenticationService).shouldHaveNoInteractions();
+        then(userService).should().deleteUser(userId);
     }
 
     @Test
-    void givenDeleteUnknownTeacher_thenShouldThrowNotFoundException() {
+    void givenDeleteGuestTeacherWithOutModules_thenShouldDeleteTeacherAndNotDeleteUser() {
+        final UUID teacherId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
+        final String surname = RandomStringUtils.randomAlphabetic(10);
+        final String firstName = RandomStringUtils.randomAlphabetic(10);
+
+        final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
+        entity.setModules(null);
+
+        doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
+        doReturn(2).when(tokenHelper).getNumberOfAuthorizations();
+
+        service.deleteGuestTeacher(teacherId, userId);
+
+        then(repository).should().delete(entity);
+        then(moduleRepository).shouldHaveNoInteractions();
+        then(authenticationService).should().removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, teacherId);
+        then(userService).shouldHaveNoInteractions();
+    }
+
+    @Test
+    void givenDeleteUnknownGuestTeacher_thenShouldThrowNotFoundException() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
 
@@ -268,12 +299,12 @@ class GuestTeacherServiceTest {
         when(repository.findByIdOptional(teacherId)).thenReturn(Optional.empty());
         verifyNoMoreInteractions(repository);
 
-        assertThrows(NotFoundException.class, () -> service.deleteTeacher(teacherId, userId));
+        assertThrows(NotFoundException.class, () -> service.deleteGuestTeacher(teacherId, userId));
     }
 
     @Test
-    void givenDeleteNullTeacher_thenShouldThrowNullPointer() {
-        assertThrows(NullPointerException.class, () -> service.deleteTeacher(null, null));
+    void givenDeleteNullGuestTeacher_thenShouldThrowNullPointer() {
+        assertThrows(NullPointerException.class, () -> service.deleteGuestTeacher(null, null));
     }
 
     @Test

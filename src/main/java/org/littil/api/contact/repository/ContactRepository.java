@@ -28,4 +28,16 @@ public class ContactRepository implements PanacheRepositoryBase<ContactEntity, U
     public Optional<ContactEntity> findByContactEntityId(final UUID id) {
         return find("id", id).firstResultOptional();
     }
+
+    public void deleteByCreatedByOrRecipientId(final UUID userId) {
+        deleteByCreatedBy(userId);
+        deleteByRecipientId(userId);
+    }
+
+    private void deleteByCreatedBy(UUID userId) {
+        delete("createdBy", new UserId(userId));
+    }
+    private void deleteByRecipientId(UUID userId) {
+        delete("recipient.id", userId);
+    }
 }
