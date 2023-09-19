@@ -105,8 +105,8 @@ jobs:
           docker push $ECR_IMAGE_ID:latest
       - name: Force restart of ECS service
         run: |
-          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNApiVpc629800F1-NCpU7lAtciFh
-          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-FB07YvpQgxGv
+          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNApiVpc629800F1-OKAOUG96zeJn
+          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-eR7CMdTYT2lB
 
           echo "Going to redeploy $ECS_SERVICE on $ECS_CLUSTER"
 
