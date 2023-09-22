@@ -83,8 +83,8 @@ jobs:
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE }}
-          role-session-name: github_publish_littil_backend
+          role-to-assume: ${{ secrets.AWS_ROLE_ECR }}
+          role-session-name: github_publish_littil_ecr
           aws-region: ${{ secrets.AWS_REGION }}
       - name:  Test credentials
         run: |
@@ -103,10 +103,19 @@ jobs:
           docker tag $IMAGE_NAME $ECR_IMAGE_ID:latest
           echo "Going to push $ECR_IMAGE_ID:latest to ECR"
           docker push $ECR_IMAGE_ID:latest
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_CDK }}
+          role-session-name: github_publish_littil_backend
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name:  Test credentials
+        run: |
+          aws sts get-caller-identity
       - name: Force restart of ECS service
         run: |
-          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNApiVpc629800F1-NCpU7lAtciFh
-          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-FB07YvpQgxGv
+          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNApiVpc629800F1-8Hws84BV1YEc
+          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-5bVXSER0nQnT
 
           echo "Going to redeploy $ECS_SERVICE on $ECS_CLUSTER"
 

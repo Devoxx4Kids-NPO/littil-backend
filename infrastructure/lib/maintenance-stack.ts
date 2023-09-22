@@ -16,8 +16,8 @@ export interface MaintenanceStackProps extends StackProps {
     maintenanceContainer: {
         enable: boolean;
         ecrRepository: {
+            awsAccount: string;
             name: string;
-            arn: string;
         };
         imageTag: string;
     };
@@ -51,7 +51,7 @@ export class MaintenanceStack extends Stack {
                                        ecsExecUser: User) {
         const maintenanceEcrRepository = Repository.fromRepositoryAttributes(this, 'MaintenanceContainerRepository', {
             repositoryName: props.maintenanceContainer.ecrRepository.name,
-            repositoryArn: props.maintenanceContainer.ecrRepository.arn,
+            repositoryArn: 'arn:aws:ecr:eu-west-1:' + props.maintenanceContainer.ecrRepository.awsAccount + ':repository/' + props.maintenanceContainer.ecrRepository.name,
         });
         const maintenanceContainerImage = ContainerImage.fromEcrRepository(maintenanceEcrRepository, props.maintenanceContainer.imageTag);
 

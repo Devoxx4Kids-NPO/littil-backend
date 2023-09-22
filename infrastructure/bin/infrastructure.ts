@@ -6,156 +6,174 @@ import { ApiStack, ApiStackProps } from '../lib/api-stack';
 import { CertificateStack, CertificateStackProps } from '../lib/certificate-stack';
 import { DatabaseStack, DatabaseStackProps } from '../lib/database-stack';
 import { EcrStack, EcrStackProps } from '../lib/ecr-stack';
-import { isLittilEnvironment, LittilEnvironment } from '../lib/littil-environment';
+import { LittilEnvironment } from '../lib/littil-environment';
 import { LittilEnvironmentSettings } from '../lib/littil-environment-settings';
-import { MaintenanceEcrStack } from '../lib/maintenance-ecr-stack';
+import {
+    isLittilAwsAccountConfiguration,
+    LittilAccountType,
+    LittilAwsAccountConfiguration
+} from '../lib/LittilAwsAccountConfiguration';
+import { MaintenanceEcrStack, MaintenanceEcrStackProps } from '../lib/maintenance-ecr-stack';
 import { MaintenanceStack, MaintenanceStackProps } from '../lib/maintenance-stack';
 import { VpcStack } from '../lib/vpc-stack';
 
+const fs = require('fs');
+
 const app = new App();
 
-const awsAccountId = app.node.tryGetContext('account');
-if (!awsAccountId) {
-    throw new Error('Please supply the ID of the AWS account this stack needs to be build for');
-}
+const ecrApiRepositoryName = 'littil-backend';
+const ecrMaintenanceRepositoryName = 'littil-backend-maintenance';
 
-const littilEnvironment = app.node.tryGetContext('environment');
-if (!isLittilEnvironment(littilEnvironment)) {
-    throw new Error('environment needs to be of type LittilEnvironment');
+const awsAccountName = app.node.tryGetContext('accountName');
+const accountConfiguration: LittilAwsAccountConfiguration = JSON.parse(fs.readFileSync('accounts.json', 'utf8'));
+if (!isLittilAwsAccountConfiguration(accountConfiguration)) {
+    throw new Error('Invalid account configuration');
 }
+const awsAccount = accountConfiguration.accounts.find(account => account.name === awsAccountName);
+if (!awsAccount) {
+    throw new Error('Could not find account in accounts.json. Please provide an account name (--context accountName=<accountName>) that matches an entry in accounts.json');
+}
+const awsAccountId = awsAccount.id;
+
+const sharedAccount = accountConfiguration.accounts.find(account => account.type === LittilAccountType.SHARED);
+if (!sharedAccount) {
+    throw new Error('Could not find shared account in accounts.json');
+}
+const sharedAccountId = sharedAccount.id;
+
+const workloadAccounts = accountConfiguration.accounts
+    .filter(account => account.type === LittilAccountType.WORKLOAD)
+    .map(account => account.id);
 
 const env = {
     region: 'eu-west-1',
     account: awsAccountId,
 };
 
-const littilDomain = littilEnvironment !== LittilEnvironment.production
-    ? littilEnvironment + '.littil.org'
-    : 'littil.org';
-
-const littilEnvironmentSettings: LittilEnvironmentSettings = {
-    environment: littilEnvironment,
-    backendDomainName: 'api.' + littilDomain,
-    httpCorsOrigin: 'https://' + littilDomain,
-};
-
 const crossStackReferenceExportNames = {
-    apiEcrRepositoryArn: 'apiEcrRepositoryArn',
-    apiEcrRepositoryName: 'apiEcrRepositoryName',
     apiCertificateArn: 'apiCertificateArn',
-    maintenanceEcrRepositoryArn: 'maintenanceEcrRepositoryArn',
-    maintenanceEcrRepositoryName: 'maintenanceEcrRepositoryName',
     databaseHost: 'databaseHost',
     databasePort: 'databasePort',
     databaseName: 'databaseName',
     databaseSecurityGroup: 'databaseSecurityGroup',
 };
 
-const certificateStackProps: CertificateStackProps = {
-    env,
-    littil: littilEnvironmentSettings,
-    apiCertificateArnExportName: crossStackReferenceExportNames.apiCertificateArn,
-};
-new CertificateStack(app, 'ApiCertificatesStack', certificateStackProps);
+const littilEnvironment = app.node.tryGetContext('environment');
+if (!littilEnvironment) {
+    const apiEcrProps: EcrStackProps = {
+        env,
+        workloadAccounts,
+        ecrApiRepositoryName: ecrApiRepositoryName,
+    };
+    new EcrStack(app, 'ApiEcrStack', apiEcrProps);
 
-// TODO: Deploy ECR stack to shared account (don't create a separate ECR repository for staging and production)
-const apiEcrProps: EcrStackProps = {
-    env,
-    littil: littilEnvironmentSettings,
-    apiRepositoryNameExportName: crossStackReferenceExportNames.apiEcrRepositoryName,
-    apiRepositoryArnExportName: crossStackReferenceExportNames.apiEcrRepositoryArn,
-};
-new EcrStack(app, 'ApiEcrStack', apiEcrProps);
+    const maintenanceEcrProps: MaintenanceEcrStackProps = {
+        env,
+        workloadAccounts,
+        ecrMaintenanceRepositoryName: ecrMaintenanceRepositoryName,
+    };
+    new MaintenanceEcrStack(app, 'MaintenanceEcrStack', maintenanceEcrProps);
+} else {
+    const littilDomain = littilEnvironment !== LittilEnvironment.production
+        ? littilEnvironment + '.littil.org'
+        : 'littil.org';
 
-const maintenanceEcrProps = {
-    env,
-    maintenanceEcrRepositoryNameExportName: crossStackReferenceExportNames.maintenanceEcrRepositoryName,
-    maintenanceEcrRepositoryArnExportName: crossStackReferenceExportNames.maintenanceEcrRepositoryArn,
-};
-new MaintenanceEcrStack(app, 'MaintenanceEcrStack', maintenanceEcrProps);
+    const littilEnvironmentSettings: LittilEnvironmentSettings = {
+        environment: littilEnvironment,
+        backendDomainName: 'api.' + littilDomain,
+        httpCorsOrigin: 'https://' + littilDomain,
+    };
 
-const vpcStackProps: StackProps = {
-    env,
-};
-new VpcStack(app, 'ApiVpcStack', vpcStackProps);
+    const certificateStackProps: CertificateStackProps = {
+        env,
+        littil: littilEnvironmentSettings,
+        apiCertificateArnExportName: crossStackReferenceExportNames.apiCertificateArn,
+    };
+    new CertificateStack(app, 'ApiCertificatesStack', certificateStackProps);
+
+    const vpcStackProps: StackProps = {
+        env,
+    };
+    new VpcStack(app, 'ApiVpcStack', vpcStackProps);
 
 // TODO: Lookup
 //  Lookup is already performed in the stacks. Perhaps we can look up by name instead of ID so we can use the same identifier for staging and production?
-const vpcId = littilEnvironment === LittilEnvironment.staging
-    ? 'vpc-0ea0163b370393de5'
-    : '';
+    const vpcId = littilEnvironment === LittilEnvironment.staging
+        ? 'vpc-0ea0163b370393de5'
+        : '';
 
-const databaseStackProps: DatabaseStackProps = {
-    apiVpc: {
-        id: vpcId,
-    },
-    env,
-    databaseHostExportName: crossStackReferenceExportNames.databaseHost,
-    databasePortExportName: crossStackReferenceExportNames.databasePort,
-    databaseNameExportName: crossStackReferenceExportNames.databaseName,
-    databaseSecurityGroupIdExportName: crossStackReferenceExportNames.databaseSecurityGroup,
-};
-new DatabaseStack(app, 'ApiDatabaseStack', databaseStackProps);
-
-const apiEc2StackProps: ApiEc2StackProps = {
-    apiVpc: {
-        id: vpcId,
-    },
-    env,
-    database: {
-        port: Fn.importValue(crossStackReferenceExportNames.databasePort),
-        securityGroup: {
-            id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+    const databaseStackProps: DatabaseStackProps = {
+        apiVpc: {
+            id: vpcId,
         },
-    },
-};
-new ApiEc2Stack(app, 'ApiEc2Stack', apiEc2StackProps);
+        env,
+        databaseHostExportName: crossStackReferenceExportNames.databaseHost,
+        databasePortExportName: crossStackReferenceExportNames.databasePort,
+        databaseNameExportName: crossStackReferenceExportNames.databaseName,
+        databaseSecurityGroupIdExportName: crossStackReferenceExportNames.databaseSecurityGroup,
+    };
+    new DatabaseStack(app, 'ApiDatabaseStack', databaseStackProps);
 
-const apiStackProps: ApiStackProps = {
-    littil: littilEnvironmentSettings,
-    apiVpc: {
-        id: vpcId,
-    },
-    env,
-    ecrRepository: {
-        name: Fn.importValue(crossStackReferenceExportNames.apiEcrRepositoryName),
-        arn: Fn.importValue(crossStackReferenceExportNames.apiEcrRepositoryArn),
-    },
-    apiCertificateArn: Fn.importValue(crossStackReferenceExportNames.apiCertificateArn),
-    database: {
-        host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
-        port: Fn.importValue(crossStackReferenceExportNames.databasePort),
-        name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-        vpcId,
-        securityGroup: {
-            id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+    const apiEc2StackProps: ApiEc2StackProps = {
+        apiVpc: {
+            id: vpcId,
         },
-    },
-};
-new ApiStack(app, 'ApiStack', apiStackProps);
+        env,
+        database: {
+            port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+            securityGroup: {
+                id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+            },
+        },
+    };
+    new ApiEc2Stack(app, 'ApiEc2Stack', apiEc2StackProps);
 
-const maintenanceProps: MaintenanceStackProps = {
-    env,
-    littil: littilEnvironmentSettings,
-    apiVpc: {
-        id: vpcId,
-    },
-    maintenanceContainer: {
-        enable: false,
-        imageTag: '1.0.2',
+    const apiStackProps: ApiStackProps = {
+        littil: littilEnvironmentSettings,
+        apiVpc: {
+            id: vpcId,
+        },
+        env,
         ecrRepository: {
-            name: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryName),
-            arn: Fn.importValue(crossStackReferenceExportNames.maintenanceEcrRepositoryArn),
+            awsAccount: sharedAccountId,
+            name: ecrApiRepositoryName,
         },
-    },
-    database: {
-        host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
-        port: Fn.importValue(crossStackReferenceExportNames.databasePort),
-        name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-        vpcId,
-        securityGroup: {
-            id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+        apiCertificateArn: Fn.importValue(crossStackReferenceExportNames.apiCertificateArn),
+        database: {
+            host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
+            port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+            name: Fn.importValue(crossStackReferenceExportNames.databaseName),
+            vpcId,
+            securityGroup: {
+                id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+            },
         },
-    },
-};
-new MaintenanceStack(app, 'MaintenanceServiceStack', maintenanceProps);
+    };
+    new ApiStack(app, 'ApiStack', apiStackProps);
+
+    const maintenanceProps: MaintenanceStackProps = {
+        env,
+        littil: littilEnvironmentSettings,
+        apiVpc: {
+            id: vpcId,
+        },
+        maintenanceContainer: {
+            enable: false,
+            imageTag: '1.0.2',
+            ecrRepository: {
+                awsAccount: sharedAccountId,
+                name: ecrMaintenanceRepositoryName,
+            },
+        },
+        database: {
+            host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
+            port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+            name: Fn.importValue(crossStackReferenceExportNames.databaseName),
+            vpcId,
+            securityGroup: {
+                id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
+            },
+        },
+    };
+    new MaintenanceStack(app, 'MaintenanceServiceStack', maintenanceProps);
+}

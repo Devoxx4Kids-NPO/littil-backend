@@ -4,7 +4,7 @@ import { Port, SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
-import { CfnAccessKey, Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
+import { CfnAccessKey, Effect, Policy, PolicyStatement, Role, User, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
@@ -20,8 +20,8 @@ export interface ApiStackProps extends StackProps {
     };
 
     ecrRepository: {
+        awsAccount: string;
         name: string;
-        arn: string;
     };
     apiCertificateArn: string;
 
@@ -49,7 +49,7 @@ export class ApiStack extends Stack {
         /* Fargate. */
         const apiEcrRepository = Repository.fromRepositoryAttributes(this, 'ApiEcrContainerRepository', {
             repositoryName: props.ecrRepository.name,
-            repositoryArn: props.ecrRepository.arn,
+            repositoryArn: 'arn:aws:ecr:eu-west-1:' + props.ecrRepository.awsAccount + ':repository/' + props.ecrRepository.name,
         });
 
         const certificate = Certificate.fromCertificateArn(this, 'ApiCertificate', props.apiCertificateArn);
@@ -145,5 +145,38 @@ export class ApiStack extends Stack {
 
         const fargateSecurityGroup = fargateService.service.connections.securityGroups[0];
         databaseSecurityGroup.connections.allowFrom(fargateSecurityGroup, Port.allTcp());
+
+        /* Push-pull permissions for Github repository. */
+        const issuer = 'token.actions.githubusercontent.com';
+        const gitHubOrg = 'Devoxx4Kids-NPO';
+        const githubRepoName = 'littil-backend';
+        const accountId = this.account;
+        const openIdConnectProviderArn = `arn:aws:iam::${accountId}:oidc-provider/${issuer}`;
+        const ciDeployRole = new Role(this, 'EcsCiDeployRole', {
+            roleName: 'LITTIL-NL-api-ecs-redeploy',
+            assumedBy: new WebIdentityPrincipal(openIdConnectProviderArn, {
+                StringLike: {
+                    [`${issuer}:sub`]: `repo:${gitHubOrg}/${githubRepoName}:*`,
+                },
+                StringEquals: {
+                    [`${issuer}:aud`]: 'sts.amazonaws.com',
+                },
+            }),
+        });
+        const updateServicePolicy = new Policy(this, 'EcsUpdateServicePolicy', {
+            policyName: 'EcsUpdateServicePolicy',
+            statements: [
+                new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    actions: [
+                        'ecs:UpdateService',
+                    ],
+                    resources: [
+                        fargateService.service.serviceArn,
+                    ],
+                }),
+            ],
+        });
+        updateServicePolicy.attachToRole(ciDeployRole);
     }
 }
