@@ -6,16 +6,16 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
-import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemplateTransformer;
 
+import com.github.tomakehurst.wiremock.extension.responsetemplating.TemplateEngine;
 import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 
 public class WireMockSearchService implements QuarkusTestResourceLifecycleManager {
@@ -26,9 +26,11 @@ public class WireMockSearchService implements QuarkusTestResourceLifecycleManage
 
     @Override
     public Map<String, String> start() {
+        ResponseTemplateTransformer transformer = new ResponseTemplateTransformer(
+                TemplateEngine.defaultTemplateEngine(),false, options().filesRoot(), new ArrayList<>());
         wireMockServer = new WireMockServer(options()
                 .dynamicPort()
-                .extensions(new ResponseTemplateTransformer(false)));
+                .extensions(transformer));
         wireMockServer.start();
         stubbing();
         return Collections.singletonMap("quarkus.rest-client.\"org.littil.api.coordinates.service.SearchService\".url",
