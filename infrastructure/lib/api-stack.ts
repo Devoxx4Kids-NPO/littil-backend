@@ -11,6 +11,7 @@ import { Construct } from 'constructs';
 import { allowEcsDescribeTaskStatement } from './iam/allowEcsDescribeTaskStatement';
 import { allowEcsExecuteCommandStatement } from './iam/allowEcsExecuteCommandStatement';
 import { LittilEnvironmentSettings } from './littil-environment-settings';
+import { LoggingStack } from './logging-stack';
 
 export interface ApiStackProps extends StackProps {
     littil: LittilEnvironmentSettings;
@@ -60,30 +61,10 @@ export class ApiStack extends Stack {
         const littilDatabaseSecretName = 'littil/backend/' + props.littil.environment + '/databaseCredentials';
         const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
 
-        /* TODO: Extract to separate stack. */
-        const littilBackendCloudwatchLoggingUser = new User(this, 'CloudwatchLoggingUser', {
-            userName: 'LITTIL-NL-staging-backend-Cloudwatch'
+        const apiEcsLoggingStack = new LoggingStack(this, 'ApiEcsLoggingStack', {
+            littil: props.littil,
+            logGroupName: 'BackendApiEcsLogs',
         });
-        const loggingAccessKey = new CfnAccessKey(this, 'CloudwatchLoggingAccessKey', {
-            userName: littilBackendCloudwatchLoggingUser.userName,
-        });
-        const cloudwatchLogGroup = new LogGroup(this, 'BackendLogGroup', {
-            logGroupName: 'BackendQuarkusLogs',
-        });
-        const cloudwatchLoggingStatement = new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: [
-                'logs:DescribeLogStreams',
-                'logs:CreateLogStream',
-                'logs:PutLogEvents',
-            ],
-            resources: [
-                cloudwatchLogGroup.logGroupArn,
-            ],
-        });
-        const loggingPolicy = new Policy(this, 'QuarkusCloudwatchLoggingPolicy');
-        loggingPolicy.addStatements(cloudwatchLoggingStatement);
-        loggingPolicy.attachToUser(littilBackendCloudwatchLoggingUser);
 
         const fargateService = new ApplicationLoadBalancedFargateService(this, 'LittilApi', {
             vpc,
@@ -100,9 +81,9 @@ export class ApiStack extends Stack {
                     DATASOURCE_PORT: props.database.port,
                     DATASOURCE_DATABASE: props.database.name,
                     QUARKUS_HTTP_CORS_ORIGINS: props.littil.httpCorsOrigin,
-                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_ID: loggingAccessKey.ref,
-                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_SECRET: loggingAccessKey.attrSecretAccessKey,
-                    QUARKUS_LOG_CLOUDWATCH_LOG_GROUP: cloudwatchLogGroup.logGroupName,
+                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_ID: apiEcsLoggingStack.loggingAccessKey.ref,
+                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_SECRET: apiEcsLoggingStack.loggingAccessKey.attrSecretAccessKey,
+                    QUARKUS_LOG_CLOUDWATCH_LOG_GROUP: apiEcsLoggingStack.cloudwatchLogGroup.logGroupName,
                     QUARKUS_LOG_CLOUDWATCH_REGION: this.region,
                     QUARKUS_LOG_CLOUDWATCH_LOG_STREAM_NAME: 'quarkus-logs',
                 },
@@ -123,7 +104,6 @@ export class ApiStack extends Stack {
         });
         fargateService.targetGroup
             .configureHealthCheck({
-                // enabled: false,
                 path: '/q/health',
                 healthyHttpCodes: '200',
             });

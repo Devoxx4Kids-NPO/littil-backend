@@ -15,10 +15,14 @@ import {
 import { CfnAccessKey, Effect, Policy, PolicyStatement, Role, User } from 'aws-cdk-lib/aws-iam';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
+import { LittilEnvironmentSettings } from './littil-environment-settings';
+import { LoggingStack } from './logging-stack';
 
 const fs = require('fs');
 
 export interface ApiEc2StackProps extends StackProps {
+    littil: LittilEnvironmentSettings;
+
     apiVpc: {
         id: string;
     };
@@ -68,7 +72,9 @@ export class ApiEc2Stack extends Stack {
                 '---- END SSH2 PUBLIC KEY ----\n',
         });
 
-        const littilServerConf = fs.readFileSync('lib/nginx/serverconfiguration');
+        const littilServerConf = fs.readFileSync('lib/nginx/serverconfiguration')
+            .toString('utf-8')
+            .replaceAll('%ENVIRONMENT%', props.littil.environment);
 
         const userData = UserData.forLinux();
         userData.addCommands(
@@ -87,14 +93,14 @@ export class ApiEc2Stack extends Stack {
 
             /* Nginx configuration. */
             'echo test > /etc/nginx/conf.d/test',
-            'echo ' + littilServerConf.toString('base64') + ' > /etc/nginx/conf.d/test2',
-            'echo ' + littilServerConf.toString('base64') + ' | base64 -d > /etc/nginx/conf.d/api.staging.littil.org.conf',
+            'echo ' + Buffer.from(littilServerConf).toString('base64') + ' > /etc/nginx/conf.d/test2',
+            'echo ' + Buffer.from(littilServerConf).toString('base64') + ' | base64 -d > /etc/nginx/conf.d/api.' + props.littil.environment + '.littil.org.conf',
 
             /* Certbot. */
             'amazon-linux-extras install epel',
             'yum update',
             'yum install certbot -y',
-            'letsencrypt certonly --standalone -d api.staging.littil.org -m lennert.gijsen@littil.org --agree-tos --no-eff-email',
+            'letsencrypt certonly --standalone -d api.' + props.littil.environment + '.littil.org -m lennert.gijsen@littil.org --agree-tos --no-eff-email',
 
             'systemctl enable docker',
             'systemctl enable nginx',
@@ -144,29 +150,10 @@ export class ApiEc2Stack extends Stack {
         /**/
 
         /* Logging. */
-        const littilBackendCloudwatchLoggingUser = new User(this, 'EC2CloudwatchLoggingUser', {
-            userName: 'LITTIL-NL-staging-backend-Cloudwatch'
+        const apiEc2LoggingStack = new LoggingStack(this, 'ApiEc2LoggingStack', {
+            littil: props.littil,
+            logGroupName: 'BackendApiEc2Logs',
         });
-        const loggingAccessKey = new CfnAccessKey(this, 'EC2CloudwatchLoggingAccessKey', {
-            userName: littilBackendCloudwatchLoggingUser.userName,
-        });
-        const cloudwatchLogGroup = new LogGroup(this, 'EC2BackendLogGroup', {
-            logGroupName: 'BackendQuarkusLogs',
-        });
-        const cloudwatchLoggingStatement = new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: [
-                'logs:DescribeLogStreams',
-                'logs:CreateLogStream',
-                'logs:PutLogEvents',
-            ],
-            resources: [
-                cloudwatchLogGroup.logGroupArn,
-            ],
-        });
-        const loggingPolicy = new Policy(this, 'EC2QuarkusCloudwatchLoggingPolicy');
-        loggingPolicy.addStatements(cloudwatchLoggingStatement);
-        loggingPolicy.attachToUser(littilBackendCloudwatchLoggingUser);
 
         /* Database access. */
         const databaseSecurityGroup = SecurityGroup.fromSecurityGroupId(this, 'DatabaseSecurityGroup', props.database.securityGroup.id);
