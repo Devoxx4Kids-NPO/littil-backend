@@ -15,7 +15,7 @@ import {
 } from '../lib/LittilAwsAccountConfiguration';
 import { MaintenanceEcrStack, MaintenanceEcrStackProps } from '../lib/maintenance-ecr-stack';
 import { MaintenanceStack, MaintenanceStackProps } from '../lib/maintenance-stack';
-import { VpcStack } from '../lib/vpc-stack';
+import { VpcStack, VpcStackProps } from '../lib/vpc-stack';
 
 const fs = require('fs');
 
@@ -56,6 +56,7 @@ const crossStackReferenceExportNames = {
     databasePort: 'databasePort',
     databaseName: 'databaseName',
     databaseSecurityGroup: 'databaseSecurityGroup',
+    vpcId: 'vpcId',
 };
 
 const littilEnvironment = app.node.tryGetContext('environment');
@@ -91,20 +92,15 @@ if (!littilEnvironment) {
     };
     new CertificateStack(app, 'ApiCertificatesStack', certificateStackProps);
 
-    const vpcStackProps: StackProps = {
+    const vpcStackProps: VpcStackProps = {
         env,
+        vpcIdExportName: crossStackReferenceExportNames.vpcId,
     };
     new VpcStack(app, 'ApiVpcStack', vpcStackProps);
 
-    // TODO: Lookup
-    //  Lookup is already performed in the stacks. Perhaps we can look up by name instead of ID so we can use the same identifier for staging and production?
-    const vpcId = littilEnvironment === LittilEnvironment.staging
-        ? 'vpc-0ea0163b370393de5'
-        : '';
-
     const databaseStackProps: DatabaseStackProps = {
         apiVpc: {
-            id: vpcId,
+            id: Fn.importValue(crossStackReferenceExportNames.vpcId),
         },
         env,
         databaseHostExportName: crossStackReferenceExportNames.databaseHost,
@@ -117,7 +113,7 @@ if (!littilEnvironment) {
     const apiEc2StackProps: ApiEc2StackProps = {
         littil: littilEnvironmentSettings,
         apiVpc: {
-            id: vpcId,
+            id: Fn.importValue(crossStackReferenceExportNames.vpcId),
         },
         env,
         database: {
@@ -132,7 +128,7 @@ if (!littilEnvironment) {
     const apiStackProps: ApiStackProps = {
         littil: littilEnvironmentSettings,
         apiVpc: {
-            id: vpcId,
+            id: Fn.importValue(crossStackReferenceExportNames.vpcId),
         },
         env,
         ecrRepository: {
@@ -144,7 +140,7 @@ if (!littilEnvironment) {
             host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
             port: Fn.importValue(crossStackReferenceExportNames.databasePort),
             name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-            vpcId,
+            vpcId: Fn.importValue(crossStackReferenceExportNames.vpcId),
             securityGroup: {
                 id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
             },
@@ -156,7 +152,7 @@ if (!littilEnvironment) {
         env,
         littil: littilEnvironmentSettings,
         apiVpc: {
-            id: vpcId,
+            id: Fn.importValue(crossStackReferenceExportNames.vpcId),
         },
         maintenanceContainer: {
             enable: false,
@@ -170,7 +166,7 @@ if (!littilEnvironment) {
             host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
             port: Fn.importValue(crossStackReferenceExportNames.databasePort),
             name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-            vpcId,
+            vpcId: Fn.importValue(crossStackReferenceExportNames.vpcId),
             securityGroup: {
                 id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
             },
