@@ -16,9 +16,7 @@ import { LoggingStack } from './logging-stack';
 export interface ApiStackProps extends StackProps {
     littil: LittilEnvironmentSettings;
 
-    apiVpc: {
-        id: string;
-    };
+    apiVpc: Vpc;
 
     ecrRepository: {
         awsAccount: string;
@@ -30,7 +28,6 @@ export interface ApiStackProps extends StackProps {
         host: string;
         port: string;
         name: string;
-        vpcId: string;
         securityGroup: {
             id: string;
         };
@@ -43,10 +40,6 @@ export class ApiStack extends Stack {
                 props: ApiStackProps) {
         super(scope, id, props);
 
-        const vpc = Vpc.fromLookup(this, 'ApiVpc', {
-            vpcId: props.apiVpc.id,
-        });
-
         /* Fargate. */
         const apiEcrRepository = Repository.fromRepositoryAttributes(this, 'ApiEcrContainerRepository', {
             repositoryName: props.ecrRepository.name,
@@ -58,16 +51,16 @@ export class ApiStack extends Stack {
         const littilOidcSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilOidcSecret', 'littil/backend/' + props.littil.environment + '/oidc');
         const littilSmtpSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilSmtpSecret', 'littil/backend/' + props.littil.environment + '/smtp');
 
-        const littilDatabaseSecretName = 'littil/backend/' + props.littil.environment + '/databaseCredentials';
+        const littilDatabaseSecretName = 'littil/backend/' + props.littil.environment + '/database';
         const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
 
         const apiEcsLoggingStack = new LoggingStack(this, 'ApiEcsLoggingStack', {
             littil: props.littil,
-            logGroupName: 'BackendApiEcsLogs',
+            logGroupName: 'LITTILBackendApiEcsLogs-' + props.littil.environment,
         });
 
         const fargateService = new ApplicationLoadBalancedFargateService(this, 'LittilApi', {
-            vpc,
+            vpc: props.apiVpc,
             memoryLimitMiB: 512,
             desiredCount: 1,
             cpu: 256,

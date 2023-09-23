@@ -8,13 +8,13 @@ import {
     ParameterGroup
 } from 'aws-cdk-lib/aws-rds';
 import { DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
-import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
+import { LittilEnvironmentSettings } from './littil-environment-settings';
 
 export interface DatabaseStackProps extends StackProps {
-    apiVpc: {
-        id: string;
-    };
+    littil: LittilEnvironmentSettings;
+
+    apiVpc: Vpc;
 
     databaseHostExportName: string;
     databasePortExportName: string;
@@ -28,14 +28,7 @@ export class DatabaseStack extends Stack {
                 props: DatabaseStackProps) {
         super(scope, id, props);
 
-        const vpc = Vpc.fromLookup(this, 'ApiVpc', {
-            vpcId: props.apiVpc.id,
-        });
-
         const databaseName = 'LittilDatabase';
-
-        const littilDatabaseSecretName = 'littil/backend/databaseCredentials';
-        const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
 
         const rdsEngine = DatabaseInstanceEngine.mariaDb({
             version: MariaDbEngineVersion.VER_10_6_8,
@@ -48,11 +41,18 @@ export class DatabaseStack extends Stack {
             }
         });
 
+        const credentials = Credentials.fromGeneratedSecret(
+            'littil_' + props.littil.environment.substring(0, 7),
+            {
+                secretName: 'littil/backend/' + props.littil.environment + '/database',
+            }
+        );
+
         const databaseProperties: DatabaseInstanceProps = {
             databaseName,
-            credentials: Credentials.fromSecret(littilBackendDatabaseSecret),
+            credentials,
             publiclyAccessible: false,
-            vpc,
+            vpc: props.apiVpc,
             engine: rdsEngine,
             parameterGroup: rdsParameterGroup,
             instanceType: InstanceType.of(

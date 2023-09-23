@@ -15,7 +15,7 @@ import {
 } from '../lib/LittilAwsAccountConfiguration';
 import { MaintenanceEcrStack, MaintenanceEcrStackProps } from '../lib/maintenance-ecr-stack';
 import { MaintenanceStack, MaintenanceStackProps } from '../lib/maintenance-stack';
-import { VpcStack, VpcStackProps } from '../lib/vpc-stack';
+import { VpcStack } from '../lib/vpc-stack';
 
 const fs = require('fs');
 
@@ -56,7 +56,6 @@ const crossStackReferenceExportNames = {
     databasePort: 'databasePort',
     databaseName: 'databaseName',
     databaseSecurityGroup: 'databaseSecurityGroup',
-    vpcId: 'vpcId',
 };
 
 const littilEnvironment = app.node.tryGetContext('environment');
@@ -92,16 +91,14 @@ if (!littilEnvironment) {
     };
     new CertificateStack(app, 'ApiCertificatesStack', certificateStackProps);
 
-    const vpcStackProps: VpcStackProps = {
+    const vpcStackProps: StackProps = {
         env,
-        vpcIdExportName: crossStackReferenceExportNames.vpcId,
     };
-    new VpcStack(app, 'ApiVpcStack', vpcStackProps);
+    const vpcStack = new VpcStack(app, 'ApiVpcStack', vpcStackProps);
 
     const databaseStackProps: DatabaseStackProps = {
-        apiVpc: {
-            id: Fn.importValue(crossStackReferenceExportNames.vpcId),
-        },
+        littil: littilEnvironmentSettings,
+        apiVpc: vpcStack.vpc,
         env,
         databaseHostExportName: crossStackReferenceExportNames.databaseHost,
         databasePortExportName: crossStackReferenceExportNames.databasePort,
@@ -112,9 +109,7 @@ if (!littilEnvironment) {
 
     const apiEc2StackProps: ApiEc2StackProps = {
         littil: littilEnvironmentSettings,
-        apiVpc: {
-            id: Fn.importValue(crossStackReferenceExportNames.vpcId),
-        },
+        apiVpc: vpcStack.vpc,
         env,
         database: {
             port: Fn.importValue(crossStackReferenceExportNames.databasePort),
@@ -127,9 +122,7 @@ if (!littilEnvironment) {
 
     const apiStackProps: ApiStackProps = {
         littil: littilEnvironmentSettings,
-        apiVpc: {
-            id: Fn.importValue(crossStackReferenceExportNames.vpcId),
-        },
+        apiVpc: vpcStack.vpc,
         env,
         ecrRepository: {
             awsAccount: sharedAccountId,
@@ -140,7 +133,6 @@ if (!littilEnvironment) {
             host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
             port: Fn.importValue(crossStackReferenceExportNames.databasePort),
             name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-            vpcId: Fn.importValue(crossStackReferenceExportNames.vpcId),
             securityGroup: {
                 id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
             },
@@ -151,9 +143,7 @@ if (!littilEnvironment) {
     const maintenanceProps: MaintenanceStackProps = {
         env,
         littil: littilEnvironmentSettings,
-        apiVpc: {
-            id: Fn.importValue(crossStackReferenceExportNames.vpcId),
-        },
+        apiVpc: vpcStack.vpc,
         maintenanceContainer: {
             enable: false,
             imageTag: '1.0.2',
@@ -166,7 +156,6 @@ if (!littilEnvironment) {
             host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
             port: Fn.importValue(crossStackReferenceExportNames.databasePort),
             name: Fn.importValue(crossStackReferenceExportNames.databaseName),
-            vpcId: Fn.importValue(crossStackReferenceExportNames.vpcId),
             securityGroup: {
                 id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
             },

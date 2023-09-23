@@ -10,9 +10,7 @@ import { LittilEnvironmentSettings } from './littil-environment-settings';
 
 export interface MaintenanceStackProps extends StackProps {
     littil: LittilEnvironmentSettings;
-    apiVpc: {
-        id: string;
-    };
+    apiVpc: Vpc;
     maintenanceContainer: {
         enable: boolean;
         ecrRepository: {
@@ -25,7 +23,6 @@ export interface MaintenanceStackProps extends StackProps {
         host: string;
         port: string;
         name: string;
-        vpcId: string;
         securityGroup: {
             id: string;
         };
@@ -72,12 +69,8 @@ export class MaintenanceStack extends Stack {
                 }
             });
 
-        const vpc = Vpc.fromLookup(this, 'ApiVpc', {
-            vpcId: props.apiVpc.id,
-        });
-
         const ecsCluster = new Cluster(this, 'MaintenanceCluster', {
-            vpc,
+            vpc: props.apiVpc,
         });
         const maintenanceFargateService = new FargateService(this, 'BackendMaintenanceService', {
             cluster: ecsCluster,

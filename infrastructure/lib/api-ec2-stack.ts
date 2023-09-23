@@ -23,9 +23,7 @@ const fs = require('fs');
 export interface ApiEc2StackProps extends StackProps {
     littil: LittilEnvironmentSettings;
 
-    apiVpc: {
-        id: string;
-    };
+    apiVpc: Vpc;
     database: {
         port: string;
         securityGroup: {
@@ -40,12 +38,8 @@ export class ApiEc2Stack extends Stack {
                 props: ApiEc2StackProps) {
         super(scope, id, props);
 
-        const vpc = Vpc.fromLookup(this, 'ApiVpc', {
-            vpcId: props.apiVpc.id,
-        });
-
         const ec2SecurityGroup = new SecurityGroup(this, 'ApiInstanceSecurityGroup', {
-            vpc,
+            vpc: props.apiVpc,
         });
         ec2SecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(443), 'HTTPS over IPv4');
         ec2SecurityGroup.addIngressRule(Peer.anyIpv6(), Port.tcp(443), 'HTTPS over IPv6');
@@ -129,7 +123,7 @@ export class ApiEc2Stack extends Stack {
 
         /**/
         const ec2Instance = new Instance(this, 'ApiInstance', {
-            vpc,
+            vpc: props.apiVpc,
             instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.NANO),
             machineImage: new AmazonLinuxImage({
                 generation: AmazonLinuxGeneration.AMAZON_LINUX_2,
