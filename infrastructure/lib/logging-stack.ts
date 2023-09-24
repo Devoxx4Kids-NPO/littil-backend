@@ -45,6 +45,7 @@ export class LoggingStack extends NestedStack {
         });
         this.loggingPolicy.attachToUser(littilBackendCloudwatchLoggingUser);
 
+        // TODO: Put in secret and expose secret
         this.loggingAccessKey = new CfnAccessKey(this, 'CloudwatchLoggingAccessKey', {
             userName: littilBackendCloudwatchLoggingUser.userName,
         });

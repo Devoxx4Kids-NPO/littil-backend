@@ -10,8 +10,11 @@
     "test": "jest",
     "cdk": "cdk",
 
-    "cdk:list": "cdk ls",
+    "cdk:list:shared": "cdk ls --context accountName=shared",
+    "cdk:list:production": "cdk ls --context accountName=production --context environment=production",
+
     "cdk:diff": "cdk diff",
+
     "cdk:synth:shared": "cdk synth --context accountName=shared",
     "cdk:deploy:shared": "cdk deploy ApiEcrStack MaintenanceEcrStack --context accountName=shared --require-approval=never",
 
@@ -20,6 +23,7 @@
 
     "cdk:synth:production": "cdk synth --context accountName=production --context environment=production",
     "cdk:deploy:production": "cdk deploy ApiCertificatesStack ApiVpcStack ApiDatabaseStack ApiStack --context accountName=production --context environment=production --require-approval=never",
+    "cdk:deploy:production:maintenance": "cdk deploy ApiVpcStack MaintenanceServiceStack --context accountName=production --context environment=production --require-approval=never",
 
     "cdk:deploy:ec2": "cdk deploy ApiCertificatesStack ApiVpcStack ApiEc2Stack --require-approval=never",
     "cdk:deploy:maintenance": "cdk deploy MaintenanceServiceStack --require-approval=never",
