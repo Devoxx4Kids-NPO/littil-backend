@@ -114,8 +114,8 @@ jobs:
           aws sts get-caller-identity
       - name: Force restart of ECS service
         run: |
-          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNApiVpc629800F1-8Hws84BV1YEc
-          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-5bVXSER0nQnT
+          ECS_CLUSTER=ApiStack-EcsDefaultClusterMnL3mNNYNLittilBackendVpc2DA926C3-5TH0t6KU8c5o
+          ECS_SERVICE=ApiStack-LittilApiServiceC3832F12-FVrUDraLsMKS
 
           echo "Going to redeploy $ECS_SERVICE on $ECS_CLUSTER"
 
