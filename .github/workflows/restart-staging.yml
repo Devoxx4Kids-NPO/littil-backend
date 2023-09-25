@@ -1,0 +1,36 @@
+---
+name: littil-backend-restart-staging
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+env:
+  IMAGE_NAME: littil-backend
+
+jobs:
+  push:
+    name: Restart ECS service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_CDK }}
+          role-session-name: github_publish_littil_backend
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name:  Test credentials
+        run: |
+          aws sts get-caller-identity
+      - name: Force restart of ECS service
+        run: |
+          ECS_CLUSTER=$(aws ecs list-clusters --max-items 1 --output text | awk '{print $2}')
+          ECS_SERVICE_ARN=$(aws ecs list-services --cluster $ECS_CLUSTER --max-items 1 --output text | awk '{print $2}')
+          ECS_SERVICE=$(echo $ECS_SERVICE_ARN | awk -F/ '{print $3}')
+
+          echo "Going to redeploy $ECS_SERVICE on $ECS_CLUSTER"
+
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
