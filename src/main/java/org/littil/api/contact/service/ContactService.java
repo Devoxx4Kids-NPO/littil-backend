@@ -10,6 +10,7 @@ import org.littil.api.auth.TokenHelper;
 import org.littil.api.contact.repository.ContactEntity;
 import org.littil.api.contact.repository.ContactRepository;
 import org.littil.api.mail.MailService;
+import org.littil.api.metrics.LittilMetrics;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
@@ -50,6 +51,7 @@ public class ContactService {
         repository.persist(contactEntity);
         // send contact mail to contact recipient
         mailService.sendContactMail(contactEntity.getRecipient().getEmailAddress(),contact.getMessage(),contact.getMedium(), this.ccEmail.orElse(null));
+        log.info(LittilMetrics.Contact.mailSent());
         // send contact mail to initiating user
         tokenHelper.currentUserId()
                 .flatMap(this.userService::getUserById)
