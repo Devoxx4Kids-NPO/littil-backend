@@ -15,6 +15,8 @@ jobs:
   push:
     name: Restart ECS service
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v2
