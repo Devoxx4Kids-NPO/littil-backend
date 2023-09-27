@@ -81,7 +81,7 @@ if (!littilEnvironment) {
     const littilEnvironmentSettings: LittilEnvironmentSettings = {
         environment: littilEnvironment,
         backendDomainName: 'api.' + littilDomain,
-        httpCorsOrigin: 'https://prod.' + littilDomain + ',https://www.' + littilDomain + ',https://' + littilDomain,
+        httpCorsOrigin: 'https://www.' + littilDomain,
     };
 
     const certificateStackProps: CertificateStackProps = {

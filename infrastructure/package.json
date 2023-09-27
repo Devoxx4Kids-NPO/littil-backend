@@ -13,15 +13,16 @@
     "cdk:list:shared": "cdk ls --context accountName=shared",
     "cdk:list:production": "cdk ls --context accountName=production --context environment=production",
 
-    "cdk:diff": "cdk diff",
-
     "cdk:synth:shared": "cdk synth --context accountName=shared",
+    "cdk:diff:shared": "cdk diff --context accountName=shared",
     "cdk:deploy:shared": "cdk deploy ApiEcrStack MaintenanceEcrStack --context accountName=shared --require-approval=never",
 
     "cdk:synth:staging": "cdk synth --context accountName=staging --context environment=staging",
+    "cdk:diff:staging": "cdk diff --context accountName=staging --context environment=staging",
     "cdk:deploy:staging": "cdk deploy ApiCertificatesStack ApiVpcStack ApiDatabaseStack ApiStack --context accountName=staging --context environment=staging --require-approval=never",
 
     "cdk:synth:production": "cdk synth --context accountName=production --context environment=production",
+    "cdk:diff:production": "cdk diff --context accountName=production --context environment=production",
     "cdk:deploy:production": "cdk deploy ApiCertificatesStack ApiVpcStack ApiDatabaseStack ApiStack --context accountName=production --context environment=production --require-approval=never",
     "cdk:deploy:production:maintenance": "cdk deploy ApiVpcStack MaintenanceServiceStack --context accountName=production --context environment=production --require-approval=never",
 

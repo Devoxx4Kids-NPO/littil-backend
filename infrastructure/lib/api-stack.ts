@@ -66,7 +66,7 @@ export class ApiStack extends Stack {
             cpu: 256,
             enableExecuteCommand: true,
             taskImageOptions: {
-                image: ContainerImage.fromEcrRepository(apiEcrRepository, 'latest'),
+                image: ContainerImage.fromEcrRepository(apiEcrRepository, '1.0.1'),
                 containerPort: 8080,
                 containerName: 'api',
                 environment: {
@@ -79,6 +79,7 @@ export class ApiStack extends Stack {
                     QUARKUS_LOG_CLOUDWATCH_LOG_GROUP: apiEcsLoggingStack.cloudwatchLogGroup.logGroupName,
                     QUARKUS_LOG_CLOUDWATCH_REGION: this.region,
                     QUARKUS_LOG_CLOUDWATCH_LOG_STREAM_NAME: 'quarkus-logs',
+                    QUARKUS_MAILER_FROM: 'no-reply@mail.littil.org',
                 },
                 secrets: {
                     DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
