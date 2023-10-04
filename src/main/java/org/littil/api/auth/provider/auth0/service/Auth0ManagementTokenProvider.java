@@ -2,6 +2,7 @@ package org.littil.api.auth.provider.auth0.service;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.TokenProvider;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
 import com.auth0.net.Response;
@@ -21,11 +22,13 @@ import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Singleton
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
-public class Auth0ManagementTokenProvider {
+public class Auth0ManagementTokenProvider implements TokenProvider {
+
 
     @Inject
     @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
@@ -82,5 +85,38 @@ public class Auth0ManagementTokenProvider {
 
         return audience.get(0);
 
+    }
+
+    @Override
+    public String getToken() throws Auth0Exception {
+        return getNewToken().getAccessToken();
+    }
+
+    @Override
+    public CompletableFuture<String> getTokenAsync() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return getToken();
+            } catch (Auth0Exception e) {
+                throw new RuntimeException("unable to get new token",e);
+            }
+        });
+    }
+
+    private TokenHolder getNewToken() throws Auth0Exception {
+        Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
+
+        // todo if not present throw exception
+        var audience = getAudienceFromOidcTenantConfig();
+        var request = AuthAPI.newBuilder(tenantUri, clientId, clientSecret)
+                .withHttpClient(auth0HttpClient)
+                .build()
+                .requestToken(audience);
+
+        // Machine2Machine tokens is paid after 1000 tokens each month
+        log.info("getNewToken machine2machine token for audience {}",audience);
+        var response = request.execute();
+        log.info("token response status {}",response.getStatusCode());
+        return response.getBody();
     }
 }
