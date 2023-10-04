@@ -33,7 +33,7 @@ class Auth0ManagementTokenProvider {
         this.defaultTenantConfigResolver = defaultTenantConfigResolver;
     }
 
-    private Optional<String> getAudienceFromOidcTenantConfig() {
+    Optional<String> getAudienceFromOidcTenantConfig() {
         return Optional.ofNullable(this.defaultTenantConfigResolver)
                 .map(DefaultTenantConfigResolver::getTenantConfigBean)
                 .map(TenantConfigBean::getDefaultTenant)
