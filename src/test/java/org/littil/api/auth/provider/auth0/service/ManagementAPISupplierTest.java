@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.littil.mock.auth0.APIManagementMock;
 
-import java.time.Instant;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
@@ -16,14 +14,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class ManagementAPISupplierTest {
 
     private final ManagementAPISupplier apiSupplier;
+
     @Test
     void get() {
         var api = this.apiSupplier.get();
 
         assertNotNull(api);
-        assertNotNull(this.apiSupplier.getToken());
-        assertTrue(this.apiSupplier.getToken().getExpiresAt().toInstant().isAfter(Instant.now()));
-
+        assertFalse(this.apiSupplier.tokenIsExpired());
         assertEquals(api,this.apiSupplier.get());
     }
 }
