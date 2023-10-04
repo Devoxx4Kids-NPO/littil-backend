@@ -21,7 +21,7 @@ class Auth0ManagementTokenProviderTest {
     @Test
     void getToken() {
         var accessToken = provider.getNewToken();
-        
+
         assertNotNull(accessToken);
         assertTrue(accessToken.getExpiresAt().toInstant().isAfter(Instant.now()));
     }

@@ -8,6 +8,8 @@ import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.roles.Role;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
+import jakarta.inject.Inject;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.provider.auth0.exception.Auth0AuthorizationException;
@@ -29,27 +31,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
+@AllArgsConstructor(onConstructor_ = {@Inject})
 @Slf4j
 public class Auth0AuthenticationService implements AuthenticationService {
     private final Auth0UserMapper auth0UserMapper;
     private final ManagementAPISupplier managementAPI;
     private final Auth0RoleService roleService;
     private final UserService userService;
-    private final String authorizationsClaimName;
 
-    public Auth0AuthenticationService(
-            Auth0UserMapper auth0UserMapper,
-            ManagementAPISupplier managementAPI,
-            Auth0RoleService roleService,
-            UserService userService,
-            @ConfigProperty(name = "org.littil.auth.token.claim.authorizations") String authorizationsClaimName) {
-        this.auth0UserMapper = auth0UserMapper;
-        this.managementAPI = managementAPI;
-        this.roleService = roleService;
-        this.userService = userService;
-        this.authorizationsClaimName = authorizationsClaimName;
-    }
-
+    @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
+    private String authorizationsClaimName;
 
     private String getAuth0IdFor(UUID littilUserId) {
         Optional<org.littil.api.user.service.User> userById = userService.getUserById(littilUserId);
