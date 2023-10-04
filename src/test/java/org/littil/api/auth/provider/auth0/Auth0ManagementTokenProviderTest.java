@@ -7,7 +7,7 @@ import org.littil.mock.auth0.APIManagementMock;
 
 @QuarkusTest
 @QuarkusTestResource(APIManagementMock.class)
-class Auth0ManagementAPITest {
+class Auth0ManagementTokenProviderTest {
 
     @Test
     void produceManagementAPI() {

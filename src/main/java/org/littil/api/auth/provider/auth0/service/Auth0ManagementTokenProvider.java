@@ -1,4 +1,4 @@
-package org.littil.api.auth.provider.auth0;
+package org.littil.api.auth.provider.auth0.service;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
@@ -25,7 +25,7 @@ import java.util.Optional;
 @Singleton
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
-public class Auth0ManagementAPI {
+public class Auth0ManagementTokenProvider {
 
     @Inject
     @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
