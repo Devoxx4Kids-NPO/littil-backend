@@ -29,8 +29,12 @@ class ManagementAPISupplier implements Supplier<ManagementAPI> {
     public ManagementAPI get() {
         if(this.token.getExpiresAt().toInstant().isBefore(Instant.now())) {
             this.token = this.tokenProvider.getNewToken();
-            this.api.setApiToken(this.token.getAccessToken());
+            this.api.setApiToken(getToken().getAccessToken());
         }
         return this.api;
+    }
+
+    TokenHolder getToken() {
+        return this.token;
     }
 }
