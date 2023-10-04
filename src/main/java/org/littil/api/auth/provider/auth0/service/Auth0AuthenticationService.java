@@ -28,14 +28,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
 @AllArgsConstructor(onConstructor_ = {@Inject})
 @Slf4j
 public class Auth0AuthenticationService implements AuthenticationService {
+    private final Map<AuthorizationType, String> roleIdMapping = new ConcurrentHashMap<>();
     private final Auth0UserMapper auth0UserMapper;
     private final ManagementAPISupplier api;
-    private final Auth0RoleService roleService;
     private final UserService userService;
 
     @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
@@ -121,7 +122,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         Map<String, List<String>> authorizations = (Map<String, List<String>>) appMetadata.getOrDefault(authorizationsClaimName, new HashMap<>());
         List<String> authorizationTypeAuthorizations = authorizations.getOrDefault(type.getTokenValue(), new ArrayList<>());
 
-        String roleId = roleService.getIdForRoleName(type.name().toLowerCase());
+        String roleId = getIdForRoleName(type);
 
 
         // todo can we do this neater? dont like the multiline
@@ -172,12 +173,27 @@ public class Auth0AuthenticationService implements AuthenticationService {
         REMOVE
     }
 
-    public Optional<Role> getRoleByName(String roleName) {
+    /**
+     * If roleName not present in roleIdMapping map, retrieve from auth0 and store (cache) it
+     * @param type (roleName) to retrieve id for
+     * @return Id, if not found throws Auth0RoleException
+     */
+    String getIdForRoleName(AuthorizationType type){
+        return this.roleIdMapping.computeIfAbsent(type,this::lookupId);
+    }
+
+    private String lookupId(AuthorizationType type) {
+        return getRoleByName(type)
+                .map(Role::getId)
+                .orElse(null);
+    }
+
+    private Optional<Role> getRoleByName(AuthorizationType type) {
         try {
-            var response = this.api.roles().list(new RolesFilter().withName(roleName)).execute();
+            var response = this.api.roles().list(new RolesFilter().withName(type.name().toLowerCase())).execute();
             return response.getBody().getItems().stream().findFirst();
         } catch (Auth0Exception e) {
-            throw new Auth0RoleException("Could not retrieve role for " + roleName, e);
+            throw new Auth0RoleException("Could not retrieve role for " + type, e);
         }
     }
 
