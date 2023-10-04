@@ -1,6 +1,7 @@
 package org.littil.api.auth.provider.auth0.service;
 
 import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.filter.RolesFilter;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.APIException;
 import com.auth0.exception.Auth0Exception;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.provider.auth0.exception.Auth0AuthorizationException;
 import org.littil.api.auth.provider.auth0.exception.Auth0DuplicateUserException;
+import org.littil.api.auth.provider.auth0.exception.Auth0RoleException;
 import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
@@ -170,4 +172,23 @@ public class Auth0AuthenticationService implements AuthenticationService {
         ADD,
         REMOVE
     }
+
+    public Optional<Role> getRoleByName(String roleName) {
+        try {
+            var response = managementAPI.roles().list(new RolesFilter().withName(roleName)).execute();
+            return response.getBody().getItems().stream().findFirst();
+        } catch (Auth0Exception e) {
+            throw new Auth0RoleException("Could not retrieve role for " + roleName, e);
+        }
+    }
+
+    public List<User> getUsersByEmail(String email) {
+        try {
+            var response = managementAPI.users().listByEmail(email,new UserFilter()).execute();
+            return response.getBody();
+        } catch (Auth0Exception e) {
+            throw new Auth0UserException("Could not retrieve user for " + email, e);
+        }
+    }
+
 }

@@ -1,13 +1,11 @@
 package org.littil.api;
 
-import com.auth0.client.mgmt.ManagementAPI;
-import com.auth0.client.mgmt.filter.UserFilter;
-import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.users.User;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.runtime.configuration.ProfileManager;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.littil.api.auth.provider.auth0.service.Auth0AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
 import org.littil.api.location.Location;
@@ -64,7 +62,7 @@ public class ApplicationLifeCycle {
     GuestTeacherService guestTeacherService;
 
     @Inject
-    ManagementAPI managementAPI;
+    Auth0AuthenticationService auth0;
 
     void onStart(@Observes StartupEvent ev) {
         if (this.insertDevData && ProfileManager.getLaunchMode().isDevOrTest()) {
@@ -91,16 +89,7 @@ public class ApplicationLifeCycle {
     }
 
     private Stream<User> findAuth0User(String email) {
-        try {
-            return this.managementAPI
-                    .users().listByEmail(email,new UserFilter())
-                    .execute()
-                    .getBody()
-                    .stream();
-        } catch (Auth0Exception e) {
-            log.error("unable to find {} in auth0, skipping this development user ", email, e);
-            return Stream.empty();
-        }
+        return this.auth0.getUsersByEmail(email).stream();
     }
 
     protected Optional<String> createAndPersistDevData(User user, Location location) {
@@ -146,5 +135,4 @@ public class ApplicationLifeCycle {
         location.setPostalCode(postalCode);
         return location;
     }
-
 }
