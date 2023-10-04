@@ -46,21 +46,18 @@ public class Auth0ManagementTokenProvider {
 
     }
 
-    public Optional<TokenHolder> getNewToken() {
-        var audience = getAudienceFromOidcTenantConfig();
+    public TokenHolder getNewToken() {
+        var audience = getAudienceFromOidcTenantConfig()
+                .orElseThrow();
         log.info("getNewToken machine2machine token for audience {}",audience);
-        if(audience.isEmpty()) {
-            return Optional.empty();
-        }
         // Machine2Machine tokens is paid after 1000 tokens each month
         try {
-            var request = this.authAPI.requestToken(audience.get());
-            var response = Optional.of(request.execute());
-            log.info("token response status {}",response.map(Response::getStatusCode));
-            return response.map(Response::getBody);
+            var request = this.authAPI.requestToken(audience);
+            var response = request.execute();
+            log.info("token response status {}",response.getStatusCode());
+            return response.getBody();
         } catch (Exception e) {
-            log.error("error getting token",e);
-            return Optional.empty();
+            throw new RuntimeException("error getting new machine2machine token",e);
         }
     }
 }
