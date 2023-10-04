@@ -2,7 +2,6 @@ package org.littil.api.auth.provider.auth0.service;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.json.auth.TokenHolder;
-import com.auth0.net.Response;
 import com.auth0.net.client.DefaultHttpClient;
 import io.quarkus.oidc.OidcTenantConfig;
 import io.quarkus.oidc.runtime.DefaultTenantConfigResolver;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
 @Singleton
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
-public class Auth0ManagementTokenProvider {
+class Auth0ManagementTokenProvider {
     private final AuthAPI authAPI;
     private final DefaultTenantConfigResolver defaultTenantConfigResolver;
     Auth0ManagementTokenProvider(
@@ -46,7 +45,7 @@ public class Auth0ManagementTokenProvider {
 
     }
 
-    public TokenHolder getNewToken() {
+    TokenHolder getNewToken() {
         var audience = getAudienceFromOidcTenantConfig()
                 .orElseThrow();
         log.info("getNewToken machine2machine token for audience {}",audience);
