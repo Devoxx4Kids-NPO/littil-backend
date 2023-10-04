@@ -15,10 +15,12 @@ import io.quarkus.oidc.runtime.TenantConfigContext;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +28,10 @@ import java.util.Optional;
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
 public class Auth0ManagementAPI {
+
+    private ManagementAPI managementAPI = null;
+
+    private Date expiresAt;
 
     @Inject
     @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
@@ -46,8 +52,30 @@ public class Auth0ManagementAPI {
     @Inject
     DefaultTenantConfigResolver defaultTenantConfigResolver;
 
-    @Produces
-    public ManagementAPI produceManagementAPI() throws Auth0Exception {
+    public ManagementAPI getManagementAPI() throws Auth0Exception {
+        if (managementAPI == null) {
+            managementAPI = produceManagementAPI();
+        }
+        if (expiresAt.before(new Date(Instant.now().plusSeconds(10).toEpochMilli()))) {
+                TokenHolder tokenHolder = produceTokenHolder();
+                managementAPI.setApiToken(tokenHolder.getAccessToken());
+        }
+        return managementAPI;
+    }
+
+    private ManagementAPI produceManagementAPI() throws Auth0Exception {
+        log.info("### produceManagementAPI");
+        Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
+
+        TokenHolder tokenHolder = produceTokenHolder();
+
+        return ManagementAPI.newBuilder(providerApiUri, tokenHolder.getAccessToken())
+                .withHttpClient(auth0HttpClient)
+                .build();
+    }
+
+    private TokenHolder produceTokenHolder() throws Auth0Exception {
+        log.info("### produceTokenHolder");
         String audience = getAudienceFromOidcTenantConfig();
 
         Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
@@ -61,9 +89,11 @@ public class Auth0ManagementAPI {
         // Machine2Machine tokens is paid after 1000 tokens each month
         Response<TokenHolder> holder = authRequest.execute();
 
-        return ManagementAPI.newBuilder(providerApiUri, holder.getBody().getAccessToken())
-                .withHttpClient(auth0HttpClient)
-                .build();
+        TokenHolder tokenHolder = holder.getBody();
+        expiresAt = tokenHolder.getExpiresAt();
+        log.info("### token expires at {}", expiresAt);
+
+        return tokenHolder;
     }
 
     private String getAudienceFromOidcTenantConfig() throws Auth0Exception {
@@ -81,6 +111,5 @@ public class Auth0ManagementAPI {
             throw new Auth0Exception("No audience is set to fetch a token.");
 
         return audience.get(0);
-
     }
 }

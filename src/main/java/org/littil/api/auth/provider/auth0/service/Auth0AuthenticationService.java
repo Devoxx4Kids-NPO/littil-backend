@@ -10,6 +10,7 @@ import com.auth0.json.mgmt.users.UsersPage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.littil.api.auth.provider.auth0.Auth0ManagementAPI;
 import org.littil.api.auth.provider.auth0.exception.Auth0AuthorizationException;
 import org.littil.api.auth.provider.auth0.exception.Auth0DuplicateUserException;
 import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
@@ -33,7 +34,7 @@ import java.util.UUID;
 public class Auth0AuthenticationService implements AuthenticationService {
 
     private final Auth0UserMapper auth0UserMapper;
-    ManagementAPI managementAPI;
+    Auth0ManagementAPI auth0ManagementAPI;
     Auth0RoleService roleService;
     UserService userService;
 
@@ -51,6 +52,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public Optional<AuthUser> getUserById(String userId) {
         try {
+            ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
             User user = managementAPI.users().get(userId, null).execute().getBody();
             AuthUser authUser = getAuthUser(user);
             return Optional.of(authUser);
@@ -67,6 +69,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public AuthUser createUser(AuthUser authUser, String tempPassword) {
         try {
+            ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
             UsersPage usersForEmail = managementAPI.users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute().getBody();
 
             if (!usersForEmail.getItems().isEmpty()) {
@@ -80,6 +83,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private AuthUser getAuthUser(User user) throws Auth0Exception {
+        ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
         List<Role> roles = managementAPI.users().listRoles(user.getId(), null).execute().getBody().getItems();
         return auth0UserMapper.toDomain(user, roles);
     }
@@ -88,6 +92,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     public void deleteUser(UUID littilUserId) {
         String userId = getAuth0IdFor(littilUserId);
         try {
+            ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
             managementAPI.users().delete(userId).execute();
         } catch (Auth0Exception exception) {
             throw new Auth0UserException("Could not remove user for id " + userId, exception);
@@ -122,7 +127,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
         String roleId = roleService.getIdForRoleName(type.name().toLowerCase());
 
-
+        ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
         // todo can we do this neater? dont like the multiline
         switch (action) {
             case ADD -> {
@@ -163,6 +168,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private User getUserForId(String userId) throws Auth0Exception {
+        ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
         return managementAPI.users().get(userId, null).execute().getBody();
     }
 

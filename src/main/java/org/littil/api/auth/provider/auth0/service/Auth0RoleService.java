@@ -6,6 +6,7 @@ import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.roles.Role;
 import com.auth0.json.mgmt.roles.RolesPage;
 import com.auth0.net.Response;
+import org.littil.api.auth.provider.auth0.Auth0ManagementAPI;
 import org.littil.api.auth.provider.auth0.exception.Auth0RoleException;
 
 import jakarta.inject.Inject;
@@ -19,7 +20,7 @@ public class Auth0RoleService {
     private final Map<String, String> roleIdMapping = new HashMap<>();
 
     @Inject
-    ManagementAPI managementAPI;
+    Auth0ManagementAPI auth0ManagementAPI;
 
 
     /**
@@ -32,8 +33,9 @@ public class Auth0RoleService {
             return roleIdMapping.get(roleName);
         }
 
-        RolesPage roles = null;
+        RolesPage roles;
         try {
+            ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
             Response<RolesPage> response = managementAPI.roles().list(new RolesFilter().withName(roleName)).execute();
             roles = response.getBody();
         } catch (Auth0Exception e) {

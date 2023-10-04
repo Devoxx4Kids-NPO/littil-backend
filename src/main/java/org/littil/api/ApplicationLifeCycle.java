@@ -8,6 +8,7 @@ import io.quarkus.runtime.StartupEvent;
 import io.quarkus.runtime.configuration.ProfileManager;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.littil.api.auth.provider.auth0.Auth0ManagementAPI;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
 import org.littil.api.location.Location;
@@ -64,7 +65,7 @@ public class ApplicationLifeCycle {
     GuestTeacherService guestTeacherService;
 
     @Inject
-    ManagementAPI managementAPI;
+    Auth0ManagementAPI auth0ManagementAPI;
 
     void onStart(@Observes StartupEvent ev) {
         if (this.insertDevData && ProfileManager.getLaunchMode().isDevOrTest()) {
@@ -92,7 +93,8 @@ public class ApplicationLifeCycle {
 
     private Stream<User> findAuth0User(String email) {
         try {
-            return this.managementAPI
+            ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
+            return managementAPI
                     .users().listByEmail(email,new UserFilter())
                     .execute()
                     .getBody()
