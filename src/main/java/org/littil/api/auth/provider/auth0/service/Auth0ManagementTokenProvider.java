@@ -46,12 +46,11 @@ class Auth0ManagementTokenProvider {
     }
 
     TokenHolder getNewToken() {
-        var audience = getAudienceFromOidcTenantConfig()
-                .orElseThrow();
+        var audience = getAudienceFromOidcTenantConfig();
         log.info("getNewToken machine2machine token for audience {}",audience);
-        // Machine2Machine tokens is paid after 1000 tokens each month
         try {
-            var request = this.authAPI.requestToken(audience);
+            var request = this.authAPI.requestToken(audience.orElseThrow());
+            // Machine2Machine tokens is paid after 1000 tokens each month
             var response = request.execute();
             log.info("token response status {}",response.getStatusCode());
             return response.getBody();
