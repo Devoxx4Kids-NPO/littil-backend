@@ -60,7 +60,7 @@ public class Auth0ManagementAPI {
 
         // Machine2Machine tokens is paid after 1000 tokens each month
         Response<TokenHolder> holder = authRequest.execute();
-
+        // FIXME: this tokenHolder must refresh after expiry(holder.body.expiresAt)
         return ManagementAPI.newBuilder(providerApiUri, holder.getBody().getAccessToken())
                 .withHttpClient(auth0HttpClient)
                 .build();
