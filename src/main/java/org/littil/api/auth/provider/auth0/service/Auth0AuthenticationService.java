@@ -1,6 +1,5 @@
 package org.littil.api.auth.provider.auth0.service;
 
-import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.RolesFilter;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.APIException;
@@ -35,7 +34,7 @@ import java.util.UUID;
 @Slf4j
 public class Auth0AuthenticationService implements AuthenticationService {
     private final Auth0UserMapper auth0UserMapper;
-    private final ManagementAPISupplier managementAPI;
+    private final ManagementAPISupplier api;
     private final Auth0RoleService roleService;
     private final UserService userService;
 
@@ -50,14 +49,10 @@ public class Auth0AuthenticationService implements AuthenticationService {
         throw new Auth0UserException("Could not find auth0 id for littilUserId " + littilUserId);
     }
 
-    private ManagementAPI api() {
-        return this.managementAPI.get();
-    }
-
     @Override
     public Optional<AuthUser> getUserById(String userId) {
         try {
-            User user = api().users().get(userId, null).execute().getBody();
+            User user = this.api.users().get(userId, null).execute().getBody();
             AuthUser authUser = getAuthUser(user);
             return Optional.of(authUser);
         } catch (APIException exception) {
@@ -73,12 +68,12 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public AuthUser createUser(AuthUser authUser, String tempPassword) {
         try {
-            UsersPage usersForEmail = api().users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute().getBody();
+            UsersPage usersForEmail = this.api.users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute().getBody();
 
             if (!usersForEmail.getItems().isEmpty()) {
                 throw new Auth0DuplicateUserException("User already exists for" + authUser.getEmailAddress());
             }
-            User user = api().users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute().getBody();
+            User user = this.api.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute().getBody();
             return getAuthUser(user);
         } catch (Auth0Exception exception) {
             throw new Auth0UserException("Could not create user for email " + authUser.getEmailAddress(), exception);
@@ -86,7 +81,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private AuthUser getAuthUser(User user) throws Auth0Exception {
-        List<Role> roles = api().users().listRoles(user.getId(), null).execute().getBody().getItems();
+        List<Role> roles = this.api.users().listRoles(user.getId(), null).execute().getBody().getItems();
         return auth0UserMapper.toDomain(user, roles);
     }
 
@@ -94,7 +89,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     public void deleteUser(UUID littilUserId) {
         String userId = getAuth0IdFor(littilUserId);
         try {
-            api().users().delete(userId).execute();
+            this.api.users().delete(userId).execute();
         } catch (Auth0Exception exception) {
             throw new Auth0UserException("Could not remove user for id " + userId, exception);
         }
@@ -132,13 +127,13 @@ public class Auth0AuthenticationService implements AuthenticationService {
         // todo can we do this neater? dont like the multiline
         switch (action) {
             case ADD -> {
-                api().roles().assignUsers(roleId, List.of(userId)).execute(); // list of users is added, this is not "current state"
+                this.api.roles().assignUsers(roleId, List.of(userId)).execute(); // list of users is added, this is not "current state"
                 if (!authorizationTypeAuthorizations.contains(resourceId.toString())) {
                     authorizationTypeAuthorizations.add(resourceId.toString());
                 }
             }
             case REMOVE -> {
-                api().users().removeRoles(userId, List.of(roleId)).execute();
+                this.api.users().removeRoles(userId, List.of(roleId)).execute();
                 if (!authorizationTypeAuthorizations.contains(resourceId.toString())) {
                     log.info(String.format("No need to remove authorisation for type %s with id %s because this user does not have any authorizations", type.getTokenValue(), resourceId));
                     return;
@@ -153,7 +148,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
         // we need to create a new user, to prevent an error of editing additional properties.
         User user = getUserWithNewAppMetaData(appMetadata);
-        api().users().update(userId, user).execute();
+        this.api.users().update(userId, user).execute();
     }
 
     private Map<String, Object> getAppMetadata(String userId) throws Auth0Exception {
@@ -169,7 +164,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private User getUserForId(String userId) throws Auth0Exception {
-        return api().users().get(userId, null).execute().getBody();
+        return this.api.users().get(userId, null).execute().getBody();
     }
 
     enum AuthorizationAction {
@@ -179,7 +174,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
     public Optional<Role> getRoleByName(String roleName) {
         try {
-            var response = api().roles().list(new RolesFilter().withName(roleName)).execute();
+            var response = this.api.roles().list(new RolesFilter().withName(roleName)).execute();
             return response.getBody().getItems().stream().findFirst();
         } catch (Auth0Exception e) {
             throw new Auth0RoleException("Could not retrieve role for " + roleName, e);
@@ -188,7 +183,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
     public List<User> getUsersByEmail(String email) {
         try {
-            var response = api().users().listByEmail(email,new UserFilter()).execute();
+            var response = this.api.users().listByEmail(email,new UserFilter()).execute();
             return response.getBody();
         } catch (Auth0Exception e) {
             throw new Auth0UserException("Could not retrieve user for " + email, e);

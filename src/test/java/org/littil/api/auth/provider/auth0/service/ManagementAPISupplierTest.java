@@ -16,11 +16,15 @@ class ManagementAPISupplierTest {
     private final ManagementAPISupplier apiSupplier;
 
     @Test
-    void get() {
-        var api = this.apiSupplier.get();
+    void users() {
+        var users = this.apiSupplier.users();
 
-        assertNotNull(api);
+        assertNotNull(users);
         assertFalse(this.apiSupplier.tokenIsExpired());
-        assertEquals(api,this.apiSupplier.get());
+    }
+
+    @Test
+    void roles() {
+        assertNotNull(this.apiSupplier.roles());
     }
 }

@@ -1,16 +1,20 @@
 package org.littil.api.auth.provider.auth0.service;
 
 import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.RolesEntity;
+import com.auth0.client.mgmt.UsersEntity;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.Instant;
-import java.util.function.Supplier;
 
+/**
+ * manages ManagementAPI instance and it's apiToken, refreshes when required
+ */
 @Singleton
 @Slf4j
-class ManagementAPISupplier implements Supplier<ManagementAPI> {
+class ManagementAPISupplier {
     private final Auth0ManagementTokenProvider tokenProvider;
     private Instant expiresAt;
     private final ManagementAPI api;
@@ -33,11 +37,18 @@ class ManagementAPISupplier implements Supplier<ManagementAPI> {
         this.api.setApiToken(token.getAccessToken());
     }
 
-    @Override
-    public ManagementAPI get() {
+    private ManagementAPI api() {
         if(tokenIsExpired()) {
             updateWithNewToken();
         }
         return this.api;
+    }
+
+    public UsersEntity users() {
+        return api().users();
+    }
+
+    public RolesEntity roles() {
+        return api().roles();
     }
 }
