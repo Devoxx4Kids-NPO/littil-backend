@@ -1,6 +1,5 @@
 package org.littil.api;
 
-import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.users.User;
@@ -65,7 +64,7 @@ public class ApplicationLifeCycle {
     GuestTeacherService guestTeacherService;
 
     @Inject
-    Auth0ManagementAPI auth0ManagementAPI;
+    Auth0ManagementAPI auth0api;
 
     void onStart(@Observes StartupEvent ev) {
         if (this.insertDevData && ProfileManager.getLaunchMode().isDevOrTest()) {
@@ -93,8 +92,7 @@ public class ApplicationLifeCycle {
 
     private Stream<User> findAuth0User(String email) {
         try {
-            ManagementAPI managementAPI = auth0ManagementAPI.getManagementAPI();
-            return managementAPI
+            return auth0api
                     .users().listByEmail(email,new UserFilter())
                     .execute()
                     .getBody()

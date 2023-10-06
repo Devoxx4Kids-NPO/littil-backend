@@ -2,8 +2,9 @@ package org.littil.api.auth.provider.auth0;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.RolesEntity;
+import com.auth0.client.mgmt.UsersEntity;
 import com.auth0.exception.Auth0Exception;
-import com.auth0.json.auth.TokenHolder;
 import com.auth0.net.TokenRequest;
 import com.auth0.net.client.Auth0HttpClient;
 import com.auth0.net.client.DefaultHttpClient;
@@ -29,7 +30,7 @@ public class Auth0ManagementAPI {
     final String audience;
     private Instant expiresAt;
 
-    public Auth0ManagementAPI(
+    Auth0ManagementAPI(
         @ConfigProperty(name = "org.littil.auth.provider_api") String providerApiUri,
         @ConfigProperty(name = "org.littil.auth.machine2machine.client.id") String clientId,
         @ConfigProperty(name = "org.littil.auth.machine2machine.client.secret")  String clientSecret,
@@ -47,11 +48,19 @@ public class Auth0ManagementAPI {
                 .orElseThrow(() -> new Auth0UserException("No audience is set to fetch a token."));
     }
 
+    public UsersEntity users() {
+        return getManagementAPI().users();
+    }
+
+    public RolesEntity roles() {
+        return getManagementAPI().roles();
+    }
+
     boolean tokenIsExpired() {
         return this.expiresAt==null || this.expiresAt.isBefore(Instant.now());
     }
 
-    public ManagementAPI getManagementAPI() {
+    ManagementAPI getManagementAPI() {
         if (tokenIsExpired()) {
             updateAccessToken();
         }

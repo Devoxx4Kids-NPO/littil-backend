@@ -1,10 +1,8 @@
 package org.littil.api.auth.provider.auth0;
 
-import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.littil.mock.auth0.APIManagementMock;
@@ -15,28 +13,31 @@ import static org.junit.jupiter.api.Assertions.*;
 @RequiredArgsConstructor
 @QuarkusTestResource(APIManagementMock.class)
 class Auth0ManagementAPITest {
-    private final Auth0ManagementAPI auth0ManagementAPI;
+    private final Auth0ManagementAPI auth0api;
 
     @Test
     void getManagementAPI() throws Auth0Exception {
         // on init it starts with tokenExpired
-        assertTrue(auth0ManagementAPI.tokenIsExpired());
+        assertTrue(this.auth0api.tokenIsExpired());
 
         // ManagementAPI get's one and refreshes token in the process
-        assertNotNull(auth0ManagementAPI.getManagementAPI());
+        assertNotNull(this.auth0api.getManagementAPI());
+        // this is public api of Auth0ManagementAPI
+        assertNotNull(this.auth0api.users());
+        assertNotNull(this.auth0api.roles());
 
         // token is not expired after this
-        assertFalse(auth0ManagementAPI.tokenIsExpired());
+        assertFalse(this.auth0api.tokenIsExpired());
     }
 
     @Test
     void audienceInit() {
-        assertTrue(auth0ManagementAPI.audience.endsWith("/api/v2/"));
+        assertTrue(this.auth0api.audience.endsWith("/api/v2/"));
     }
 
     @Test
     void createRequestForToken() {
-        var requestForToken = auth0ManagementAPI.createRequestForToken();
+        var requestForToken = this.auth0api.createRequestForToken();
 
         assertNotNull(requestForToken);
     }
