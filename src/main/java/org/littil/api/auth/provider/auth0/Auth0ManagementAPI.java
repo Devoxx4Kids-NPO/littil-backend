@@ -4,7 +4,6 @@ import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
-import com.auth0.net.Response;
 import com.auth0.net.TokenRequest;
 import com.auth0.net.client.Auth0HttpClient;
 import com.auth0.net.client.DefaultHttpClient;
@@ -20,7 +19,6 @@ import jakarta.inject.Singleton;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +27,7 @@ import java.util.Optional;
 //https://github.com/auth0/auth0-java#api-clients-recommendations
 public class Auth0ManagementAPI {
     private final ManagementAPI managementAPI;
-    private Date expiresAt;
+    private Instant expiresAt;
 
     @Inject
     @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
@@ -50,16 +48,20 @@ public class Auth0ManagementAPI {
         @ConfigProperty(name = "org.littil.auth.provider_api") String providerApiUri
     ) {
         this.managementAPI = ManagementAPI.newBuilder(providerApiUri, "empty").build();
-        // set to expiry directly
-        this.expiresAt = new Date(System.currentTimeMillis()-10_000);
+    }
+
+    boolean tokenIsExpired() {
+        return this.expiresAt==null || this.expiresAt.isBefore(Instant.now());
     }
 
     public ManagementAPI getManagementAPI() throws Auth0Exception {
-        if (expiresAt.before(new Date(Instant.now().plusSeconds(10).toEpochMilli()))) {
-                TokenHolder tokenHolder = produceTokenHolder();
-                managementAPI.setApiToken(tokenHolder.getAccessToken());
+        if (tokenIsExpired()) {
+            TokenHolder tokenHolder = produceTokenHolder();
+            this.expiresAt = tokenHolder.getExpiresAt().toInstant();
+            log.info("### token expires at {}", this.expiresAt);
+            this.managementAPI.setApiToken(tokenHolder.getAccessToken());
         }
-        return managementAPI;
+        return this.managementAPI;
     }
 
     private TokenHolder produceTokenHolder() throws Auth0Exception {
@@ -75,13 +77,7 @@ public class Auth0ManagementAPI {
         TokenRequest authRequest = authAPI.requestToken(audience);
 
         // Machine2Machine tokens is paid after 1000 tokens each month
-        Response<TokenHolder> holder = authRequest.execute();
-
-        TokenHolder tokenHolder = holder.getBody();
-        expiresAt = tokenHolder.getExpiresAt();
-        log.info("### token expires at {}", expiresAt);
-
-        return tokenHolder;
+        return authRequest.execute().getBody();
     }
 
     private String getAudienceFromOidcTenantConfig() throws Auth0Exception {
