@@ -51,12 +51,9 @@ public class Auth0ManagementAPI {
         return this.expiresAt==null || this.expiresAt.isBefore(Instant.now());
     }
 
-    public ManagementAPI getManagementAPI() throws Auth0Exception {
+    public ManagementAPI getManagementAPI() {
         if (tokenIsExpired()) {
-            TokenHolder tokenHolder = produceTokenHolder();
-            this.expiresAt = tokenHolder.getExpiresAt().toInstant();
-            log.info("### token expires at {}", this.expiresAt);
-            this.managementAPI.setApiToken(tokenHolder.getAccessToken());
+            updateAccessToken();
         }
         return this.managementAPI;
     }
@@ -65,11 +62,18 @@ public class Auth0ManagementAPI {
         return this.authAPI.requestToken(this.audience);
     }
 
-    private TokenHolder produceTokenHolder() throws Auth0Exception {
-        log.info("### produceTokenHolder");
+    private void updateAccessToken() {
+        log.info("### getNewAccessToken");
         TokenRequest authRequest = createRequestForToken();
-        // Machine2Machine tokens is paid after 1000 tokens each month
-        return authRequest.execute().getBody();
+        try {
+            // Machine2Machine tokens is paid after 1000 tokens each month
+            var token = authRequest.execute().getBody();
+            this.expiresAt = token.getExpiresAt().toInstant();
+            log.info("### token expires at {}", this.expiresAt);
+            this.managementAPI.setApiToken(token.getAccessToken());
+        } catch(Auth0Exception e) {
+            log.error("unable to get new access token for {}",audience,e);
+        }
     }
 
     private static Optional<String> getAudienceFromOidcTenantConfig(DefaultTenantConfigResolver defaultTenantConfigResolver) {
