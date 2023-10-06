@@ -28,9 +28,7 @@ import java.util.Optional;
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
 public class Auth0ManagementAPI {
-
-    private ManagementAPI managementAPI = null;
-
+    private final ManagementAPI managementAPI;
     private Date expiresAt;
 
     @Inject
@@ -42,36 +40,26 @@ public class Auth0ManagementAPI {
     String clientSecret;
 
     @Inject
-    @ConfigProperty(name = "org.littil.auth.provider_api")
-    String providerApiUri;
-
-    @Inject
     @ConfigProperty(name = "org.littil.auth.tenant_uri")
     String tenantUri;
 
     @Inject
     DefaultTenantConfigResolver defaultTenantConfigResolver;
 
+    public Auth0ManagementAPI(
+        @ConfigProperty(name = "org.littil.auth.provider_api") String providerApiUri
+    ) {
+        this.managementAPI = ManagementAPI.newBuilder(providerApiUri, "empty").build();
+        // set to expiry directly
+        this.expiresAt = new Date(System.currentTimeMillis()-10_000);
+    }
+
     public ManagementAPI getManagementAPI() throws Auth0Exception {
-        if (managementAPI == null) {
-            managementAPI = produceManagementAPI();
-        }
         if (expiresAt.before(new Date(Instant.now().plusSeconds(10).toEpochMilli()))) {
                 TokenHolder tokenHolder = produceTokenHolder();
                 managementAPI.setApiToken(tokenHolder.getAccessToken());
         }
         return managementAPI;
-    }
-
-    private ManagementAPI produceManagementAPI() throws Auth0Exception {
-        log.info("### produceManagementAPI");
-        Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
-
-        TokenHolder tokenHolder = produceTokenHolder();
-
-        return ManagementAPI.newBuilder(providerApiUri, tokenHolder.getAccessToken())
-                .withHttpClient(auth0HttpClient)
-                .build();
     }
 
     private TokenHolder produceTokenHolder() throws Auth0Exception {
