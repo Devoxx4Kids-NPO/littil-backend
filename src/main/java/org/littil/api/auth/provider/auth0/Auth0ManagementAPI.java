@@ -16,17 +16,17 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Singleton
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
 public class Auth0ManagementAPI {
     private final ManagementAPI managementAPI;
+    final String audience;
     private Instant expiresAt;
 
     @Inject
@@ -41,13 +41,13 @@ public class Auth0ManagementAPI {
     @ConfigProperty(name = "org.littil.auth.tenant_uri")
     String tenantUri;
 
-    @Inject
-    DefaultTenantConfigResolver defaultTenantConfigResolver;
-
     public Auth0ManagementAPI(
-        @ConfigProperty(name = "org.littil.auth.provider_api") String providerApiUri
+        @ConfigProperty(name = "org.littil.auth.provider_api") String providerApiUri,
+        DefaultTenantConfigResolver defaultTenantConfigResolver
     ) {
         this.managementAPI = ManagementAPI.newBuilder(providerApiUri, "empty").build();
+        this.audience = getAudienceFromOidcTenantConfig(defaultTenantConfigResolver)
+                .orElseThrow(() -> new Auth0UserException("No audience is set to fetch a token."));
     }
 
     boolean tokenIsExpired() {
@@ -66,7 +66,6 @@ public class Auth0ManagementAPI {
 
     private TokenHolder produceTokenHolder() throws Auth0Exception {
         log.info("### produceTokenHolder");
-        String audience = getAudienceFromOidcTenantConfig();
 
         Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
 
@@ -80,20 +79,14 @@ public class Auth0ManagementAPI {
         return authRequest.execute().getBody();
     }
 
-    private String getAudienceFromOidcTenantConfig() throws Auth0Exception {
+    private static Optional<String> getAudienceFromOidcTenantConfig(DefaultTenantConfigResolver defaultTenantConfigResolver) {
         List<String> audience = Optional.ofNullable(defaultTenantConfigResolver)
                 .map(DefaultTenantConfigResolver::getTenantConfigBean)
                 .map(TenantConfigBean::getDefaultTenant)
                 .map(TenantConfigContext::getOidcTenantConfig)
                 .map(OidcTenantConfig::getToken)
-                .map(OidcTenantConfig.Token::getAudience)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .orElse(new ArrayList<>());
-
-        if (audience.isEmpty())
-            throw new Auth0Exception("No audience is set to fetch a token.");
-
-        return audience.get(0);
+                .flatMap(OidcTenantConfig.Token::getAudience)
+                .orElseGet(Collections::emptyList);
+        return audience.stream().findFirst();
     }
 }

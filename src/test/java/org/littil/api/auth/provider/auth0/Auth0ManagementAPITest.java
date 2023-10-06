@@ -28,4 +28,9 @@ class Auth0ManagementAPITest {
         // token is not expired after this
         assertFalse(auth0ManagementAPI.tokenIsExpired());
     }
+
+    @Test
+    void audienceInit() {
+        assertTrue(auth0ManagementAPI.audience.endsWith("/api/v2/"));
+    }
 }
