@@ -33,4 +33,11 @@ class Auth0ManagementAPITest {
     void audienceInit() {
         assertTrue(auth0ManagementAPI.audience.endsWith("/api/v2/"));
     }
+
+    @Test
+    void createRequestForToken() {
+        var requestForToken = auth0ManagementAPI.createRequestForToken();
+
+        assertNotNull(requestForToken);
+    }
 }

@@ -14,7 +14,6 @@ import io.quarkus.oidc.runtime.TenantConfigContext;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 
@@ -26,26 +25,24 @@ import java.util.*;
 //https://github.com/auth0/auth0-java#api-clients-recommendations
 public class Auth0ManagementAPI {
     private final ManagementAPI managementAPI;
+    private final AuthAPI authAPI;
     final String audience;
     private Instant expiresAt;
 
-    @Inject
-    @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
-    String clientId;
-
-    @Inject
-    @ConfigProperty(name = "org.littil.auth.machine2machine.client.secret")
-    String clientSecret;
-
-    @Inject
-    @ConfigProperty(name = "org.littil.auth.tenant_uri")
-    String tenantUri;
-
     public Auth0ManagementAPI(
         @ConfigProperty(name = "org.littil.auth.provider_api") String providerApiUri,
+        @ConfigProperty(name = "org.littil.auth.machine2machine.client.id") String clientId,
+        @ConfigProperty(name = "org.littil.auth.machine2machine.client.secret")  String clientSecret,
+        @ConfigProperty(name = "org.littil.auth.tenant_uri") String tenantUri,
         DefaultTenantConfigResolver defaultTenantConfigResolver
     ) {
-        this.managementAPI = ManagementAPI.newBuilder(providerApiUri, "empty").build();
+        Auth0HttpClient http = DefaultHttpClient.newBuilder().build();
+        this.authAPI = AuthAPI.newBuilder(tenantUri, clientId, clientSecret)
+                .withHttpClient(http)
+                .build();
+        this.managementAPI = ManagementAPI.newBuilder(providerApiUri, "empty")
+                .withHttpClient(http)
+                .build();
         this.audience = getAudienceFromOidcTenantConfig(defaultTenantConfigResolver)
                 .orElseThrow(() -> new Auth0UserException("No audience is set to fetch a token."));
     }
@@ -64,17 +61,13 @@ public class Auth0ManagementAPI {
         return this.managementAPI;
     }
 
+    TokenRequest createRequestForToken() {
+        return this.authAPI.requestToken(this.audience);
+    }
+
     private TokenHolder produceTokenHolder() throws Auth0Exception {
         log.info("### produceTokenHolder");
-
-        Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
-
-        // todo if not present throw exception
-        AuthAPI authAPI = AuthAPI.newBuilder(tenantUri, clientId, clientSecret)
-                .withHttpClient(auth0HttpClient)
-                .build();
-        TokenRequest authRequest = authAPI.requestToken(audience);
-
+        TokenRequest authRequest = createRequestForToken();
         // Machine2Machine tokens is paid after 1000 tokens each month
         return authRequest.execute().getBody();
     }
