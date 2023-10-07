@@ -2,9 +2,9 @@ package org.littil.api.auth.provider.auth0;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.RolesEntity;
+import com.auth0.client.mgmt.UsersEntity;
 import com.auth0.exception.Auth0Exception;
-import com.auth0.json.auth.TokenHolder;
-import com.auth0.net.Response;
 import com.auth0.net.TokenRequest;
 import com.auth0.net.client.Auth0HttpClient;
 import com.auth0.net.client.DefaultHttpClient;
@@ -15,72 +15,84 @@ import io.quarkus.oidc.runtime.TenantConfigContext;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
+
+import java.time.Instant;
+import java.util.*;
 
 @Singleton
 @Slf4j
 //https://github.com/auth0/auth0-java#api-clients-recommendations
 public class Auth0ManagementAPI {
+    private final ManagementAPI managementAPI;
+    private final AuthAPI authAPI;
+    final String audience;
+    private Instant expiresAt;
 
-    @Inject
-    @ConfigProperty(name = "org.littil.auth.machine2machine.client.id")
-    String clientId;
-
-    @Inject
-    @ConfigProperty(name = "org.littil.auth.machine2machine.client.secret")
-    String clientSecret;
-
-    @Inject
-    @ConfigProperty(name = "org.littil.auth.provider_api")
-    String providerApiUri;
-
-    @Inject
-    @ConfigProperty(name = "org.littil.auth.tenant_uri")
-    String tenantUri;
-
-    @Inject
-    DefaultTenantConfigResolver defaultTenantConfigResolver;
-
-    @Produces
-    public ManagementAPI produceManagementAPI() throws Auth0Exception {
-        String audience = getAudienceFromOidcTenantConfig();
-
-        Auth0HttpClient auth0HttpClient = DefaultHttpClient.newBuilder().build();
-
-        // todo if not present throw exception
-        AuthAPI authAPI = AuthAPI.newBuilder(tenantUri, clientId, clientSecret)
-                .withHttpClient(auth0HttpClient)
+    Auth0ManagementAPI(
+        @ConfigProperty(name = "org.littil.auth.provider_api") String providerApiUri,
+        @ConfigProperty(name = "org.littil.auth.machine2machine.client.id") String clientId,
+        @ConfigProperty(name = "org.littil.auth.machine2machine.client.secret")  String clientSecret,
+        @ConfigProperty(name = "org.littil.auth.tenant_uri") String tenantUri,
+        DefaultTenantConfigResolver defaultTenantConfigResolver
+    ) {
+        Auth0HttpClient http = DefaultHttpClient.newBuilder().build();
+        this.authAPI = AuthAPI.newBuilder(tenantUri, clientId, clientSecret)
+                .withHttpClient(http)
                 .build();
-        TokenRequest authRequest = authAPI.requestToken(audience);
-
-        // Machine2Machine tokens is paid after 1000 tokens each month
-        Response<TokenHolder> holder = authRequest.execute();
-
-        return ManagementAPI.newBuilder(providerApiUri, holder.getBody().getAccessToken())
-                .withHttpClient(auth0HttpClient)
+        this.managementAPI = ManagementAPI.newBuilder(providerApiUri, "empty")
+                .withHttpClient(http)
                 .build();
+        this.audience = getAudienceFromOidcTenantConfig(defaultTenantConfigResolver)
+                .orElseThrow(() -> new Auth0UserException("No audience is set to fetch a token."));
     }
 
-    private String getAudienceFromOidcTenantConfig() throws Auth0Exception {
+    public UsersEntity users() {
+        return getManagementAPI().users();
+    }
+
+    public RolesEntity roles() {
+        return getManagementAPI().roles();
+    }
+
+    boolean tokenIsExpired() {
+        return this.expiresAt==null || this.expiresAt.isBefore(Instant.now());
+    }
+
+    ManagementAPI getManagementAPI() {
+        if (tokenIsExpired()) {
+            updateAccessToken();
+        }
+        return this.managementAPI;
+    }
+
+    TokenRequest createRequestForToken() {
+        return this.authAPI.requestToken(this.audience);
+    }
+
+    private void updateAccessToken() {
+        log.info("### getNewAccessToken");
+        TokenRequest authRequest = createRequestForToken();
+        try {
+            // Machine2Machine tokens is paid after 1000 tokens each month
+            var token = authRequest.execute().getBody();
+            this.expiresAt = token.getExpiresAt().toInstant();
+            log.info("### token expires at {}", this.expiresAt);
+            this.managementAPI.setApiToken(token.getAccessToken());
+        } catch(Auth0Exception e) {
+            log.error("unable to get new access token for {}",audience,e);
+        }
+    }
+
+    private static Optional<String> getAudienceFromOidcTenantConfig(DefaultTenantConfigResolver defaultTenantConfigResolver) {
         List<String> audience = Optional.ofNullable(defaultTenantConfigResolver)
                 .map(DefaultTenantConfigResolver::getTenantConfigBean)
                 .map(TenantConfigBean::getDefaultTenant)
                 .map(TenantConfigContext::getOidcTenantConfig)
                 .map(OidcTenantConfig::getToken)
-                .map(OidcTenantConfig.Token::getAudience)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .orElse(new ArrayList<>());
-
-        if (audience.isEmpty())
-            throw new Auth0Exception("No audience is set to fetch a token.");
-
-        return audience.get(0);
-
+                .flatMap(OidcTenantConfig.Token::getAudience)
+                .orElseGet(Collections::emptyList);
+        return audience.stream().findFirst();
     }
 }
