@@ -61,21 +61,50 @@ public class SchoolModuleService {
     @Transactional
     public void save (@NonNull final UUID schoolId, @NonNull final Module module ) {
         SchoolEntity school = getSchoolEntity(schoolId);
-        ModuleEntity moduleEntity = getModuleEntity (module);
+        ModuleEntity moduleEntity = getModuleEntity (module.getId());
         Optional<SchoolModuleEntity> schoolModule = school.getModules().stream() //
                 .filter(s -> s.getModule().getId().equals(module.getId()))
                 .findFirst();
         if (schoolModule.isEmpty()) {
-            SchoolModuleEntity newSchoolModuleEntity = new SchoolModuleEntity();
-            newSchoolModuleEntity.setId(UUID.randomUUID());
-            newSchoolModuleEntity.setModule(moduleEntity);
-            newSchoolModuleEntity.setSchool(school);
+            SchoolModuleEntity newSchoolModuleEntity = mapToSchoolModuleEntity(school, moduleEntity);
             schoolModule = Optional.of(newSchoolModuleEntity);
         }
         schoolModuleRepository.persist(schoolModule.get());
     }
 
     /*
+     *   update modules of given guestTeacherId
+     */
+    @Transactional
+    public void save (@NonNull final UUID schoolId, @NonNull final List<String> modules ) {
+        SchoolEntity school = getSchoolEntity(schoolId);
+
+        // add module if missing
+        modules.stream()
+                .map(UUID::fromString)
+                .filter(moduleId -> ! isExistingModule(school, moduleId))
+                .map(this::getModuleEntity)
+                .map(moduleEntity -> mapToSchoolModuleEntity(school, moduleEntity))
+                .forEach(schoolModuleRepository::persist);
+
+        // remove if not in modules
+        school.getModules().stream()
+                .filter(entity -> ! modules.contains(entity.getModule().getId().toString()))
+                .forEach(schoolModuleRepository::delete);
+    }
+
+    /*
+     *   check if moduleId is existing module for the guest teacher
+     */
+    private boolean isExistingModule(SchoolEntity entity, UUID moduleId) {
+        return entity.getModules().stream()
+                .map(SchoolModuleEntity::getModule)
+                .map(ModuleEntity::getId)
+                .toList()
+                .contains(moduleId);
+    }
+
+        /*
      *   get schoolEntity and validate user
      */
     @NotNull
@@ -96,14 +125,20 @@ public class SchoolModuleService {
      *   get moduleEntity and validate
      */
     @NotNull
-    protected ModuleEntity getModuleEntity(@NotNull Module module) {
-        ModuleEntity moduleEntity = moduleRepository.findById(module.getId());
+    protected ModuleEntity getModuleEntity(@NotNull UUID moduleId) {
+        ModuleEntity moduleEntity = moduleRepository.findById(moduleId);
         if (moduleEntity == null ||
-                !moduleEntity.getName().equals(module.getName()) ||
                 moduleEntity.getDeleted()) {
             throw new NotFoundException("Module not found or not valid.");
         }
         return moduleEntity;
     }
 
+    private static SchoolModuleEntity mapToSchoolModuleEntity(SchoolEntity school, ModuleEntity moduleEntity) {
+        SchoolModuleEntity newSchoolModuleEntity = new SchoolModuleEntity();
+        newSchoolModuleEntity.setId(UUID.randomUUID());
+        newSchoolModuleEntity.setModule(moduleEntity);
+        newSchoolModuleEntity.setSchool(school);
+        return newSchoolModuleEntity;
+    }
 }

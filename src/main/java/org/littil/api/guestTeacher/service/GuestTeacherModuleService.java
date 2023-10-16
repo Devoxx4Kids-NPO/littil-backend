@@ -61,18 +61,47 @@ public class GuestTeacherModuleService {
     @Transactional
     public void save (@NonNull final UUID guestTeacherId, @NonNull final Module module ) {
         GuestTeacherEntity guestTeacher = getGuestTeacherEntity(guestTeacherId);
-        ModuleEntity moduleEntity = getModuleEntity (module);
+        ModuleEntity moduleEntity = getModuleEntity (module.getId());
         Optional<GuestTeacherModuleEntity> guestTeacherModule = guestTeacher.getModules().stream() //
                 .filter(s -> s.getModule().getId().equals(module.getId()))
                 .findFirst();
         if (guestTeacherModule.isEmpty()) {
-            GuestTeacherModuleEntity newGuestTeacherModuleEntity = new GuestTeacherModuleEntity();
-            newGuestTeacherModuleEntity.setId(UUID.randomUUID());
-            newGuestTeacherModuleEntity.setModule(moduleEntity);
-            newGuestTeacherModuleEntity.setGuestTeacher(guestTeacher);
+            GuestTeacherModuleEntity newGuestTeacherModuleEntity = mapToGuestTeacherModuleEntity(guestTeacher, moduleEntity);
             guestTeacherModule = Optional.of(newGuestTeacherModuleEntity);
         }
         guestTeacherModuleRepository.persist(guestTeacherModule.get());
+    }
+
+    /*
+     *   update modules of given guestTeacherId
+     */
+    @Transactional
+    public void save (@NonNull final UUID guestTeacherId, @NonNull final List<String> modules ) {
+        GuestTeacherEntity guestTeacher = getGuestTeacherEntity(guestTeacherId);
+
+        // add module if missing
+        modules.stream()
+                .map(UUID::fromString)
+                .filter(moduleId -> ! isExistingModule(guestTeacher, moduleId))
+                .map(this::getModuleEntity)
+                .map(moduleEntity -> mapToGuestTeacherModuleEntity(guestTeacher, moduleEntity))
+                .forEach(guestTeacherModuleRepository::persist);
+
+        // remove if not in modules
+        guestTeacher.getModules().stream()
+                .filter(entity -> ! modules.contains(entity.getModule().getId().toString()))
+                .forEach(guestTeacherModuleRepository::delete);
+    }
+
+    /*
+     *   check if moduleId is existing module for the guest teacher
+     */
+    private boolean isExistingModule(GuestTeacherEntity entity, UUID moduleId) {
+        return entity.getModules().stream()
+                .map(GuestTeacherModuleEntity::getModule)
+                .map(ModuleEntity::getId)
+                .toList()
+                .contains(moduleId);
     }
 
     /*
@@ -96,14 +125,20 @@ public class GuestTeacherModuleService {
      *   get moduleEntity and validate
      */
     @NotNull
-    protected ModuleEntity getModuleEntity(@NotNull Module module) {
-        ModuleEntity moduleEntity = moduleRepository.findById(module.getId());
+    protected ModuleEntity getModuleEntity(@NotNull UUID moduleId) {
+        ModuleEntity moduleEntity = moduleRepository.findById(moduleId);
         if (moduleEntity == null ||
-                !moduleEntity.getName().equals(module.getName()) ||
                 moduleEntity.getDeleted()) {
             throw new NotFoundException("Module not found or not valid.");
         }
         return moduleEntity;
     }
 
+    private static GuestTeacherModuleEntity mapToGuestTeacherModuleEntity(GuestTeacherEntity guestTeacher, ModuleEntity moduleEntity) {
+        GuestTeacherModuleEntity entity = new GuestTeacherModuleEntity();
+        entity.setId(UUID.randomUUID());
+        entity.setModule(moduleEntity);
+        entity.setGuestTeacher(guestTeacher);
+        return entity;
+    }
 }
