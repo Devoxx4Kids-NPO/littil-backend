@@ -33,12 +33,12 @@ public class ApplicationLifeCycle {
     // use locations from public places like city town hall, police station, railway station, etc.
     private static final Map<String, Location> DEV_USERS = Map.of(
             "info@littil.org", new Location(), //
-            "testdocent1@littil.org", createLocationForDevUser("De Passage 100", "1101 AX"), //
-            "testdocent2@littil.org", createLocationForDevUser("Colosseum 65", "7521 PP"), //
-            "testdocent3@littil.org", createLocationForDevUser("Mosae Forum 10",  "6211 DW"), //
-            "testschool1@littil.org", createLocationForDevUser("Prinses Irenepad 1", "2595 BG"), //
-            "testschool2@littil.org", createLocationForDevUser("Marco Pololaan 6", "3526 GJ"), //
-            "testschool3@littil.org", createLocationForDevUser("Sint Jansstraat 4", "9712 JN") //
+            "testdocent1@littil.org", createLocationForDevUser("De Passage 100", "1101AX"), //
+            "testdocent2@littil.org", createLocationForDevUser("Colosseum 65", "7521PP"), //
+            "testdocent3@littil.org", createLocationForDevUser("Mosae Forum 10",  "6211DW"), //
+            "testschool1@littil.org", createLocationForDevUser("Prinses Irenepad 1", "2595BG"), //
+            "testschool2@littil.org", createLocationForDevUser("Marco Pololaan 6", "3526GJ"), //
+            "testschool3@littil.org", createLocationForDevUser("Sint Jansstraat 4", "9712JN") //
     );
 
 
