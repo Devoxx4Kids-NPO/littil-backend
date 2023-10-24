@@ -1,6 +1,5 @@
 package org.littil.api;
 
-import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.users.User;
@@ -8,6 +7,7 @@ import io.quarkus.runtime.StartupEvent;
 import io.quarkus.runtime.configuration.ProfileManager;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.littil.api.auth.provider.auth0.Auth0ManagementAPI;
 import org.littil.api.auth.service.AuthorizationType;
 import org.littil.api.guestTeacher.service.GuestTeacherService;
 import org.littil.api.location.Location;
@@ -33,12 +33,12 @@ public class ApplicationLifeCycle {
     // use locations from public places like city town hall, police station, railway station, etc.
     private static final Map<String, Location> DEV_USERS = Map.of(
             "info@littil.org", new Location(), //
-            "testdocent1@littil.org", createLocationForDevUser("De Passage 100", "1101 AX"), //
-            "testdocent2@littil.org", createLocationForDevUser("Colosseum 65", "7521 PP"), //
-            "testdocent3@littil.org", createLocationForDevUser("Mosae Forum 10",  "6211 DW"), //
-            "testschool1@littil.org", createLocationForDevUser("Prinses Irenepad 1", "2595 BG"), //
-            "testschool2@littil.org", createLocationForDevUser("Marco Pololaan 6", "3526 GJ"), //
-            "testschool3@littil.org", createLocationForDevUser("Sint Jansstraat 4", "9712 JN") //
+            "testdocent1@littil.org", createLocationForDevUser("De Passage 100", "1101AX"), //
+            "testdocent2@littil.org", createLocationForDevUser("Colosseum 65", "7521PP"), //
+            "testdocent3@littil.org", createLocationForDevUser("Mosae Forum 10",  "6211DW"), //
+            "testschool1@littil.org", createLocationForDevUser("Prinses Irenepad 1", "2595BG"), //
+            "testschool2@littil.org", createLocationForDevUser("Marco Pololaan 6", "3526GJ"), //
+            "testschool3@littil.org", createLocationForDevUser("Sint Jansstraat 4", "9712JN") //
     );
 
 
@@ -64,7 +64,7 @@ public class ApplicationLifeCycle {
     GuestTeacherService guestTeacherService;
 
     @Inject
-    ManagementAPI managementAPI;
+    Auth0ManagementAPI auth0api;
 
     void onStart(@Observes StartupEvent ev) {
         if (this.insertDevData && ProfileManager.getLaunchMode().isDevOrTest()) {
@@ -92,7 +92,7 @@ public class ApplicationLifeCycle {
 
     private Stream<User> findAuth0User(String email) {
         try {
-            return this.managementAPI
+            return auth0api
                     .users().listByEmail(email,new UserFilter())
                     .execute()
                     .getBody()

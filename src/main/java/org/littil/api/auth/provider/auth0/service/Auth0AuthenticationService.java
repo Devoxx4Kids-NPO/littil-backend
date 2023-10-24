@@ -1,6 +1,5 @@
 package org.littil.api.auth.provider.auth0.service;
 
-import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.APIException;
 import com.auth0.exception.Auth0Exception;
@@ -10,6 +9,7 @@ import com.auth0.json.mgmt.users.UsersPage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.littil.api.auth.provider.auth0.Auth0ManagementAPI;
 import org.littil.api.auth.provider.auth0.exception.Auth0AuthorizationException;
 import org.littil.api.auth.provider.auth0.exception.Auth0DuplicateUserException;
 import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
@@ -33,9 +33,9 @@ import java.util.UUID;
 public class Auth0AuthenticationService implements AuthenticationService {
 
     private final Auth0UserMapper auth0UserMapper;
-    ManagementAPI managementAPI;
-    Auth0RoleService roleService;
-    UserService userService;
+    private final Auth0ManagementAPI auth0api;
+    private final Auth0RoleService roleService;
+    private final UserService userService;
 
     @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
     String authorizationsClaimName;
@@ -51,7 +51,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public Optional<AuthUser> getUserById(String userId) {
         try {
-            User user = managementAPI.users().get(userId, null).execute().getBody();
+            User user = auth0api.users().get(userId, null).execute().getBody();
             AuthUser authUser = getAuthUser(user);
             return Optional.of(authUser);
         } catch (APIException exception) {
@@ -67,12 +67,11 @@ public class Auth0AuthenticationService implements AuthenticationService {
     @Override
     public AuthUser createUser(AuthUser authUser, String tempPassword) {
         try {
-            UsersPage usersForEmail = managementAPI.users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute().getBody();
-
+            UsersPage usersForEmail = auth0api.users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute().getBody();
             if (!usersForEmail.getItems().isEmpty()) {
                 throw new Auth0DuplicateUserException("User already exists for" + authUser.getEmailAddress());
             }
-            User user = managementAPI.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute().getBody();
+            User user = auth0api.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute().getBody();
             return getAuthUser(user);
         } catch (Auth0Exception exception) {
             throw new Auth0UserException("Could not create user for email " + authUser.getEmailAddress(), exception);
@@ -80,7 +79,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private AuthUser getAuthUser(User user) throws Auth0Exception {
-        List<Role> roles = managementAPI.users().listRoles(user.getId(), null).execute().getBody().getItems();
+        List<Role> roles = auth0api.users().listRoles(user.getId(), null).execute().getBody().getItems();
         return auth0UserMapper.toDomain(user, roles);
     }
 
@@ -88,7 +87,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     public void deleteUser(UUID littilUserId) {
         String userId = getAuth0IdFor(littilUserId);
         try {
-            managementAPI.users().delete(userId).execute();
+            auth0api.users().delete(userId).execute();
         } catch (Auth0Exception exception) {
             throw new Auth0UserException("Could not remove user for id " + userId, exception);
         }
@@ -122,17 +121,16 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
         String roleId = roleService.getIdForRoleName(type.name().toLowerCase());
 
-
         // todo can we do this neater? dont like the multiline
         switch (action) {
             case ADD -> {
-                managementAPI.roles().assignUsers(roleId, List.of(userId)).execute(); // list of users is added, this is not "current state"
+                auth0api.roles().assignUsers(roleId, List.of(userId)).execute(); // list of users is added, this is not "current state"
                 if (!authorizationTypeAuthorizations.contains(resourceId.toString())) {
                     authorizationTypeAuthorizations.add(resourceId.toString());
                 }
             }
             case REMOVE -> {
-                managementAPI.users().removeRoles(userId, List.of(roleId)).execute();
+                auth0api.users().removeRoles(userId, List.of(roleId)).execute();
                 if (!authorizationTypeAuthorizations.contains(resourceId.toString())) {
                     log.info(String.format("No need to remove authorisation for type %s with id %s because this user does not have any authorizations", type.getTokenValue(), resourceId));
                     return;
@@ -147,7 +145,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
 
         // we need to create a new user, to prevent an error of editing additional properties.
         User user = getUserWithNewAppMetaData(appMetadata);
-        managementAPI.users().update(userId, user).execute();
+        auth0api.users().update(userId, user).execute();
     }
 
     private Map<String, Object> getAppMetadata(String userId) throws Auth0Exception {
@@ -163,7 +161,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     private User getUserForId(String userId) throws Auth0Exception {
-        return managementAPI.users().get(userId, null).execute().getBody();
+        return auth0api.users().get(userId, null).execute().getBody();
     }
 
     enum AuthorizationAction {

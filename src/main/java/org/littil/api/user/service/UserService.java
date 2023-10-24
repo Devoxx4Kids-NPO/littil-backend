@@ -10,12 +10,14 @@ import org.littil.api.auth.service.PasswordService;
 import org.littil.api.auth.service.ProviderService;
 import org.littil.api.exception.EntityAlreadyExistsException;
 import org.littil.api.mail.MailService;
+import org.littil.api.metrics.LittilMetrics;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -74,13 +76,16 @@ public class UserService {
         String tempPassword = passwordService.generate();
         AuthUser createdUser = authenticationService.createUser(mapper.toAuthUser(user), tempPassword);
         mapper.updateEntityFromAuthUser(createdUser, userEntity);
+        log.info(LittilMetrics.Registration.userCreatedInOidc());
 
         // update the user entity with the provider id
         repository.persist(userEntity);
         mapper.updateDomainFromEntity(userEntity, user);
+        log.info(LittilMetrics.Registration.userPersisted());
 
         // send welcome mail with credentials
         mailService.sendWelcomeMail(user, tempPassword);
+        log.info(LittilMetrics.Registration.mailSent());
 
         return user;
     }
