@@ -62,14 +62,11 @@ public class GuestTeacherModuleService {
     public void save (@NonNull final UUID guestTeacherId, @NonNull final Module module ) {
         GuestTeacherEntity guestTeacher = getGuestTeacherEntity(guestTeacherId);
         ModuleEntity moduleEntity = getModuleEntity (module.getId());
-        Optional<GuestTeacherModuleEntity> guestTeacherModule = guestTeacher.getModules().stream() //
+        GuestTeacherModuleEntity guestTeacherModule = guestTeacher.getModules().stream() //
                 .filter(s -> s.getModule().getId().equals(module.getId()))
-                .findFirst();
-        if (guestTeacherModule.isEmpty()) {
-            GuestTeacherModuleEntity newGuestTeacherModuleEntity = mapToGuestTeacherModuleEntity(guestTeacher, moduleEntity);
-            guestTeacherModule = Optional.of(newGuestTeacherModuleEntity);
-        }
-        guestTeacherModuleRepository.persist(guestTeacherModule.get());
+                .findFirst()
+                .orElseGet(() -> mapToGuestTeacherModuleEntity(guestTeacher, moduleEntity));
+        guestTeacherModuleRepository.persist(guestTeacherModule);
     }
 
     /*

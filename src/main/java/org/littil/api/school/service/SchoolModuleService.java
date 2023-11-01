@@ -62,14 +62,11 @@ public class SchoolModuleService {
     public void save (@NonNull final UUID schoolId, @NonNull final Module module ) {
         SchoolEntity school = getSchoolEntity(schoolId);
         ModuleEntity moduleEntity = getModuleEntity (module.getId());
-        Optional<SchoolModuleEntity> schoolModule = school.getModules().stream() //
+        SchoolModuleEntity schoolModule = school.getModules().stream() //
                 .filter(s -> s.getModule().getId().equals(module.getId()))
-                .findFirst();
-        if (schoolModule.isEmpty()) {
-            SchoolModuleEntity newSchoolModuleEntity = mapToSchoolModuleEntity(school, moduleEntity);
-            schoolModule = Optional.of(newSchoolModuleEntity);
-        }
-        schoolModuleRepository.persist(schoolModule.get());
+                .findFirst()
+                .orElseGet(() -> mapToSchoolModuleEntity(school, moduleEntity)) ;
+        schoolModuleRepository.persist(schoolModule);
     }
 
     /*
