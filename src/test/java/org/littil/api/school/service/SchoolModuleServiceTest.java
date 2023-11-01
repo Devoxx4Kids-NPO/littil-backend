@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -53,7 +53,7 @@ public class SchoolModuleServiceTest {
         UUID schoolId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         SchoolEntity school = createSchoolEntity(schoolId, userId);
-        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school,  false);
+        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school, false);
         school.setModules(List.of(schoolModuleEntity));
         UUID expectedModuleId = schoolModuleEntity.getModule().getId();
         String expectedModuleName = schoolModuleEntity.getModule().getName();
@@ -61,7 +61,7 @@ public class SchoolModuleServiceTest {
         when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
         when(tokenHelper.getCurrentUserId()).thenReturn(userId);
 
-        List<Module>  modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
+        List<Module> modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
 
         assertThat(modules).isNotEmpty();
         assertThat(modules.size()).isEqualTo(1);
@@ -100,12 +100,12 @@ public class SchoolModuleServiceTest {
         UUID schoolId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         SchoolEntity school = createSchoolEntity(schoolId, userId);
-        school.setModules(List.of(createSchoolModuleEntities(school,  true)));
+        school.setModules(List.of(createSchoolModuleEntities(school, true)));
 
         when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
         when(tokenHelper.getCurrentUserId()).thenReturn(userId);
 
-        List<Module>  modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
+        List<Module> modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
 
         assertThat(modules).isEmpty();
     }
@@ -121,7 +121,7 @@ public class SchoolModuleServiceTest {
         when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
         when(tokenHelper.getCurrentUserId()).thenReturn(userId);
 
-        List<Module>  modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
+        List<Module> modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
 
         assertThat(modules).isEmpty();
     }
@@ -136,23 +136,23 @@ public class SchoolModuleServiceTest {
         when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
         when(tokenHelper.getCurrentUserId()).thenReturn(userId);
 
-        List<Module>  modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
+        List<Module> modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
 
         assertThat(modules).isEmpty();
     }
 
     @Test
-    void givenGetSchoolModulesBySchoolId_forUnknownSchoolId_thenShouldThrowNotFoundException () {
+    void givenGetSchoolModulesBySchoolId_forUnknownSchoolId_thenShouldThrowNotFoundException() {
         UUID schoolId = UUID.randomUUID();
         assertThrows(NotFoundException.class, () -> schoolModuleService.getSchoolModulesBySchoolId(schoolId));
     }
 
     @Test
-    void givenDeleteSchoolModule_thenShouldDeleteSchoolModule () {
+    void givenDeleteSchoolModule_thenShouldDeleteSchoolModule() {
         UUID schoolId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         SchoolEntity school = createSchoolEntity(schoolId, userId);
-        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school,  false);
+        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school, false);
         school.setModules(List.of(schoolModuleEntity));
         UUID moduleId = schoolModuleEntity.getModule().getId();
 
@@ -164,7 +164,7 @@ public class SchoolModuleServiceTest {
     }
 
     @Test
-    void givenDeleteSchoolModule_forUnknownSchoolId_thenShouldThrowNotFoundException () {
+    void givenDeleteSchoolModule_forUnknownSchoolId_thenShouldThrowNotFoundException() {
         UUID schoolId = UUID.randomUUID();
         UUID moduleId = UUID.randomUUID();
         assertThrows(NotFoundException.class, () -> schoolModuleService.deleteSchoolModule(schoolId, moduleId));
@@ -172,7 +172,7 @@ public class SchoolModuleServiceTest {
     }
 
     @Test
-    void givenDeleteSchoolModule_forUnknownSchoolModuleId_thenShouldThrowNotFoundException () {
+    void givenDeleteSchoolModule_forUnknownSchoolModuleId_thenShouldThrowNotFoundException() {
         UUID schoolId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         UUID moduleId = UUID.randomUUID();
@@ -213,7 +213,7 @@ public class SchoolModuleServiceTest {
         UUID schoolId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
         SchoolEntity school = createSchoolEntity(schoolId, userId);
-        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school,  false);
+        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school, false);
         school.setModules(List.of(schoolModuleEntity));
         UUID moduleId = schoolModuleEntity.getModule().getId();
         String moduleName = schoolModuleEntity.getModule().getName();
@@ -227,28 +227,7 @@ public class SchoolModuleServiceTest {
         Mockito.verify(schoolModuleRepository, never()).persist(any(SchoolModuleEntity.class));
     }
 
-    @Test
-    void givenSaveSchoolModule_forModuleWithWrongName_thenShouldThrowNotFoundException() {
-        UUID schoolId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        SchoolEntity school = createSchoolEntity(schoolId, userId);
-        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school,  false);
-        school.setModules(List.of(schoolModuleEntity));
-        UUID moduleId = schoolModuleEntity.getModule().getId();
-        String moduleName = schoolModuleEntity.getModule().getName();
-        Module module = createModule(moduleId, moduleName);
-        ModuleEntity repositoryModuleEntity = schoolModuleEntity.getModule();
-        repositoryModuleEntity.setName(RandomStringUtils.randomAlphanumeric(10));
-
-        when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
-        when(moduleRepository.findById(any(UUID.class))).thenReturn(repositoryModuleEntity);
-        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
-
-        assertThrows(NotFoundException.class, () -> schoolModuleService.save(schoolId, module));
-        Mockito.verify(schoolModuleRepository, never()).persist(any(SchoolModuleEntity.class));
-    }
-
-    @Test
+     @Test
     void givenSaveSchoolModule_forDeletedModule_thenShouldThrowNotFoundException() {
         UUID schoolId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -258,7 +237,7 @@ public class SchoolModuleServiceTest {
         UUID moduleId = schoolModuleEntity.getModule().getId();
         String moduleName = schoolModuleEntity.getModule().getName();
         Module module = createModule(moduleId, moduleName);
-        ModuleEntity repositoryModuleEntity = createSchoolModuleEntities(school,  true).getModule();
+        ModuleEntity repositoryModuleEntity = createSchoolModuleEntities(school, true).getModule();
 
         when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
         when(moduleRepository.findById(any(UUID.class))).thenReturn(repositoryModuleEntity);
@@ -269,12 +248,74 @@ public class SchoolModuleServiceTest {
     }
 
     @Test
-    void givenSaveSchoolModule_forUnknownSchoolId_thenShouldThrowNotFoundException () {
+    void givenSaveSchoolModule_forUnknownSchoolId_thenShouldThrowNotFoundException() {
         UUID schoolId = UUID.randomUUID();
         String moduleName = RandomStringUtils.randomAlphanumeric(10);
         Module module = createModule(UUID.randomUUID(), moduleName);
         assertThrows(NotFoundException.class, () -> schoolModuleService.save(schoolId, module));
         Mockito.verify(schoolModuleRepository, never()).persist(any(SchoolModuleEntity.class));
+    }
+
+    @Test
+    void givenSaveSchoolModules_withNewModule_thenShouldSave() {
+        UUID schoolId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        SchoolEntity school = createSchoolEntity(schoolId, userId);
+        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school, false);
+        UUID moduleId = schoolModuleEntity.getModule().getId();
+
+        assertThat(school.getModules()).isNullOrEmpty();
+
+        when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
+        when(moduleRepository.findById(any(UUID.class))).thenReturn(schoolModuleEntity.getModule());
+        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
+
+        schoolModuleService.save(schoolId, List.of(moduleId.toString()));
+
+        ArgumentCaptor<SchoolModuleEntity> captor = ArgumentCaptor.forClass(SchoolModuleEntity.class);
+        Mockito.verify(schoolModuleRepository, times(1)).persist(captor.capture());
+        SchoolModuleEntity entity = captor.getValue();
+        assertThat(entity.getModule().getDeleted()).isFalse();
+        Mockito.verify(schoolModuleRepository, times(0)).delete(any());
+    }
+
+    @Test
+    void givenSaveSchoolModules_withExistingModule_thenShouldDoNothing() {
+        UUID schoolId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        SchoolEntity school = createSchoolEntity(schoolId, userId);
+        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school, false);
+        UUID moduleId = schoolModuleEntity.getModule().getId();
+
+        school.setModules(List.of(schoolModuleEntity));
+
+        when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
+        when(moduleRepository.findById(any(UUID.class))).thenReturn(schoolModuleEntity.getModule());
+        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
+
+        schoolModuleService.save(schoolId, List.of(moduleId.toString()));
+
+        Mockito.verify(schoolModuleRepository, times(0)).persist(any(SchoolModuleEntity.class));
+        Mockito.verify(schoolModuleRepository, times(0)).delete(any());
+    }
+
+    @Test
+    void givenSaveSchoolModules_withEmptyList_thenShouldDeleteModule() {
+        UUID schoolId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        SchoolEntity school = createSchoolEntity(schoolId, userId);
+        SchoolModuleEntity schoolModuleEntity = createSchoolModuleEntities(school, false);
+
+        school.setModules(List.of(schoolModuleEntity));
+
+        when(schoolRepository.findByIdOptional(schoolId)).thenReturn(Optional.of(school));
+        when(moduleRepository.findById(any(UUID.class))).thenReturn(schoolModuleEntity.getModule());
+        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
+
+        schoolModuleService.save(schoolId, new ArrayList<>());
+
+        Mockito.verify(schoolModuleRepository, times(0)).persist(any(SchoolModuleEntity.class));
+        Mockito.verify(schoolModuleRepository, times(1)).delete(any());
     }
 
     private SchoolEntity createSchoolEntity(UUID schoolId, UUID UserId) {

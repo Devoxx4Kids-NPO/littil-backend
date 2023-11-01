@@ -1,4 +1,4 @@
-package org.littil.api.guestTeacher.api;
+package org.littil.api.school.api;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.common.http.TestHTTPEndpoint;
@@ -15,17 +15,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
-import org.littil.api.auth.authz.GuestTeacherSecurityInterceptor;
+import org.littil.api.auth.authz.SchoolSecurityInterceptor;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.module.service.Module;
 import org.littil.api.module.service.ModuleService;
-import org.littil.api.guestTeacher.service.GuestTeacher;
-import org.littil.api.guestTeacher.service.GuestTeacherService;
+import org.littil.api.school.service.School;
+import org.littil.api.school.service.SchoolService;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 
 import jakarta.inject.Inject;
+
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,15 +37,15 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 
 @QuarkusTest
-@TestHTTPEndpoint(GuestTeacherModuleResource.class)
+@TestHTTPEndpoint(SchoolModuleV1Resource.class)
 @QuarkusTestResource(APIManagementMock.class)
-public class GuestTeacherModuleResourceTest
+public class SchoolModuleV1ResourceTest
 {
 
     @InjectSpy
     UserService userService;
     @Inject
-    GuestTeacherService guestTeacherService;
+    SchoolService schoolService;
     @Inject
     ModuleService moduleService;
     @InjectMock
@@ -53,18 +54,18 @@ public class GuestTeacherModuleResourceTest
     AuthenticationService authenticationService;
     @InjectMock
     @MockitoConfig(convertScopes=true)
-    GuestTeacherSecurityInterceptor guestTeacherSecurityInterceptor;
+    SchoolSecurityInterceptor schoolSecurityInterceptor;
 
     @BeforeEach
     void setup() throws IOException {
-        doNothing().when(guestTeacherSecurityInterceptor).filter(any());
+        doNothing().when(schoolSecurityInterceptor).filter(any());
     }
     @Test
-    void givenFindGuestTeacherModulesByGuestTeacherId_Unauthorized_thenShouldReturnForbidden() {
-        UUID guestTeacherId = UUID.randomUUID();
+    void givenFindSchoolModulesBySchoolId_Unauthorized_thenShouldReturnForbidden() {
+        UUID schoolId = UUID.randomUUID();
         given()
                 .when()
-                .get("/{id}/modules", guestTeacherId)
+                .get("/{id}/modules", schoolId)
                 .then() //
                 .statusCode(401);
     }
@@ -73,11 +74,11 @@ public class GuestTeacherModuleResourceTest
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenFindGuestTeacherModulesByGuestTeacherId_forUnknownGuestTeacherId_thenShouldReturnNotFound() {
-        UUID guestTeacherId = UUID.randomUUID();
+    void givenFindSchoolModulesBySchoolId_forUnknownSchoolId_thenShouldReturnNotFound() {
+        UUID schoolId = UUID.randomUUID();
         given()
                 .when()
-                .get("/{id}/modules", guestTeacherId)
+                .get("/{id}/modules", schoolId)
                 .then()
                 .statusCode(404);
     }
@@ -86,21 +87,20 @@ public class GuestTeacherModuleResourceTest
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenFindGuestTeacherModules_thenShouldReturnGuestTeacherModules() {
-        GuestTeacher guestTeacher  = createAndSaveGuestTeacher();
+    void givenFindSchoolModules_thenShouldReturnSchoolModules() {
+        School school  = createAndSaveSchool();
         given()
                 .when()
-                .get("/{id}/modules", guestTeacher.getId())
+                .get("/{id}/modules", school.getId())
                 .then()
                 .statusCode(200);
     }
 
     @Test
-    void givenDeleteGuestTeacherModule_Unauthorized_thenShouldReturnForbidden() {
+    void givenDeleteSchoolModule_Unauthorized_thenShouldReturnForbidden() {
         given()
                 .contentType(ContentType.JSON)
                 .delete("/{id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
-                // guestTeacher.getId(), module.getId())
                 .then()
                 .statusCode(401);
     }
@@ -109,10 +109,10 @@ public class GuestTeacherModuleResourceTest
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenDeleteGuestTeacherModule_forUnkwnownGuestTeacherId_thenShouldReturnNotFound() {
+    void givenDeleteSchoolModule_forUnkwnownSchoolId_thenShouldReturnNotFound() {
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
+                .delete("/{school_id}/modules/{module_id}", UUID.randomUUID(), UUID.randomUUID())
                 .then()
                 .statusCode(404);
     }
@@ -121,12 +121,12 @@ public class GuestTeacherModuleResourceTest
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenDeleteGuestTeacherModule_forUnknownGuestTeacherModule_thenShouldReturnForbidden()  {
-        GuestTeacher guestTeacher  = createAndSaveGuestTeacher();
+    void givenDeleteSchoolModule_forUnknownSchoolModule_thenShouldReturnForbidden()  {
+        School school  = createAndSaveSchool();
 
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{id}/modules/{module_id}", guestTeacher.getId(), UUID.randomUUID())
+                .delete("/{id}/modules/{module_id}", school.getId(), UUID.randomUUID())
                 .then()
                 .statusCode(404);
     }
@@ -135,27 +135,27 @@ public class GuestTeacherModuleResourceTest
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenDeleteGuestTeacherModule_thenShouldDeleteGuestTeacherModule() {
-        GuestTeacher guestTeacher  = createAndSaveGuestTeacher();
+    void givenDeleteSchoolModule_thenShouldDeleteSchoolModule() {
+        School school  = createAndSaveSchool();
         Module module = moduleService.findAll().get(0);
 
         given()
                 .contentType(ContentType.JSON)
                 .body(module)
-                .post("/{id}/modules", guestTeacher.getId())
+                .post("/{id}/modules", school.getId())
                 .then()
                 .statusCode(201);
 
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{id}/modules/{module_id}", guestTeacher.getId(), module.getId())
+                .delete("/{school_id}/modules/{module_id}", school.getId(), module.getId())
                 .then()
                 .statusCode(200);
     }
 
     @Test
-    void givenSaveGuestTeacherModule_Unauthorized_thenShouldReturnForbidden() {
-        GuestTeacher guestTeacher  = createAndSaveGuestTeacher();
+    void givenSaveSchoolModule_Unauthorized_thenShouldReturnForbidden() {
+        School school  = createAndSaveSchool();
         Module module = moduleService.findAll().get(0);
 
         doReturn(true).when(tokenHelper).hasUserAuthorizations();
@@ -163,7 +163,7 @@ public class GuestTeacherModuleResourceTest
         given()
                 .contentType(ContentType.JSON)
                 .body(module)
-                .post("/{id}/modules", guestTeacher.getId())
+                .post("/{id}/modules", school.getId())
                 .then()
                 .statusCode(401);
     }
@@ -172,8 +172,8 @@ public class GuestTeacherModuleResourceTest
     @TestSecurity(user = "littil", roles = "viewer")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenSaveGuestTeacherModule_thenShouldReturnGuestTeacherModules() {
-        GuestTeacher guestTeacher  = createAndSaveGuestTeacher();
+    void givenSaveSchoolModule_thenShouldReturnSchoolModules() {
+        School school  = createAndSaveSchool();
         Module module = moduleService.findAll().get(0);
 
         doReturn(true).when(tokenHelper).hasUserAuthorizations();
@@ -181,32 +181,34 @@ public class GuestTeacherModuleResourceTest
         given()
                 .contentType(ContentType.JSON)
                 .body(module)
-                .post("/{id}/modules", guestTeacher.getId())
+                .post("/{id}/modules", school.getId())
                 .then()
                 .statusCode(201);
     }
 
-    private GuestTeacher createAndSaveGuestTeacher()  {
+    private School createAndSaveSchool()  {
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
         doReturn(userId).when(tokenHelper).getCurrentUserId();
         User createdUser = createAndSaveUser(userId);
         doReturn(Optional.ofNullable(createdUser)).when(userService).getUserById(any(UUID.class));
         doNothing().when(authenticationService).addAuthorization(any(), any(), any());
-        GuestTeacher guestTeacher = getDefaultGuestTeacher();
-        return guestTeacherService.saveOrUpdate(guestTeacher, userId);
+        School school = getDefaultSchool();
+        return schoolService.saveOrUpdate(school, userId);
     }
 
     private User createAndSaveUser(UUID userId) {
-        Optional<User> user = userService.getUserById(userId);
-        return user.orElseGet(() -> userService.createUser(TestFactory.createUser(userId)));
+        return userService.getUserById(userId)
+                .orElseGet(() -> userService.createUser(TestFactory.createUser(userId)));
+
     }
 
-    private GuestTeacher getDefaultGuestTeacher() {
-        GuestTeacher guestTeacher = new GuestTeacher();
-        guestTeacher.setAddress(RandomStringUtils.randomAlphabetic(10));
-        guestTeacher.setPostalCode(RandomStringUtils.randomAlphabetic(6));
-        guestTeacher.setFirstName(RandomStringUtils.randomAlphabetic(10));
-        guestTeacher.setSurname(RandomStringUtils.randomAlphabetic(10));
-        return guestTeacher;
+    private School getDefaultSchool() {
+        School school = new School();
+        school.setName(RandomStringUtils.randomAlphabetic(10));
+        school.setAddress(RandomStringUtils.randomAlphabetic(10));
+        school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
+        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        school.setSurname(RandomStringUtils.randomAlphabetic(10));
+        return school;
     }
 }
