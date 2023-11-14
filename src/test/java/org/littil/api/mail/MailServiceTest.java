@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.littil.TestFactory;
+import org.littil.api.feedback.api.FeedbackPostResource;
 import org.littil.api.user.service.User;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,5 +70,24 @@ class MailServiceTest {
         assertEquals(2, mailbox.getTotalMessagesSent());
         assertEquals(1, mailbox.getMailMessagesSentTo("contact-mail@littil.org").size());
         assertEquals(1, mailbox.getMailMessagesSentTo("cc@littil.org").size());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "issue,something is wrong,feedback@littil.org",
+            "idea,just some idea,feedback@littil.org"
+    })
+    void testSendFeedbackMail(String feedbackType, String message, String email) {
+        // sut
+        final var feedback = new FeedbackPostResource();
+        feedback.setFeedbackType(feedbackType);
+        feedback.setMessage(message);
+        mailService.sendFeedbackMail(feedback, email);
+
+        // verify
+        MailMessage sent = mailbox.getMailMessagesSentTo(email).stream().findFirst().get();
+        assertEquals("Feedback ontvangen", sent.getSubject());
+        assertTrue(sent.getText().contains(feedbackType));
+        assertTrue(sent.getText().contains(message));
     }
 }
