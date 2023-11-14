@@ -12,6 +12,8 @@ import org.littil.TestFactory;
 import org.littil.api.feedback.api.FeedbackPostResource;
 import org.littil.api.user.service.User;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -82,7 +84,7 @@ class MailServiceTest {
         final var feedback = new FeedbackPostResource();
         feedback.setFeedbackType(feedbackType);
         feedback.setMessage(message);
-        mailService.sendFeedbackMail(feedback, email);
+        mailService.sendFeedbackMail(feedback, Optional.of(email));
 
         // verify
         MailMessage sent = mailbox.getMailMessagesSentTo(email).stream().findFirst().get();
@@ -90,4 +92,15 @@ class MailServiceTest {
         assertTrue(sent.getText().contains(feedbackType));
         assertTrue(sent.getText().contains(message));
     }
+
+    @Test
+    void testSendFeedbackMailWithFeedbackEmailOptionalEmpty() {
+        // sut
+        final var feedback = new FeedbackPostResource();
+        mailService.sendFeedbackMail(feedback, Optional.empty());
+
+        // verify
+        assertEquals(0 , mailbox.getTotalMessagesSent());
+    }
+
 }

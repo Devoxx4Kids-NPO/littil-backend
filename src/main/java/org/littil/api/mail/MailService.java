@@ -7,6 +7,8 @@ import org.littil.api.feedback.api.FeedbackPostResource;
 import org.littil.api.user.service.User;
 
 import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -35,9 +37,12 @@ public class MailService {
         send(template);
     }
 
-    public void sendFeedbackMail(FeedbackPostResource feedback, String feedbackEmail) {
+    public void sendFeedbackMail(FeedbackPostResource feedback, Optional<String> feedbackEmail) {
+        if (feedbackEmail.isEmpty()) {
+            return;
+        }
         var template = Templates.feedback(feedback.getFeedbackType(), feedback.getMessage())
-                .to(feedbackEmail)
+                .to(feedbackEmail.get())
                 .subject("Feedback ontvangen");
         send(template);
     }

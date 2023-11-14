@@ -14,6 +14,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.mail.MailService;
 
+import java.util.Optional;
+
 @Path("/api/v1/feedback")
 @RequestScoped
 @Consumes(MediaType.APPLICATION_JSON)
@@ -24,7 +26,7 @@ public class FeedbackResource {
     MailService mailService;
     @Inject
     @ConfigProperty(name = "org.littil.feedback.email")
-    String feedbackEmail;
+    Optional<String> feedbackEmail;
 
     @POST
     @APIResponse(

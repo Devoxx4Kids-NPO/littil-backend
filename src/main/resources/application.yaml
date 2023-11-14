@@ -16,8 +16,6 @@ org:
         client:
           id: ${M2M_CLIENT_ID:m2m_client_id}
           secret: ${M2M_CLIENT_SECRET:m2m_client_secret}
-    feedback:
-      email: info@littil.org
 quarkus:
   live-reload:
     instrumentation: true
@@ -70,6 +68,8 @@ quarkus:
 "%dev":
   org:
     littil:
+      feedback:
+        email: "feedback@littil.org"
       devservices:
         devdata: true
   quarkus:
@@ -124,6 +124,8 @@ quarkus:
     littil:
       contact:
         ccEmail: "info@littil.org"
+    feedback:
+      email: "info@littil.org"
   quarkus:
     banner:
       enabled: false
