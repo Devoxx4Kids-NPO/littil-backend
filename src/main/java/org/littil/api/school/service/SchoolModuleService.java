@@ -45,30 +45,6 @@ public class SchoolModuleService {
                 .toList();
     }
 
-    @Transactional
-    public void deleteSchoolModule(@NonNull final UUID schoolId, UUID moduleId) {
-        SchoolEntity school = getSchoolEntity(schoolId);
-        Optional<SchoolModuleEntity> schoolModule = school.getModules().stream() //
-                .filter(s -> s.getModule().getId().equals(moduleId))
-                .findFirst();
-        if (schoolModule.isEmpty()) {
-            throw new NotFoundException("Module not found.");
-        }
-        SchoolModuleEntity entity = schoolModule.get();
-        schoolModuleRepository.delete(entity);
-    }
-
-    @Transactional
-    public void save (@NonNull final UUID schoolId, @NonNull final Module module ) {
-        SchoolEntity school = getSchoolEntity(schoolId);
-        ModuleEntity moduleEntity = getModuleEntity (module.getId());
-        SchoolModuleEntity schoolModule = school.getModules().stream() //
-                .filter(s -> s.getModule().getId().equals(module.getId()))
-                .findFirst()
-                .orElseGet(() -> mapToSchoolModuleEntity(school, moduleEntity)) ;
-        schoolModuleRepository.persist(schoolModule);
-    }
-
     /*
      *   update modules of given guestTeacherId
      */
@@ -123,12 +99,12 @@ public class SchoolModuleService {
      */
     @NotNull
     protected ModuleEntity getModuleEntity(@NotNull UUID moduleId) {
-        ModuleEntity moduleEntity = moduleRepository.findById(moduleId);
-        if (moduleEntity == null ||
-                moduleEntity.getDeleted()) {
+        Optional<ModuleEntity> moduleEntity = moduleRepository.findByIdOptional(moduleId);
+        if (moduleEntity.isEmpty() ||
+                moduleEntity.get().getDeleted()) {
             throw new NotFoundException("Module not found or not valid.");
         }
-        return moduleEntity;
+        return moduleEntity.get();
     }
 
     private static SchoolModuleEntity mapToSchoolModuleEntity(SchoolEntity school, ModuleEntity moduleEntity) {

@@ -148,115 +148,6 @@ public class GuestTeacherModuleServiceTest {
     }
 
     @Test
-    void givenDeleteGuestTeacherModule_thenShouldDeleteGuestTeacherModule () {
-        UUID guestTeacherId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        GuestTeacherEntity guestTeacher = createGuestTeacherEntity(guestTeacherId, userId);
-        GuestTeacherModuleEntity guestTeacherModuleEntity = createGuestTeacherModuleEntities(guestTeacher,  false);
-        guestTeacher.setModules(List.of(guestTeacherModuleEntity));
-        UUID moduleId = guestTeacherModuleEntity.getModule().getId();
-
-        when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
-        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
-
-        guestTeacherModuleService.deleteGuestTeacherModule(guestTeacherId, moduleId);
-        Mockito.verify(guestTeacherModuleRepository, times(1)).delete(any());
-    }
-
-    @Test
-    void givenDeleteGuestTeacherModule_forUnknownGuestTeacherId_thenShouldThrowNotFoundException () {
-        UUID guestTeacherId = UUID.randomUUID();
-        UUID moduleId = UUID.randomUUID();
-        assertThrows(NotFoundException.class, () -> guestTeacherModuleService.deleteGuestTeacherModule(guestTeacherId, moduleId));
-        Mockito.verify(guestTeacherModuleRepository, never()).delete(any());
-    }
-
-    @Test
-    void givenDeleteGuestTeacherModule_forUnknownGuestTeacherModuleId_thenShouldThrowNotFoundException () {
-        UUID guestTeacherId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        UUID moduleId = UUID.randomUUID();
-        GuestTeacherEntity guestTeacher = createGuestTeacherEntity(guestTeacherId, userId);
-        guestTeacher.setModules(new ArrayList<>());
-
-        when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
-        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
-
-        assertThrows(NotFoundException.class, () -> guestTeacherModuleService.deleteGuestTeacherModule(guestTeacherId, moduleId));
-        Mockito.verify(guestTeacherModuleRepository, never()).persist(any(GuestTeacherModuleEntity.class));
-    }
-
-    @Test
-    void givenSaveGuestTeacherModule_thenShouldSave() {
-        UUID guestTeacherId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        GuestTeacherEntity guestTeacher = createGuestTeacherEntity(guestTeacherId, userId);
-        GuestTeacherModuleEntity guestTeacherModuleEntity = createGuestTeacherModuleEntities(guestTeacher, false);
-        UUID moduleId = guestTeacherModuleEntity.getModule().getId();
-        String moduleName = guestTeacherModuleEntity.getModule().getName();
-        Module module = createModule(moduleId, moduleName);
-
-        when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
-        when(moduleRepository.findById(any(UUID.class))).thenReturn(guestTeacherModuleEntity.getModule());
-        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
-
-        guestTeacherModuleService.save(guestTeacherId, module);
-
-        ArgumentCaptor<GuestTeacherModuleEntity> captor = ArgumentCaptor.forClass(GuestTeacherModuleEntity.class);
-        Mockito.verify(guestTeacherModuleRepository, times(1)).persist(captor.capture());
-        GuestTeacherModuleEntity entity = captor.getValue();
-        assertThat(entity.getModule().getDeleted()).isFalse();
-    }
-
-    @Test
-    void givenSaveGuestTeacherModule_forNullModule_thenShouldThrowNotFoundException() {
-        UUID guestTeacherId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        GuestTeacherEntity guestTeacher = createGuestTeacherEntity(guestTeacherId, userId);
-        GuestTeacherModuleEntity guestTeacherModuleEntity = createGuestTeacherModuleEntities(guestTeacher,  false);
-        guestTeacher.setModules(List.of(guestTeacherModuleEntity));
-        UUID moduleId = guestTeacherModuleEntity.getModule().getId();
-        String moduleName = guestTeacherModuleEntity.getModule().getName();
-        Module module = createModule(moduleId, moduleName);
-
-        when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
-        when(moduleRepository.findById(any(UUID.class))).thenReturn(null);
-        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
-
-        assertThrows(NotFoundException.class, () -> guestTeacherModuleService.save(guestTeacherId, module));
-        Mockito.verify(guestTeacherModuleRepository, never()).persist(any(GuestTeacherModuleEntity.class));
-    }
-
-    @Test
-    void givenSaveGuestTeacherModule_forDeletedModule_thenShouldThrowNotFoundException() {
-        UUID guestTeacherId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-        GuestTeacherEntity guestTeacher = createGuestTeacherEntity(guestTeacherId, userId);
-        GuestTeacherModuleEntity guestTeacherModuleEntity = createGuestTeacherModuleEntities(guestTeacher, false);
-        guestTeacher.setModules(List.of(guestTeacherModuleEntity));
-        UUID moduleId = guestTeacherModuleEntity.getModule().getId();
-        String moduleName = guestTeacherModuleEntity.getModule().getName();
-        Module module = createModule(moduleId, moduleName);
-        ModuleEntity repositoryModuleEntity = createGuestTeacherModuleEntities(guestTeacher,  true).getModule();
-
-        when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
-        when(moduleRepository.findById(any(UUID.class))).thenReturn(repositoryModuleEntity);
-        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
-
-        assertThrows(NotFoundException.class, () -> guestTeacherModuleService.save(guestTeacherId, module));
-        Mockito.verify(guestTeacherModuleRepository, never()).persist(any(GuestTeacherModuleEntity.class));
-    }
-
-    @Test
-    void givenSaveGuestTeacherModule_forUnknownGuestTeacherId_thenShouldThrowNotFoundException () {
-        UUID guestTeacherId = UUID.randomUUID();
-        String moduleName = RandomStringUtils.randomAlphanumeric(10);
-        Module module = createModule(UUID.randomUUID(), moduleName);
-        assertThrows(NotFoundException.class, () -> guestTeacherModuleService.save(guestTeacherId, module));
-        Mockito.verify(guestTeacherModuleRepository, never()).persist(any(GuestTeacherModuleEntity.class));
-    }
-
-    @Test
     void givenSaveGuestTeacherModules_withNewModule_thenShouldSave() {
         UUID guestTeacherId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -267,7 +158,7 @@ public class GuestTeacherModuleServiceTest {
         assertThat(guestTeacher.getModules()).isNullOrEmpty();
 
         when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
-        when(moduleRepository.findById(any(UUID.class))).thenReturn(guestTeacherModuleEntity.getModule());
+        when(moduleRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.of(guestTeacherModuleEntity.getModule()));
         when(tokenHelper.getCurrentUserId()).thenReturn(userId);
 
         guestTeacherModuleService.save(guestTeacherId, List.of(moduleId.toString()));
@@ -280,6 +171,41 @@ public class GuestTeacherModuleServiceTest {
    }
 
     @Test
+    void givenSaveGuestTeacherModules_ForDeletedModule_thenShouldThrowNotFoundException() {
+        UUID guestTeacherId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        GuestTeacherEntity guestTeacher = createGuestTeacherEntity(guestTeacherId, userId);
+        GuestTeacherModuleEntity guestTeacherModuleEntity = createGuestTeacherModuleEntities(guestTeacher, false);
+        UUID moduleId = guestTeacherModuleEntity.getModule().getId();
+        ModuleEntity moduleEntity = guestTeacherModuleEntity.getModule();
+        moduleEntity.setDeleted(Boolean.TRUE);
+
+        assertThat(guestTeacher.getModules()).isNullOrEmpty();
+
+        when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
+        when(moduleRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.of(moduleEntity));
+        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
+
+        assertThrows(NotFoundException.class, () -> guestTeacherModuleService.save(guestTeacherId, List.of(moduleId.toString())));
+    }
+
+    @Test
+    void givenSaveGuestTeacherModules_ForUnknownModule_thenShouldThrowNotFoundException() {
+        UUID guestTeacherId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        GuestTeacherEntity guestTeacher = createGuestTeacherEntity(guestTeacherId, userId);
+        UUID moduleId = UUID.randomUUID();
+
+        assertThat(guestTeacher.getModules()).isNullOrEmpty();
+
+        when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
+        when(moduleRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.empty());
+        when(tokenHelper.getCurrentUserId()).thenReturn(userId);
+
+        assertThrows(NotFoundException.class, () -> guestTeacherModuleService.save(guestTeacherId, List.of(moduleId.toString())));
+    }
+
+    @Test
     void givenSaveGuestTeacherModules_withExistingModule_thenShouldDoNothing() {
         UUID guestTeacherId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -290,7 +216,7 @@ public class GuestTeacherModuleServiceTest {
         guestTeacher.setModules(List.of(guestTeacherModuleEntity));
 
         when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
-        when(moduleRepository.findById(any(UUID.class))).thenReturn(guestTeacherModuleEntity.getModule());
+        when(moduleRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.of(guestTeacherModuleEntity.getModule()));
         when(tokenHelper.getCurrentUserId()).thenReturn(userId);
 
         guestTeacherModuleService.save(guestTeacherId, List.of(moduleId.toString()));
@@ -309,7 +235,7 @@ public class GuestTeacherModuleServiceTest {
         guestTeacher.setModules(List.of(guestTeacherModuleEntity));
 
         when(guestTeacherRepository.findByIdOptional(guestTeacherId)).thenReturn(Optional.of(guestTeacher));
-        when(moduleRepository.findById(any(UUID.class))).thenReturn(guestTeacherModuleEntity.getModule());
+        when(moduleRepository.findByIdOptional(any(UUID.class))).thenReturn(Optional.of(guestTeacherModuleEntity.getModule()));
         when(tokenHelper.getCurrentUserId()).thenReturn(userId);
 
         guestTeacherModuleService.save(guestTeacherId, new ArrayList<>());
@@ -333,12 +259,5 @@ public class GuestTeacherModuleServiceTest {
         entity.setGuestTeacher(guestTeacher);
         entity.setModule(new ModuleEntity(UUID.randomUUID(), "moduleName", ModuleDeleted));
         return entity;
-    }
-
-    private Module createModule(UUID moduleId, String moduleName) {
-        Module module = new Module();
-        module.setId(moduleId);
-        module.setName(moduleName);
-        return module;
     }
 }
