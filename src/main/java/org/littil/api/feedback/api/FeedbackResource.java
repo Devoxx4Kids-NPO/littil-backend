@@ -7,14 +7,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.mail.MailService;
-
-import java.util.Optional;
 
 @Path("/api/v1/feedback")
 @RequestScoped
@@ -24,9 +21,6 @@ public class FeedbackResource {
 
     @Inject
     MailService mailService;
-    @Inject
-    @ConfigProperty(name = "org.littil.feedback.email")
-    Optional<String> feedbackEmail;
 
     @POST
     @APIResponse(
@@ -38,7 +32,9 @@ public class FeedbackResource {
             )
     )
     public Response feedback(@NotNull @Valid FeedbackPostResource feedback) {
-        mailService.sendFeedbackMail(feedback, feedbackEmail);
+        final String feedbackType = feedback.getFeedbackType();
+        final String feedbackMessage = feedback.getMessage();
+        mailService.sendFeedbackMail(feedbackType, feedbackMessage);
         return Response.ok().build();
     }
 }

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.littil.TestFactory;
-import org.littil.api.feedback.api.FeedbackPostResource;
 import org.littil.api.user.service.User;
 
 import java.util.Optional;
@@ -81,10 +80,7 @@ class MailServiceTest {
     })
     void testSendFeedbackMail(String feedbackType, String message, String email) {
         // sut
-        final var feedback = new FeedbackPostResource();
-        feedback.setFeedbackType(feedbackType);
-        feedback.setMessage(message);
-        mailService.sendFeedbackMail(feedback, Optional.of(email));
+        mailService.sendFeedbackMail(feedbackType, message);
 
         // verify
         MailMessage sent = mailbox.getMailMessagesSentTo(email).stream().findFirst().get();
@@ -96,10 +92,12 @@ class MailServiceTest {
     @Test
     void testSendFeedbackMailWithFeedbackEmailOptionalEmpty() {
         // sut
-        final var feedback = new FeedbackPostResource();
-        mailService.sendFeedbackMail(feedback, Optional.empty());
+        mailService.feedbackEmail = Optional.empty();
+        final var feedbackType = "feedbackType";
+        final var message = "message";
 
         // verify
+        mailService.sendFeedbackMail(feedbackType, message);
         assertEquals(0 , mailbox.getTotalMessagesSent());
     }
 
