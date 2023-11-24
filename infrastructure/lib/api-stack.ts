@@ -4,8 +4,7 @@ import { Port, SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
-import { CfnAccessKey, Effect, Policy, PolicyStatement, Role, User, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
-import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { Effect, Policy, PolicyStatement, Role, User, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { allowEcsDescribeTaskStatement } from './iam/allowEcsDescribeTaskStatement';
@@ -66,7 +65,7 @@ export class ApiStack extends Stack {
             cpu: 256,
             enableExecuteCommand: true,
             taskImageOptions: {
-                image: ContainerImage.fromEcrRepository(apiEcrRepository, '1.1.1'),
+                image: ContainerImage.fromEcrRepository(apiEcrRepository, '1.2.0'),
                 containerPort: 8080,
                 containerName: 'api',
                 environment: {
