@@ -49,7 +49,7 @@ public class SchoolModuleService {
      *   update modules of given guestTeacherId
      */
     @Transactional
-    public void save (@NonNull final UUID schoolId, @NonNull final List<String> modules ) {
+    public void save(@NonNull final UUID schoolId, @NonNull final List<String> modules) {
         SchoolEntity school = getSchoolEntity(schoolId);
 
         // add module if missing
