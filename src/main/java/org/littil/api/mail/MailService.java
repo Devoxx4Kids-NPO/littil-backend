@@ -45,7 +45,7 @@ public class MailService {
 
     public void sendFeedbackMail(String feedbackType, String feedbackMessage) {
         if (feedbackEmail.isEmpty()) {
-            log.warn("sending email with feedback is skipped. Feedbacktype : {}, meessage{}",
+            log.warn("sending email with feedback is skipped. type: {}, message: {}",
                     feedbackType, feedbackMessage);
             return;
         }
