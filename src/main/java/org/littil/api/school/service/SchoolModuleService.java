@@ -99,12 +99,10 @@ public class SchoolModuleService {
      */
     @NotNull
     protected ModuleEntity getModuleEntity(@NotNull UUID moduleId) {
-        Optional<ModuleEntity> moduleEntity = moduleRepository.findByIdOptional(moduleId);
-        if (moduleEntity.isEmpty() ||
-                moduleEntity.get().getDeleted()) {
-            throw new NotFoundException("Module not found or not valid.");
-        }
-        return moduleEntity.get();
+        return moduleRepository
+                .findByIdOptional(moduleId)
+                .filter(m -> !Boolean.TRUE.equals(m.getDeleted()))
+                .orElseThrow(() ->  new NotFoundException("Module "+moduleId+" not found or not valid"));
     }
 
     private static SchoolModuleEntity mapToSchoolModuleEntity(SchoolEntity school, ModuleEntity moduleEntity) {
