@@ -1,0 +1,3 @@
+De volgende feedback is ontvangen.
+Feedback Type: {feedbackType}
+Feedback: {message}

@@ -68,6 +68,8 @@ quarkus:
 "%dev":
   org:
     littil:
+      feedback:
+        email: "feedback@littil.org"
       devservices:
         devdata: true
   quarkus:
@@ -122,6 +124,8 @@ quarkus:
     littil:
       contact:
         ccEmail: "info@littil.org"
+    feedback:
+      email: "info@littil.org"
   quarkus:
     banner:
       enabled: false

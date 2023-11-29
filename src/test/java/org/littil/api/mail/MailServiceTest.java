@@ -11,6 +11,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.littil.TestFactory;
 import org.littil.api.user.service.User;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -18,11 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MailServiceTest {
     @Inject
     MockMailbox mailbox;
-    @Inject
+
     MailService mailService;
 
     @BeforeEach
     void init() {
+        mailService = new MailService();
         mailbox.clear();
     }
 
@@ -39,9 +42,10 @@ class MailServiceTest {
         mailService.sendWelcomeMail(user, password);
 
         // verify
-        MailMessage sent = mailbox.getMailMessagesSentTo(email).stream().findFirst().get();
-        assertEquals("Welkom bij Littil", sent.getSubject());
-        assertTrue(sent.getText().contains(password));
+        Optional<MailMessage> sent = mailbox.getMailMessagesSentTo(email).stream().findFirst();
+        assertTrue(sent.isPresent());
+        assertEquals("Welkom bij Littil", sent.get().getSubject());
+        assertTrue(sent.get().getText().contains(password));
     }
 
     @ParameterizedTest
@@ -54,10 +58,11 @@ class MailServiceTest {
         mailService.sendContactMail(email, message, medium, null);
 
         // verify
-        MailMessage sent = mailbox.getMailMessagesSentTo(email).stream().findFirst().get();
-        assertEquals("Contactverzoek voor Littil", sent.getSubject());
-        assertTrue(sent.getText().contains(message));
-        assertTrue(sent.getText().contains(medium));
+        Optional<MailMessage> sent = mailbox.getMailMessagesSentTo(email).stream().findFirst();
+        assertTrue(sent.isPresent());
+        assertEquals("Contactverzoek voor Littil", sent.get().getSubject());
+        assertTrue(sent.get().getText().contains(message));
+        assertTrue(sent.get().getText().contains(medium));
     }
 
     @Test
@@ -70,4 +75,35 @@ class MailServiceTest {
         assertEquals(1, mailbox.getMailMessagesSentTo("contact-mail@littil.org").size());
         assertEquals(1, mailbox.getMailMessagesSentTo("cc@littil.org").size());
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "issue,something is wrong,feedback@littil.org",
+            "idea,just some idea,feedback@littil.org"
+    })
+    void testSendFeedbackMail(String feedbackType, String message, String email) {
+        // sut
+        mailService.feedbackEmail = Optional.of(email);
+        mailService.sendFeedbackMail(feedbackType, message);
+
+        // verify
+        Optional<MailMessage> sent = mailbox.getMailMessagesSentTo(email).stream().findFirst();
+        assertTrue(sent.isPresent());
+        assertEquals("Feedback ontvangen", sent.get().getSubject());
+        assertTrue(sent.get().getText().contains(feedbackType));
+        assertTrue(sent.get().getText().contains(message));
+    }
+
+    @Test
+    void testSendFeedbackMailWithFeedbackEmailOptionalEmpty() {
+        // sut
+        mailService.feedbackEmail = Optional.empty();
+        final var feedbackType = "feedbackType";
+        final var message = "message";
+
+        // verify
+        mailService.sendFeedbackMail(feedbackType, message);
+        assertEquals(0 , mailbox.getTotalMessagesSent());
+    }
+
 }
