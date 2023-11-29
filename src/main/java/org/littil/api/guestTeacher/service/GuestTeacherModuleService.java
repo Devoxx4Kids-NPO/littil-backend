@@ -45,30 +45,6 @@ public class GuestTeacherModuleService {
                 .toList();
     }
 
-    @Transactional
-    public void deleteGuestTeacherModule(@NonNull final UUID guestTeacherId, UUID moduleId) {
-        GuestTeacherEntity guestTeacher = getGuestTeacherEntity(guestTeacherId);
-        Optional<GuestTeacherModuleEntity> guestTeacherModule = guestTeacher.getModules().stream() //
-                .filter(s -> s.getModule().getId().equals(moduleId))
-                .findFirst();
-        if (guestTeacherModule.isEmpty()) {
-            throw new NotFoundException("Module not found.");
-        }
-        GuestTeacherModuleEntity entity = guestTeacherModule.get();
-        guestTeacherModuleRepository.delete(entity);
-    }
-
-    @Transactional
-    public void save (@NonNull final UUID guestTeacherId, @NonNull final Module module ) {
-        GuestTeacherEntity guestTeacher = getGuestTeacherEntity(guestTeacherId);
-        ModuleEntity moduleEntity = getModuleEntity (module.getId());
-        GuestTeacherModuleEntity guestTeacherModule = guestTeacher.getModules().stream() //
-                .filter(s -> s.getModule().getId().equals(module.getId()))
-                .findFirst()
-                .orElseGet(() -> mapToGuestTeacherModuleEntity(guestTeacher, moduleEntity));
-        guestTeacherModuleRepository.persist(guestTeacherModule);
-    }
-
     /*
      *   update modules of given guestTeacherId
      */
@@ -123,12 +99,12 @@ public class GuestTeacherModuleService {
      */
     @NotNull
     protected ModuleEntity getModuleEntity(@NotNull UUID moduleId) {
-        ModuleEntity moduleEntity = moduleRepository.findById(moduleId);
-        if (moduleEntity == null ||
-                moduleEntity.getDeleted()) {
+        Optional<ModuleEntity> moduleEntity = moduleRepository.findByIdOptional(moduleId);
+        if (moduleEntity.isEmpty() ||
+                moduleEntity.get().getDeleted()) {
             throw new NotFoundException("Module not found or not valid.");
         }
-        return moduleEntity;
+        return moduleEntity.get();
     }
 
     private static GuestTeacherModuleEntity mapToGuestTeacherModuleEntity(GuestTeacherEntity guestTeacher, ModuleEntity moduleEntity) {

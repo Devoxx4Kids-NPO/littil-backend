@@ -30,7 +30,7 @@ import java.util.UUID;
 @Authenticated
 @SchoolSecured
 @Tag(name = "School Modules", description = "CRUD Operations")
-public class SchoolModuleV2Resource {
+public class SchoolModuleResource {
 
     @Inject
     SchoolModuleService schoolModuleService;

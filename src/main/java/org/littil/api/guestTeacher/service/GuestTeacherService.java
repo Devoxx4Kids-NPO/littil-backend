@@ -115,15 +115,12 @@ public class GuestTeacherService {
     }
 
     public UUID getUserIdByTeacherId(@NonNull final UUID teacherId) {
-        Optional<GuestTeacherEntity> teacherOptional = repository.findByIdOptional(teacherId);
-        if(teacherOptional.isEmpty()) {
-            throw new NotFoundException();
-        }
-        UserEntity user = teacherOptional.get().getUser();
-        if(Objects.isNull(user)) {
+        GuestTeacherEntity teacher = repository.findByIdOptional(teacherId)
+                .orElseThrow(() -> new NotFoundException("No teacher found for id: "+teacherId));
+        if(Objects.isNull(teacher.getUser())) {
             throw new InternalServerErrorException("No user found for GuestTeacherEntity with id:" + teacherId);
         }
-        return user.getId();
+        return teacher.getUser().getId();
     }
 
     @Transactional
