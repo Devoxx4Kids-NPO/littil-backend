@@ -68,7 +68,7 @@ To manually synthesize Cloudformation templates from the CDK Typescript code:
 
 ```bash
 npm run build
-npm run cdk:synth --  --context environment=<env> --context account=<account>  --profile=<profile>
+npm run cdk:synth -- --context environment=<env> --context account=<account>  --profile=<profile>
 ```
 
 Where `<env>` is the environment, like staging or production, `<account>` is the numerical AWS account ID and <profile> is the
@@ -78,7 +78,13 @@ a `LITTIL-<country>-<env>-littil-backend-Cdk-User` user.
 To deploy:
 
 ```bash
-npm run cdk:staging:deploy  --context environment=<env> --context account=<account>  --profile=<profile>
+npm run cdk:deploy -- --context environment=<env> --context account=<account>  --profile=<profile>
+npm run cdk:deploy:maintenance -- --context environment=<env> --context account=<account>  --profile=<profile>
+```
+
+To remove the maintenance service stack:
+```bash
+npm run cdk:destroy:maintenance -- --context environment=<env> --context account=<account>  --profile=<profile>
 ```
 
 # AWS CLI

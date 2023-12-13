@@ -9,20 +9,35 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "cdk:list": "cdk ls",
-    "cdk:diff": "cdk diff",
-    "cdk:synth": "cdk synth",
-    "cdk:deploy": "cdk deploy ApiCertificatesStack ApiEcrStack ApiVpcStack ApiDatabaseStack ApiStack MaintenanceEcrStack MaintenanceServiceStack --require-approval=never"
+
+    "cdk:list:shared": "cdk ls --context accountName=shared",
+    "cdk:list:production": "cdk ls --context accountName=production --context environment=production",
+
+    "cdk:synth:shared": "cdk synth --context accountName=shared",
+    "cdk:diff:shared": "cdk diff --context accountName=shared",
+    "cdk:deploy:shared": "cdk deploy ApiEcrStack MaintenanceEcrStack --context accountName=shared --require-approval=never",
+
+    "cdk:synth:staging": "cdk synth --context accountName=staging --context environment=staging",
+    "cdk:diff:staging": "cdk diff --context accountName=staging --context environment=staging",
+    "cdk:deploy:staging": "cdk deploy ApiCertificatesStack ApiVpcStack ApiDatabaseStack ApiStack --context accountName=staging --context environment=staging --require-approval=never",
+
+    "cdk:synth:production": "cdk synth --context accountName=production --context environment=production",
+    "cdk:diff:production": "cdk diff --context accountName=production --context environment=production",
+    "cdk:deploy:production": "cdk deploy ApiCertificatesStack ApiVpcStack ApiDatabaseStack ApiStack --context accountName=production --context environment=production --require-approval=never",
+    "cdk:deploy:production:maintenance": "cdk deploy ApiVpcStack MaintenanceServiceStack --context accountName=production --context environment=production --require-approval=never",
+
+    "cdk:deploy:ec2": "cdk deploy ApiCertificatesStack ApiVpcStack ApiEc2Stack --require-approval=never",
+    "cdk:deploy:maintenance": "cdk deploy MaintenanceServiceStack --require-approval=never",
+    "cdk:destroy:maintenance": "cdk destroy MaintenanceServiceStack --require-approval=never"
   },
   "devDependencies": {
-    "@types/jest": "^27.5.2",
-    "@types/node": "10.17.27",
-    "@types/prettier": "2.6.0",
-    "jest": "^27.5.1",
-    "ts-jest": "^27.1.4",
-    "aws-cdk": "2.40.0",
+    "@types/jest": "29.5.5",
+    "@types/node": "20.6.2",
+    "jest": "29.7.0",
+    "ts-jest": "29.1.1",
+    "aws-cdk": "2.96.2",
     "ts-node": "^10.9.1",
-    "typescript": "~3.9.7"
+    "typescript": "5.2.2"
   },
   "dependencies": {
     "aws-cdk-lib": "2.40.0",

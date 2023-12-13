@@ -4,21 +4,22 @@ import { Port, SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { ContainerImage, Secret } from 'aws-cdk-lib/aws-ecs';
 import { ApplicationLoadBalancedFargateService } from 'aws-cdk-lib/aws-ecs-patterns';
-import { CfnAccessKey, Effect, Policy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
-import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { Effect, Policy, PolicyStatement, Role, User, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam';
 import { Secret as SecretsManagerSecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { allowEcsDescribeTaskStatement } from './iam/allowEcsDescribeTaskStatement';
 import { allowEcsExecuteCommandStatement } from './iam/allowEcsExecuteCommandStatement';
+import { LittilEnvironmentSettings } from './littil-environment-settings';
+import { LoggingStack } from './logging-stack';
 
 export interface ApiStackProps extends StackProps {
-    apiVpc: {
-        id: string;
-    };
+    littil: LittilEnvironmentSettings;
+
+    apiVpc: Vpc;
 
     ecrRepository: {
+        awsAccount: string;
         name: string;
-        arn: string;
     };
     apiCertificateArn: string;
 
@@ -26,7 +27,6 @@ export interface ApiStackProps extends StackProps {
         host: string;
         port: string;
         name: string;
-        vpcId: string;
         securityGroup: {
             id: string;
         };
@@ -39,99 +39,78 @@ export class ApiStack extends Stack {
                 props: ApiStackProps) {
         super(scope, id, props);
 
-        const vpc = Vpc.fromLookup(this, 'ApiVpc', {
-            vpcId: props.apiVpc.id,
-        });
-
         /* Fargate. */
-        const littilBackendSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendSecret', 'littil/backend/staging');
-
         const apiEcrRepository = Repository.fromRepositoryAttributes(this, 'ApiEcrContainerRepository', {
             repositoryName: props.ecrRepository.name,
-            repositoryArn: props.ecrRepository.arn,
+            repositoryArn: 'arn:aws:ecr:eu-west-1:' + props.ecrRepository.awsAccount + ':repository/' + props.ecrRepository.name,
         });
 
         const certificate = Certificate.fromCertificateArn(this, 'ApiCertificate', props.apiCertificateArn);
 
-        // TODO: Deduplicate
-        const littilDatabaseSecretName = 'littil/backend/databaseCredentials';
+        const littilOidcSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilOidcSecret', 'littil/backend/' + props.littil.environment + '/oidc');
+        const littilSmtpSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilSmtpSecret', 'littil/backend/' + props.littil.environment + '/smtp');
+
+        const littilDatabaseSecretName = 'littil/backend/' + props.littil.environment + '/database';
         const littilBackendDatabaseSecret = SecretsManagerSecret.fromSecretNameV2(this, 'LittilBackendDatabaseSecret', littilDatabaseSecretName);
 
-        const littilBackendCloudwatchLoggingUser = new User(this, 'CloudwatchLoggingUser', {
-            userName: 'LITTIL-NL-staging-backend-Cloudwatch'
+        const apiEcsLoggingStack = new LoggingStack(this, 'ApiEcsLoggingStack', {
+            littil: props.littil,
+            logGroupName: 'LITTILBackendApiEcsLogs-' + props.littil.environment,
         });
-        const loggingAccessKey = new CfnAccessKey(this, 'CloudwatchLoggingAccessKey', {
-            userName: littilBackendCloudwatchLoggingUser.userName,
-        });
-        const cloudwatchLogGroup = new LogGroup(this, 'BackendLogGroup', {
-            logGroupName: 'BackendQuarkusLogs',
-        });
-        const cloudwatchLoggingStatement = new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: [
-                'logs:DescribeLogStreams',
-                'logs:CreateLogStream',
-                'logs:PutLogEvents',
-            ],
-            resources: [
-                cloudwatchLogGroup.logGroupArn,
-            ],
-        });
-        const loggingPolicy = new Policy(this, 'QuarkusCloudwatchLoggingPolicy');
-        loggingPolicy.addStatements(cloudwatchLoggingStatement);
-        loggingPolicy.attachToUser(littilBackendCloudwatchLoggingUser);
 
         const fargateService = new ApplicationLoadBalancedFargateService(this, 'LittilApi', {
-            vpc,
+            vpc: props.apiVpc,
             memoryLimitMiB: 512,
             desiredCount: 1,
             cpu: 256,
             enableExecuteCommand: true,
             taskImageOptions: {
-                image: ContainerImage.fromEcrRepository(apiEcrRepository, 'latest'),
+                image: ContainerImage.fromEcrRepository(apiEcrRepository, '1.2.0'),
                 containerPort: 8080,
                 containerName: 'api',
                 environment: {
                     DATASOURCE_HOST: props.database.host,
                     DATASOURCE_PORT: props.database.port,
                     DATASOURCE_DATABASE: props.database.name,
-                    QUARKUS_HTTP_CORS_ORIGINS: 'https://staging.littil.org',
-                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_ID: loggingAccessKey.ref,
-                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_SECRET: loggingAccessKey.attrSecretAccessKey,
-                    QUARKUS_LOG_CLOUDWATCH_LOG_GROUP: cloudwatchLogGroup.logGroupName,
+                    QUARKUS_HTTP_CORS_ORIGINS: props.littil.httpCorsOrigin,
+                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_ID: apiEcsLoggingStack.loggingAccessKey.ref,
+                    QUARKUS_LOG_CLOUDWATCH_ACCESS_KEY_SECRET: apiEcsLoggingStack.loggingAccessKey.attrSecretAccessKey,
+                    QUARKUS_LOG_CLOUDWATCH_LOG_GROUP: apiEcsLoggingStack.cloudwatchLogGroup.logGroupName,
                     QUARKUS_LOG_CLOUDWATCH_REGION: this.region,
                     QUARKUS_LOG_CLOUDWATCH_LOG_STREAM_NAME: 'quarkus-logs',
+                    QUARKUS_MAILER_FROM: 'no-reply@mail.littil.org',
                 },
                 secrets: {
                     DATASOURCE_USERNAME: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'username'),
                     DATASOURCE_PASSWORD: Secret.fromSecretsManager(littilBackendDatabaseSecret, 'password'),
-                    OIDC_CLIENT_ID: Secret.fromSecretsManager(littilBackendSecret, 'oidcClientId'),
-                    OIDC_CLIENT_SECRET: Secret.fromSecretsManager(littilBackendSecret, 'oidcClientSecret'),
-                    OIDC_TENANT: Secret.fromSecretsManager(littilBackendSecret, 'oidcTenant'),
-                    M2M_CLIENT_ID: Secret.fromSecretsManager(littilBackendSecret, 'm2mClientId'),
-                    M2M_CLIENT_SECRET: Secret.fromSecretsManager(littilBackendSecret, 'm2mClientSecret'),
-                    SMTP_HOST: Secret.fromSecretsManager(littilBackendSecret, 'smtpHost'),
-                    SMTP_USERNAME: Secret.fromSecretsManager(littilBackendSecret, 'smtpUsername'),
-                    SMTP_PASSWORD: Secret.fromSecretsManager(littilBackendSecret, 'smtpPassword'),
+                    OIDC_CLIENT_ID: Secret.fromSecretsManager(littilOidcSecret, 'oidcClientId'),
+                    OIDC_CLIENT_SECRET: Secret.fromSecretsManager(littilOidcSecret, 'oidcClientSecret'),
+                    OIDC_TENANT: Secret.fromSecretsManager(littilOidcSecret, 'oidcTenant'),
+                    M2M_CLIENT_ID: Secret.fromSecretsManager(littilOidcSecret, 'm2mClientId'),
+                    M2M_CLIENT_SECRET: Secret.fromSecretsManager(littilOidcSecret, 'm2mClientSecret'),
+                    SMTP_HOST: Secret.fromSecretsManager(littilSmtpSecret, 'smtpHost'),
+                    SMTP_USERNAME: Secret.fromSecretsManager(littilSmtpSecret, 'smtpUsername'),
+                    SMTP_PASSWORD: Secret.fromSecretsManager(littilSmtpSecret, 'smtpPassword'),
                 },
             },
             certificate,
         });
         fargateService.targetGroup
             .configureHealthCheck({
-                path: '/q/health',
-                healthyHttpCodes: '200',
+                path: '/q/health/ready',
+                healthyHttpCodes: '200,404',
+                unhealthyThresholdCount: 4,
             });
 
         /* ECS Exec. */
-        const ecsExecPolicy = new Policy(this, 'LITTIL-NL-staging-littil-api-ECSExec-Policy');
+        const ecsExecPolicy = new Policy(this, 'LITTIL-NL-' + props.littil.environment + '-littil-api-ECSExec-Policy');
         ecsExecPolicy.addStatements(
             allowEcsExecuteCommandStatement(fargateService.cluster.clusterArn, this.region, this.account),
             allowEcsDescribeTaskStatement(this.region, this.account),
         );
 
         /* ECS Exec users. */
-        const ecsExecUserName = 'LITTIL-NL-staging-littil-api-ECSExec-User';
+        const ecsExecUserName = 'LITTIL-NL-' + props.littil.environment + '-littil-api-ECSExec-User';
         const ecsExecUser = new User(this, ecsExecUserName, {userName: ecsExecUserName});
         ecsExecPolicy.attachToUser(ecsExecUser);
 
@@ -140,5 +119,38 @@ export class ApiStack extends Stack {
 
         const fargateSecurityGroup = fargateService.service.connections.securityGroups[0];
         databaseSecurityGroup.connections.allowFrom(fargateSecurityGroup, Port.allTcp());
+
+        /* Push-pull permissions for Github repository. */
+        const issuer = 'token.actions.githubusercontent.com';
+        const gitHubOrg = 'Devoxx4Kids-NPO';
+        const githubRepoName = 'littil-backend';
+        const accountId = this.account;
+        const openIdConnectProviderArn = `arn:aws:iam::${accountId}:oidc-provider/${issuer}`;
+        const ciDeployRole = new Role(this, 'EcsCiDeployRole', {
+            roleName: 'LITTIL-NL-api-ecs-redeploy',
+            assumedBy: new WebIdentityPrincipal(openIdConnectProviderArn, {
+                StringLike: {
+                    [`${issuer}:sub`]: `repo:${gitHubOrg}/${githubRepoName}:*`,
+                },
+                StringEquals: {
+                    [`${issuer}:aud`]: 'sts.amazonaws.com',
+                },
+            }),
+        });
+        const updateServicePolicy = new Policy(this, 'EcsUpdateServicePolicy', {
+            policyName: 'EcsUpdateServicePolicy',
+            statements: [
+                new PolicyStatement({
+                    effect: Effect.ALLOW,
+                    actions: [
+                        'ecs:UpdateService',
+                    ],
+                    resources: [
+                        fargateService.service.serviceArn,
+                    ],
+                }),
+            ],
+        });
+        updateServicePolicy.attachToRole(ciDeployRole);
     }
 }

@@ -103,4 +103,3 @@ jobs:
           docker tag $IMAGE_NAME $ECR_IMAGE_ID:latest
           echo "Going to push $ECR_IMAGE_ID:latest to ECR"
           docker push $ECR_IMAGE_ID:latest
-
