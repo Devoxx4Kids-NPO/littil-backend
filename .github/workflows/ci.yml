@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: s4u/setup-maven-action@v1.11.0
+      - uses: s4u/setup-maven-action@v1
         with:
           java-version: 17
           java-distribution: temurin
@@ -31,7 +31,7 @@ jobs:
           path: target/generated/openapi.json
       - name: Publish code coverage to pull request
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: madrapps/jacoco-report@v1.6.1
+        uses: madrapps/jacoco-report@v1
         with:
           paths: ${{ github.workspace }}/target/jacoco-report/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
