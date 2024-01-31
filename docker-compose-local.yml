@@ -1,0 +1,44 @@
+services:
+  dbhost:
+    image: mariadb
+    container_name: dbhost
+    environment:
+      MYSQL_DATABASE: littil
+      MYSQL_USER: ${DB_USER_NAME}
+      MYSQL_PASSWORD: ${DB_USER_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_USER_PASSWORD}
+    ports:
+      - "3306:3306"
+    networks:
+      - littil
+  littil-backend:
+    image: quarkus/backend-jvm # Local image for now
+    container_name: littil-backend
+    entrypoint:
+     - /bin/bash
+     - -c
+     - sleep 10;java -jar /deployments/quarkus-run.jar;
+    depends_on:
+      - dbhost
+    environment:
+      - QUARKUS_BANNER_ENABLED=true
+      - QUARKUS_PROFILE=dev
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:mariadb://dbhost:3306/littil
+      - QUARKUS_DATASOURCE_USERNAME=${DB_USER_NAME}
+      - QUARKUS_DATASOURCE_PASSWORD=${DB_USER_PASSWORD}
+      - OIDC_CLIENT_ID=${_DEV_OIDC_CLIENT_ID}
+      - OIDC_CLIENT_SECRET=${_DEV_OIDC_CLIENT_SECRET}
+      - OIDC_TENANT=${_DEV_OIDC_TENANT}
+      - M2M_CLIENT_ID=${_DEV_M2M_CLIENT_ID}
+      - M2M_CLIENT_SECRET=${_DEV_M2M_CLIENT_SECRET}
+      - SMTP_HOST=smtp-stub.local
+      - SMTP_USERNAME=username
+      - SMTP_PASSWORD=password
+    ports:
+      - "8080:8080"
+    networks:
+      - littil
+
+networks:
+  littil:
+    driver: bridge
