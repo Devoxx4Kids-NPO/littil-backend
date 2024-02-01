@@ -19,7 +19,7 @@ jobs:
       contents: read
     steps:
       - name: Configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_CDK }}
           role-session-name: github_publish_littil_backend
