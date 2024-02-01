@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: s4u/setup-maven-action@v1
+      - uses: s4u/setup-maven-action@v1.11.0
         with:
           java-version: 17
           java-distribution: temurin
