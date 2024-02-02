@@ -20,14 +20,14 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: graalvm/setup-graalvm@v1
         with:
           version: '22.3.1'
           java-version: '17'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: s4u/setup-maven-action@v1.6.0
+      - uses: s4u/setup-maven-action@v1.11.0
         with:
           java-version: 17
           java-distribution: temurin
@@ -81,7 +81,7 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$IMAGE_VERSION
           docker push $IMAGE_ID:$IMAGE_VERSION
       - name: Configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ECR }}
           role-session-name: github_publish_littil_ecr
