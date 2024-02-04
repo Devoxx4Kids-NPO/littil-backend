@@ -136,6 +136,9 @@ quarkus:
       password: ${DATASOURCE_PASSWORD:littil}
       jdbc:
         url: jdbc:mariadb://${DATASOURCE_HOST:localhost}:${DATASOURCE_PORT:3306}/${DATASOURCE_DATABASE:littil}
+    http:
+      cors:
+        origins: ${HTTP_CORS_ORIGINS:}
     log:
       cloudwatch:
         enabled: ${CLOUDWATCH_ENABLED:true}
