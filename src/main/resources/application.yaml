@@ -138,4 +138,4 @@ quarkus:
         url: jdbc:mariadb://${DATASOURCE_HOST:localhost}:${DATASOURCE_PORT:3306}/${DATASOURCE_DATABASE:littil}
     log:
       cloudwatch:
-        enabled: true
+        enabled: ${CLOUDWATCH_ENABLED:true}
