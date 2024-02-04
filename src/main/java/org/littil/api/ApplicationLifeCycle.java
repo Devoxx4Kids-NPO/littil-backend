@@ -67,13 +67,13 @@ public class ApplicationLifeCycle {
     Auth0ManagementAPI auth0api;
 
     void onStart(@Observes StartupEvent ev) {
-        if (this.insertDevData && ProfileManager.getLaunchMode().isDevOrTest()) {
+        if (this.insertDevData) {
             persistDevData();
         }
     }
 
     void persistDevData() {
-        log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production.");
+        log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production. LaunchMode: {}",ProfileManager.getLaunchMode());
         DEV_USERS.entrySet().stream()
                 .flatMap(this::persistDevUserData)
                 .forEach(email -> log.info("Created {} user for development purposes", email));
