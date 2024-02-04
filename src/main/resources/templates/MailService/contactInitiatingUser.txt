@@ -1,7 +1,7 @@
 Beste meneer/mevrouw,
 
 U heeft op ons LITTIL platform contact gezocht met een andere persoon voor een gastles.
-De volgende melding heeft u met deze persoon gedeeld:
+Het volgende bericht heeft u met deze persoon gedeeld:
 
 {contactMessage}
 
