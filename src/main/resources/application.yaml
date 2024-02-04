@@ -16,6 +16,8 @@ org:
         client:
           id: ${M2M_CLIENT_ID:m2m_client_id}
           secret: ${M2M_CLIENT_SECRET:m2m_client_secret}
+    devservices:
+      devdata: ${LITTIL_DEV_DATA:false}
 quarkus:
   live-reload:
     instrumentation: true
@@ -134,6 +136,9 @@ quarkus:
       password: ${DATASOURCE_PASSWORD:littil}
       jdbc:
         url: jdbc:mariadb://${DATASOURCE_HOST:localhost}:${DATASOURCE_PORT:3306}/${DATASOURCE_DATABASE:littil}
+    http:
+      cors:
+        origins: ${HTTP_CORS_ORIGINS:}
     log:
       cloudwatch:
-        enabled: true
+        enabled: ${CLOUDWATCH_ENABLED:true}
