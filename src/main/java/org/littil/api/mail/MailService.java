@@ -37,15 +37,15 @@ public class MailService {
 
     public void sendContactMailRecipient(String emailAddress, String contactMessage, String contactMedium, String cc) {
         var template = Templates.contactRecipient(contactMessage,contactMedium);
-        sendContactMail(template, emailAddress, contactMessage, contactMedium, cc);
+        sendContactMail(template, emailAddress, cc);
     }
 
     public void sendContactMailInitiatingUser(String emailAddress, String contactMessage, String contactMedium, String cc) {
         var template = Templates.contactInitiatingUser(contactMessage, contactMedium);
-        sendContactMail(template, emailAddress, contactMessage, contactMedium, cc);
+        sendContactMail(template, emailAddress, cc);
     }
 
-    private void sendContactMail(MailTemplateInstance template, String emailAddress, String contactMessage, String contactMedium, String cc) {
+    private void sendContactMail(MailTemplateInstance template, String emailAddress, String cc) {
         template.to(emailAddress)
             .subject("Contactverzoek voor Littil");
         if(cc !=null) {
