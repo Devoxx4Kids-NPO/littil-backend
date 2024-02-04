@@ -53,9 +53,9 @@ class MailServiceTest {
             "contact-mail-1@littil.org,bericht-1,+31613371337",
             "contact-mail-2@littil.org,bericht-2,sender-mail@littil.org"
     })
-    void testSendContactMail(String email, String message, String medium) {
+    void testSendContactMailRecipient(String email, String message, String medium) {
         // sut
-        mailService.sendContactMail(email, message, medium, null);
+        mailService.sendContactMailRecipient(email, message, medium, null);
 
         // verify
         Optional<MailMessage> sent = mailbox.getMailMessagesSentTo(email).stream().findFirst();
@@ -66,9 +66,37 @@ class MailServiceTest {
     }
 
     @Test
-    void testSendContactMailWithCc() {
+    void testSendContactMailRecipientWithCc() {
         // sut
-        mailService.sendContactMail("contact-mail@littil.org", "bericht-met-cc", "+31613371337", "cc@littil.org");
+        mailService.sendContactMailRecipient("contact-mail@littil.org", "bericht-met-cc", "+31613371337", "cc@littil.org");
+
+        // verify
+        assertEquals(2, mailbox.getTotalMessagesSent());
+        assertEquals(1, mailbox.getMailMessagesSentTo("contact-mail@littil.org").size());
+        assertEquals(1, mailbox.getMailMessagesSentTo("cc@littil.org").size());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "contact-mail-1@littil.org,bericht-1,+31613371337",
+        "contact-mail-2@littil.org,bericht-2,sender-mail@littil.org"
+    })
+    void testSendContactMailInitiatingUser(String email, String message, String medium) {
+        // sut
+        mailService.sendContactMailInitiatingUser(email, message, medium, null);
+
+        // verify
+        Optional<MailMessage> sent = mailbox.getMailMessagesSentTo(email).stream().findFirst();
+        assertTrue(sent.isPresent());
+        assertEquals("Contactverzoek voor Littil", sent.get().getSubject());
+        assertTrue(sent.get().getText().contains(message));
+        assertTrue(sent.get().getText().contains(medium));
+    }
+
+    @Test
+    void testSendContactMailInitiatingUserwithCc() {
+        // sut
+        mailService.sendContactMailInitiatingUser("contact-mail@littil.org", "bericht-met-cc", "+31613371337", "cc@littil.org");
 
         // verify
         assertEquals(2, mailbox.getTotalMessagesSent());

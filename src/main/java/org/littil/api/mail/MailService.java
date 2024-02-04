@@ -1,6 +1,7 @@
 package org.littil.api.mail;
 
 import io.quarkus.mailer.MailTemplate;
+import io.quarkus.mailer.MailTemplate.MailTemplateInstance;
 import io.quarkus.qute.CheckedTemplate;
 import jakarta.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,8 @@ public class MailService {
     @CheckedTemplate
     static class Templates {
         public static native MailTemplate.MailTemplateInstance welcome(String userEmail, String temporaryPassword);
-        public static native MailTemplate.MailTemplateInstance contact(String contactMessage, String contactMedium);
+        public static native MailTemplate.MailTemplateInstance contactRecipient(String contactMessage, String contactMedium);
+        public static native MailTemplate.MailTemplateInstance contactInitiatingUser(String contactMessage, String contactMedium);
         public static native MailTemplate.MailTemplateInstance feedback(String feedbackType, String message);
     }
 
@@ -33,11 +35,20 @@ public class MailService {
                         .subject("Welkom bij Littil"));
     }
 
-    public void sendContactMail(String recipientEmailAddress, String contactMessage, String contactMedium, String cc) {
-        var template = Templates.contact(contactMessage,contactMedium)
-                .to(recipientEmailAddress)
-                .subject("Contactverzoek voor Littil");
-        if(cc!=null) {
+    public void sendContactMailRecipient(String emailAddress, String contactMessage, String contactMedium, String cc) {
+        var template = Templates.contactRecipient(contactMessage,contactMedium);
+        sendContactMail(template, emailAddress, cc);
+    }
+
+    public void sendContactMailInitiatingUser(String emailAddress, String contactMessage, String contactMedium, String cc) {
+        var template = Templates.contactInitiatingUser(contactMessage, contactMedium);
+        sendContactMail(template, emailAddress, cc);
+    }
+
+    private void sendContactMail(MailTemplateInstance template, String emailAddress, String cc) {
+        template.to(emailAddress)
+            .subject("Contactverzoek voor Littil");
+        if(cc !=null) {
             template = template.cc(cc);
         }
         send(template);
