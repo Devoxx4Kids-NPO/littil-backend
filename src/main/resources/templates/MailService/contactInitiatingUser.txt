@@ -1,0 +1,14 @@
+Beste meneer/mevrouw,
+
+U heeft op ons LITTIL platform contact gezocht met een andere persoon voor een gastles.
+De volgende melding heeft u met deze persoon gedeeld:
+
+{contactMessage}
+
+Contact gegevens: {contactMedium}
+
+Met vriendelijke groet,
+
+LITTIL
+
+Heeft u vragen naar aanleiding van deze mail, neem dan contact op met info@littil.org

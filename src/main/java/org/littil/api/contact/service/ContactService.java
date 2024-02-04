@@ -50,13 +50,13 @@ public class ContactService {
         contactEntity.setId(id);
         repository.persist(contactEntity);
         // send contact mail to contact recipient
-        mailService.sendContactMail(contactEntity.getRecipient().getEmailAddress(),contact.getMessage(),contact.getMedium(), this.ccEmail.orElse(null));
+        mailService.sendContactMailRecipient(contactEntity.getRecipient().getEmailAddress(),contact.getMessage(),contact.getMedium(), this.ccEmail.orElse(null));
         log.info(LittilMetrics.Contact.mailSent());
         // send contact mail to initiating user
         tokenHelper.currentUserId()
                 .flatMap(this.userService::getUserById)
                 .map(User::getEmailAddress)
-                .ifPresent(createdByAddress -> mailService.sendContactMail(createdByAddress,contact.getMessage(),contact.getMedium(),null));
+                .ifPresent(createdByAddress -> mailService.sendContactMailInitiatingUser(createdByAddress,contact.getMessage(),contact.getMedium(),null));
         return repository.findByContactEntityId(id)
                         .map(mapper::toDomain);
     }
