@@ -69,6 +69,8 @@ public class ApplicationLifeCycle {
     void onStart(@Observes StartupEvent ev) {
         if (this.insertDevData) {
             persistDevData();
+        } else {
+            log.info("Skip persisting auth0 user data for development");
         }
     }
 
