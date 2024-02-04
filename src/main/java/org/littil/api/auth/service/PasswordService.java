@@ -24,31 +24,19 @@ public class PasswordService {
         rules = new ArrayList<>();
         CharacterData lowerCaseChars = EnglishCharacterData.LowerCase;
         CharacterRule lowerCaseRule = new CharacterRule(lowerCaseChars);
-        lowerCaseRule.setNumberOfCharacters(2);
+        lowerCaseRule.setNumberOfCharacters(3);
         rules.add(lowerCaseRule);
 
         CharacterData upperCaseChars = EnglishCharacterData.UpperCase;
         CharacterRule upperCaseRule = new CharacterRule(upperCaseChars);
-        upperCaseRule.setNumberOfCharacters(2);
+        upperCaseRule.setNumberOfCharacters(3);
         rules.add(upperCaseRule);
 
         CharacterData digitChars = EnglishCharacterData.Digit;
         CharacterRule digitRule = new CharacterRule(digitChars);
-        digitRule.setNumberOfCharacters(2);
+        digitRule.setNumberOfCharacters(3);
         rules.add(digitRule);
 
-        CharacterData specialChars = new CharacterData() {
-            public String getErrorCode() {
-                return ERROR_CODE;
-            }
-
-            public String getCharacters() {
-                return "!@#$%^*()_+";
-            }
-        };
-        CharacterRule splCharRule = new CharacterRule(specialChars);
-        splCharRule.setNumberOfCharacters(2);
-        rules.add(splCharRule);
     }
 
     @Produces
@@ -59,6 +47,7 @@ public class PasswordService {
     @Produces
     public String generate() {
         PasswordGenerator pwdGenerator = new PasswordGenerator();
-        return pwdGenerator.generatePassword(10, rules);
+        var password =  pwdGenerator.generatePassword(12, rules);
+        return new StringBuilder(password).insert(6, "-").toString();
     }
 }
