@@ -59,7 +59,7 @@
         <dependency><!-- override netty-handler because of vulnerability in version 4.1.86.Final (via io.quarkus:quarkus-mailer@2.16.7.Final -->
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
-            <version>4.1.106.Final</version>
+            <version>4.1.107.Final</version>
         </dependency>
 
         <dependency>
