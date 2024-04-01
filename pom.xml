@@ -200,7 +200,7 @@
         <dependency>
             <groupId>io.quarkiverse.logging.cloudwatch</groupId>
             <artifactId>quarkus-logging-cloudwatch</artifactId>
-            <version>6.6.0</version>
+            <version>6.8.0</version>
         </dependency>
     </dependencies>
   <build>
