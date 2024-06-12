@@ -41,6 +41,8 @@ quarkus:
     security-scheme-name: Auth0
     security-scheme: oauth2-implicit
   oidc:
+    roles:
+      role-claim-path: '"https://littil.org/roles"'
     tenant-id: "dev-g60bne29"
     authorization-path: /authorize?audience=${org.littil.auth.tenant_uri}/api/v2/
     client-id: ${OIDC_CLIENT_ID:oidc_client_id}
@@ -87,7 +89,7 @@ quarkus:
       category:
         "org.littil":
           level: DEBUG
-        "quarkus.oidc":
+        "io.quarkus.oidc":
           level: DEBUG
     mailer:
       mock: true
