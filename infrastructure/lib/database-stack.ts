@@ -1,13 +1,14 @@
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { InstanceClass, InstanceSize, InstanceType, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import {
     Credentials,
     DatabaseInstance,
-    DatabaseInstanceEngine,
+    DatabaseInstanceEngine, DatabaseInstanceFromSnapshot,
     MariaDbEngineVersion,
-    ParameterGroup
+    ParameterGroup, SnapshotCredentials
 } from 'aws-cdk-lib/aws-rds';
-import { DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
+import { DatabaseInstanceFromSnapshotProps, DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
 import { Construct } from 'constructs';
 import { LittilEnvironmentSettings } from './littil-environment-settings';
 
@@ -31,7 +32,7 @@ export class DatabaseStack extends Stack {
         const databaseName = 'LittilDatabase';
 
         const rdsEngine = DatabaseInstanceEngine.mariaDb({
-            version: MariaDbEngineVersion.VER_10_6_8,
+            version: MariaDbEngineVersion.VER_10_6_17,
         });
 
         const rdsParameterGroup = new ParameterGroup(this, 'littil-rds-parametergroup', {
@@ -41,16 +42,11 @@ export class DatabaseStack extends Stack {
             }
         });
 
-        const credentials = Credentials.fromGeneratedSecret(
-            'littil_' + props.littil.environment.substring(0, 7),
-            {
-                secretName: 'littil/backend/' + props.littil.environment + '/database',
-            }
-        );
+        const dbUserName = 'littil_' + props.littil.environment.substring(0, 7);
+        const snapshotCredentials = SnapshotCredentials.fromGeneratedSecret(dbUserName);
 
-        const databaseProperties: DatabaseInstanceProps = {
-            databaseName,
-            credentials,
+        const databaseProperties: DatabaseInstanceFromSnapshotProps = {
+            credentials: snapshotCredentials,
             publiclyAccessible: false,
             vpc: props.apiVpc,
             vpcSubnets: {
@@ -62,9 +58,10 @@ export class DatabaseStack extends Stack {
                 InstanceClass.T4G,
                 InstanceSize.MICRO,
             ),
+            snapshotIdentifier: 'apidatabasestack-snapshot-littilapidatabase74782804-el2vi4cob7bc',
         };
 
-        const database = new DatabaseInstance(this, 'LittilApiDatabase', databaseProperties);
+        const database = new DatabaseInstanceFromSnapshot(this, 'LittilApiDatabase', databaseProperties);
 
         new CfnOutput(this, 'databaseHost', {
             value: database.instanceEndpoint.hostname,

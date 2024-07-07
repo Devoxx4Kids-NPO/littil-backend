@@ -13,7 +13,7 @@ export class VpcStack extends Stack {
 
         this.vpc = new Vpc(this, 'LittilBackendVpc', {
             maxAzs: 2,
-            natGateways: 1,
+            natGateways: 0,
             subnetConfiguration: [
                 {
                     name: 'LITTIL-Public-Subnet',
@@ -22,14 +22,6 @@ export class VpcStack extends Stack {
                 {
                     name: 'LITTIL-Private-Subnet',
                     subnetType: SubnetType.PRIVATE_ISOLATED,
-                },
-                {
-                    name: 'subnet-06016bf8ed12004e3',
-                    subnetType: SubnetType.PRIVATE_WITH_NAT,
-                },
-                {
-                    name: 'subnet-05acd2dc6a262b318',
-                    subnetType: SubnetType.PRIVATE_WITH_NAT,
                 }
             ]
         });

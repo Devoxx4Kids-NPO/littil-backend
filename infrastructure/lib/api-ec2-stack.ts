@@ -9,7 +9,7 @@ import {
     Instance,
     InstanceClass,
     InstanceSize,
-    InstanceType,
+    InstanceType, KeyPair,
     Peer,
     Port,
     SecurityGroup,
@@ -67,14 +67,16 @@ export class ApiEc2Stack extends Stack {
             ]
         });
 
-        const keypair = new CfnKeyPair(this, 'ApiEc2Keypair', {
-            keyName: 'EC2 Keypair',
+        const keypair = new KeyPair(this, 'ApiEc2Keypair', {
+            keyPairName: 'EC2 Keypair',
             publicKeyMaterial: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN5OhXLM34h3omM+5AoaYgUktcBMUBrC5awrPoItmf3S prod@littil.org',
         });
 
+        const apiDomain = 'api.' + (props.littil.environment === 'production' ? '' : props.littil.environment + '.') + 'littil.org';
+
         const littilServerConf = fs.readFileSync('lib/nginx/serverconfiguration')
             .toString('utf-8')
-            .replaceAll('%ENVIRONMENT%', props.littil.environment);
+            .replaceAll('%API_DOMAIN%', apiDomain);
 
         /* Logging. */
         const logGroupName = 'BackendApiEc2Logs';
@@ -88,7 +90,7 @@ export class ApiEc2Stack extends Stack {
 
         const littilOidcSecretName = 'littil/backend/' + props.littil.environment + '/oidc';
         const littilSmtpSecretName = 'littil/backend/' + props.littil.environment + '/smtp';
-        const littilBackendDatabaseSecretName = 'littil/backend/' + props.littil.environment + '/database';
+        const littilBackendDatabaseSecretName = 'ApiDatabaseStackLittilApiDa-MkpiTVWyDurc';
 
         const userData = UserData.forLinux();
         userData.addCommands(
@@ -124,7 +126,7 @@ export class ApiEc2Stack extends Stack {
             'echo SMTP_USERNAME=$(aws secretsmanager get-secret-value --region ' + this.region + ' --secret-id ' + littilSmtpSecretName + ' | jq --raw-output \'.SecretString\' | jq -r .smtpUsername) >> littil.env',
             'echo SMTP_PASSWORD=$(aws secretsmanager get-secret-value --region ' + this.region + ' --secret-id ' + littilSmtpSecretName + ' | jq --raw-output \'.SecretString\' | jq -r .smtpPassword) >> littil.env',
 
-            'docker run -p 8080:80 --env-file littil.env -d ' + dockerImage,
+            'docker run -p 8080:8080 --env-file littil.env -d ' + dockerImage,
 
             /* Install Nginx. */
             'amazon-linux-extras install nginx1',
@@ -184,7 +186,7 @@ export class ApiEc2Stack extends Stack {
             }),
             vpcSubnets: {subnetType: SubnetType.PUBLIC},
             securityGroup: ec2SecurityGroup,
-            keyName: keypair.keyName,
+            keyPair: keypair,
             userData,
         });
 

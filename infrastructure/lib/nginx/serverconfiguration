@@ -2,8 +2,8 @@ server {
     listen              443 ssl;
     server_name         api.littil.org;
 
-    ssl_certificate /etc/letsencrypt/live/api.%ENVIRONMENT%.littil.org/cert.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.%ENVIRONMENT%.littil.org/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/%API_DOMAIN%/cert.pem;
+    ssl_certificate_key /etc/letsencrypt/live/%API_DOMAIN%/privkey.pem;
 
     location / {
         proxy_pass          http://localhost:8080;
