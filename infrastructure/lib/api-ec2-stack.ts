@@ -90,6 +90,7 @@ export class ApiEc2Stack extends Stack {
 
         const littilOidcSecretName = 'littil/backend/' + props.littil.environment + '/oidc';
         const littilSmtpSecretName = 'littil/backend/' + props.littil.environment + '/smtp';
+        // TODO: Find by tags
         const littilBackendDatabaseSecretName = 'ApiDatabaseStackLittilApiDa-MkpiTVWyDurc';
 
         const userData = UserData.forLinux();
@@ -115,6 +116,7 @@ export class ApiEc2Stack extends Stack {
             'echo QUARKUS_MAILER_FROM=no-reply@mail.littil.org >> littil.env',
 
             'yum install jq -y',
+            // TODO: Pass these secret values to the docker process in a more secure way than storing them in a file
             'echo DATASOURCE_USERNAME=$(aws secretsmanager get-secret-value --region ' + this.region + ' --secret-id ' + littilBackendDatabaseSecretName + ' | jq --raw-output \'.SecretString\' | jq -r .username) >> littil.env',
             'echo DATASOURCE_PASSWORD=$(aws secretsmanager get-secret-value --region ' + this.region + ' --secret-id ' + littilBackendDatabaseSecretName + ' | jq --raw-output \'.SecretString\' | jq -r .password) >> littil.env',
             'echo OIDC_CLIENT_ID=$(aws secretsmanager get-secret-value --region ' + this.region + ' --secret-id ' + littilOidcSecretName + ' | jq --raw-output \'.SecretString\' | jq -r .oidcClientId) >> littil.env',
@@ -127,19 +129,22 @@ export class ApiEc2Stack extends Stack {
             'echo SMTP_PASSWORD=$(aws secretsmanager get-secret-value --region ' + this.region + ' --secret-id ' + littilSmtpSecretName + ' | jq --raw-output \'.SecretString\' | jq -r .smtpPassword) >> littil.env',
 
             'docker run -p 8080:8080 --env-file littil.env -d ' + dockerImage,
+            // TODO: Test whether we can immediately delete the file
+            // 'rm littil.env',
 
             /* Install Nginx. */
             'amazon-linux-extras install nginx1',
             'systemctl stop nginx',
 
             /* Nginx configuration. */
-            'echo ' + Buffer.from(littilServerConf).toString('base64') + ' | base64 -d > /etc/nginx/conf.d/api.' + props.littil.environment + '.littil.org.conf',
+            'echo ' + Buffer.from(littilServerConf).toString('base64') + ' | base64 -d > /etc/nginx/conf.d/' + apiDomain + '.conf',
 
             /* Certbot. */
             'amazon-linux-extras install epel',
             'yum update -y',
             'yum install certbot -y',
-            'letsencrypt certonly --standalone -d api.littil.org -m lennert.gijsen@littil.org --agree-tos --no-eff-email',
+            // Will fail when there's no DNS A record pointing to the above created Elastic IP. Should be interactively waiting or perhaps put the Elastic IP in a separate stack that needs to be created first.
+            'letsencrypt certonly --standalone -d ' + apiDomain + ' -m lennert.gijsen@littil.org --agree-tos --no-eff-email',
 
             'systemctl enable docker',
             'systemctl enable nginx',

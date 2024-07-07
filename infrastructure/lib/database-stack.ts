@@ -43,6 +43,7 @@ export class DatabaseStack extends Stack {
         });
 
         const dbUserName = 'littil_' + props.littil.environment.substring(0, 7);
+        // TODO: As soon as supported, use 'secretName' property. Will make looking this secret up easier.
         const snapshotCredentials = SnapshotCredentials.fromGeneratedSecret(dbUserName);
 
         const databaseProperties: DatabaseInstanceFromSnapshotProps = {
