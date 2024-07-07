@@ -1,5 +1,5 @@
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
-import { InstanceClass, InstanceSize, InstanceType, Vpc } from 'aws-cdk-lib/aws-ec2';
+import { InstanceClass, InstanceSize, InstanceType, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import {
     Credentials,
     DatabaseInstance,
@@ -53,6 +53,9 @@ export class DatabaseStack extends Stack {
             credentials,
             publiclyAccessible: false,
             vpc: props.apiVpc,
+            vpcSubnets: {
+                subnetType: SubnetType.PRIVATE_ISOLATED,
+            },
             engine: rdsEngine,
             parameterGroup: rdsParameterGroup,
             instanceType: InstanceType.of(

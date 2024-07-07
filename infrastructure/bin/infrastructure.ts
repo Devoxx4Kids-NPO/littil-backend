@@ -111,8 +111,14 @@ if (!littilEnvironment) {
         littil: littilEnvironmentSettings,
         apiVpc: vpcStack.vpc,
         env,
+        ecrRepository: {
+            awsAccount: sharedAccountId,
+            name: ecrApiRepositoryName,
+        },
         database: {
+            host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
             port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+            name: Fn.importValue(crossStackReferenceExportNames.databaseName),
             securityGroup: {
                 id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
             },
