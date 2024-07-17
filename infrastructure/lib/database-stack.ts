@@ -59,7 +59,7 @@ export class DatabaseStack extends Stack {
                 InstanceClass.T4G,
                 InstanceSize.MICRO,
             ),
-            snapshotIdentifier: 'apidatabasestack-snapshot-littilapidatabase74782804-el2vi4cob7bc',
+            snapshotIdentifier: 'apidatabasestack-snapshot-littilapidatabase74782804-gy2ioxtzgpgy',
         };
 
         const database = new DatabaseInstanceFromSnapshot(this, 'LittilApiDatabase', databaseProperties);

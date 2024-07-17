@@ -28,6 +28,7 @@ export interface ApiEc2StackProps extends StackProps {
     littil: LittilEnvironmentSettings;
 
     apiVpc: Vpc;
+    elasticIp: CfnEIP;
     ecrRepository: {
         awsAccount: string;
         name: string;
@@ -58,14 +59,6 @@ export class ApiEc2Stack extends Stack {
         ec2SecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(22), 'SSH access');
         ec2SecurityGroup.addIngressRule(Peer.anyIpv6(), Port.tcp(22), 'SSH access');
 
-        const elasticIp = new CfnEIP(this, 'ApiIP', {
-            tags: [
-                {
-                    key: 'Name',
-                    value: 'API EC2',
-                }
-            ]
-        });
 
         const keypair = new KeyPair(this, 'ApiEc2Keypair', {
             keyPairName: 'EC2 Keypair',
@@ -91,7 +84,7 @@ export class ApiEc2Stack extends Stack {
         const littilOidcSecretName = 'littil/backend/' + props.littil.environment + '/oidc';
         const littilSmtpSecretName = 'littil/backend/' + props.littil.environment + '/smtp';
         // TODO: Find by tags
-        const littilBackendDatabaseSecretName = 'ApiDatabaseStackLittilApiDa-MkpiTVWyDurc';
+        const littilBackendDatabaseSecretName = 'ApiDatabaseStackLittilApiDa-ia57olJcscCP';
 
         const userData = UserData.forLinux();
         userData.addCommands(
@@ -148,6 +141,7 @@ export class ApiEc2Stack extends Stack {
 
             'systemctl enable docker',
             'systemctl enable nginx',
+            'systemctl start nginx',
         );
 
         const pullPolicyStatement = new PolicyStatement({
@@ -198,7 +192,7 @@ export class ApiEc2Stack extends Stack {
         littilApiPolicy.attachToRole(ec2Instance.role);
 
         new CfnEIPAssociation(this, 'Ec2EipAssociation', {
-            eip: elasticIp.ref,
+            eip: props.elasticIp.ref,
             instanceId: ec2Instance.instanceId,
         });
         /**/

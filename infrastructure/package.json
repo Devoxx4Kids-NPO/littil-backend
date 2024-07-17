@@ -27,7 +27,7 @@
     "cdk:deploy:production:maintenance": "cdk deploy ApiVpcStack MaintenanceServiceStack --context accountName=production --context environment=production --require-approval=never",
 
     "cdk:diff:ec2": "cdk diff ApiCertificatesStack ApiVpcStack ApiDatabaseStack ApiEc2Stack --context accountName=production --context environment=production",
-    "cdk:deploy:ec2": "cdk deploy ApiCertificatesStack ApiVpcStack ApiDatabaseStack ApiEc2Stack --context accountName=production --context environment=production --require-approval=never",
+    "cdk:deploy:ec2": "cdk deploy ApiCertificatesStack ApiVpcStack ApiDatabaseStack ApiElasticIpStack ApiEc2Stack --context accountName=production --context environment=production --require-approval=never",
     "cdk:deploy:maintenance": "cdk deploy MaintenanceServiceStack --require-approval=never",
     "cdk:destroy:maintenance": "cdk destroy MaintenanceServiceStack --require-approval=never"
   },
