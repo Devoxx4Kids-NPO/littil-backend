@@ -4,7 +4,7 @@ import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.users.User;
 import io.quarkus.runtime.StartupEvent;
-import io.quarkus.runtime.configuration.ProfileManager;
+import io.quarkus.runtime.LaunchMode;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.auth.provider.auth0.Auth0ManagementAPI;
@@ -75,7 +75,7 @@ public class ApplicationLifeCycle {
     }
 
     void persistDevData() {
-        log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production. LaunchMode: {}",ProfileManager.getLaunchMode());
+        log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production. LaunchMode: {}",LaunchMode.current());
         DEV_USERS.entrySet().stream()
                 .flatMap(this::persistDevUserData)
                 .forEach(email -> log.info("Created {} user for development purposes", email));
