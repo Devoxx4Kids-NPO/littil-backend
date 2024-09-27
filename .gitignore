@@ -24,3 +24,4 @@ target
 .env
 .project
 .classpath
+dev-users.properties

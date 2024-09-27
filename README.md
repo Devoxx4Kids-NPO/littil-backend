@@ -21,3 +21,10 @@ This repository contains the API backend for the LITTIL platform based on Quarku
 Please
 read [the following guide](https://devoxx4kids-npo.github.io/littil-documentation/platform/local-development/set-up-backend-environment/)
 about how to set up your local development environment.
+
+
+### dev users
+
+When running the backend as a developer you can add previously created users at startup.
+Create a `dev-users.properties` file with the users you would like to add. when the backend is started.
+Additional information can be found in the file `dev-users.example`.

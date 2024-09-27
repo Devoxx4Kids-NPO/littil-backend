@@ -18,18 +18,18 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ApplicationScoped
 @Slf4j
 public class ApplicationLifeCycle {
 
-    //TODO: make this configurable for other purposes (e2e tests for example)
     // use locations from public places like city town hall, police station, railway station, etc.
     private static final Map<String, Location> DEV_USERS = Map.of(
             "info@littil.org", new Location(), //
@@ -40,11 +40,17 @@ public class ApplicationLifeCycle {
             "testschool2@littil.org", createLocationForDevUser("Marco Pololaan 6", "3526GJ"), //
             "testschool3@littil.org", createLocationForDevUser("Sint Jansstraat 4", "9712JN") //
     );
+    private static final String ZIPCODE_REGEX = "^[1-9][0-9]{3}[A-Z]{2}$";
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
 
 
     @Inject
     @ConfigProperty(name = "org.littil.devservices.devdata", defaultValue = "false")
     boolean insertDevData;
+
+    @Inject
+    @ConfigProperty(name = "org.littil.devservices.devdatafile", defaultValue = "dev-users.properties")
+    String devUserDataFile;
 
     @Inject
     @ConfigProperty(name = "org.littil.auth.token.claim.user_id")
@@ -76,7 +82,9 @@ public class ApplicationLifeCycle {
 
     void persistDevData() {
         log.info("Persisting auth0 user data to datasource, this should not be happening in staging nor production. LaunchMode: {}",LaunchMode.current());
-        DEV_USERS.entrySet().stream()
+        Map<String, Location> devUsers = getDevUsersFromFile();
+        devUsers.putAll(DEV_USERS); // override's location details if email exists in devUserFIle
+        devUsers.entrySet().stream()
                 .flatMap(this::persistDevUserData)
                 .forEach(email -> log.info("Created {} user for development purposes", email));
         log.info("Added general LiTTiL users for development purposes. You can login via email-addresses and the default password to the dev tenant.");
@@ -147,6 +155,46 @@ public class ApplicationLifeCycle {
         location.setAddress(address);
         location.setPostalCode(postalCode);
         return location;
+    }
+
+    private Map<String, Location> getDevUsersFromFile() {
+        List<String> devUserData = readDevUsersFromFile();
+        return devUserData.stream() //
+                .filter(s -> !s.contains("#"))
+                .map(s -> s.split(","))
+                .filter(a -> a.length ==  3)
+                .filter(a -> isValidString(a[0],EMAIL_REGEX))
+                .filter(a -> isValidString(a[2],ZIPCODE_REGEX))
+                .collect(Collectors.toMap(
+                        a -> a[0],
+                        a -> createLocationForDevUser(a[1], a[2])
+                ));
+    }
+
+    private List<String> readDevUsersFromFile() {
+        List<String> devUserData = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader( new FileReader(devUserDataFile))){
+            String line;
+            while((line = br.readLine()) != null) {
+                if(line.trim().length() > 0) {
+                        devUserData.add(line);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            log.warn("File with user config not found");
+        } catch (IOException e) {
+            log.warn("File with user config ignored");
+        }
+        return devUserData;
+    }
+
+    private static boolean isValidString(String stringToValidate, String regex) {
+        Pattern pattern = Pattern.compile(regex);
+        if (stringToValidate == null) {
+            return false;
+        }
+        Matcher matcher = pattern.matcher(stringToValidate);
+        return matcher.matches();
     }
 
 }
