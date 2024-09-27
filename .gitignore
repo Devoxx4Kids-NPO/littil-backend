@@ -24,4 +24,4 @@ target
 .env
 .project
 .classpath
-dev-users.properties
+dev-users.csv

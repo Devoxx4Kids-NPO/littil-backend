@@ -18,7 +18,7 @@ org:
           secret: ${M2M_CLIENT_SECRET:m2m_client_secret}
     devservices:
       devdata: ${LITTIL_DEV_DATA:false}
-      devdatafile: ${LITTIL_DEV_DATA_FILE:dev-users.properties}
+      devdatafile: ${LITTIL_DEV_DATA_FILE:dev-users.csv}
 quarkus:
   live-reload:
     instrumentation: true

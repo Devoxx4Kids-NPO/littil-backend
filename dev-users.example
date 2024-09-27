@@ -1,4 +1,4 @@
-# You can use a file 'dev-users.properties' to add users add startup of the backend.
+# You can use a file 'dev-users.csv' to add users add startup of the backend.
 # for each user add the following information in one line, separated by a comma ,
 #  - email-address
 #  - address
