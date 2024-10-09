@@ -2,6 +2,7 @@
 import { App, Fn, StackProps } from 'aws-cdk-lib';
 import 'source-map-support/register';
 import { ApiEc2Stack, ApiEc2StackProps } from '../lib/api-ec2-stack';
+import { ApiElasticIpStack } from '../lib/api-elastic-ip-stack';
 import { ApiStack, ApiStackProps } from '../lib/api-stack';
 import { CertificateStack, CertificateStackProps } from '../lib/certificate-stack';
 import { DatabaseStack, DatabaseStackProps } from '../lib/database-stack';
@@ -107,12 +108,26 @@ if (!littilEnvironment) {
     };
     new DatabaseStack(app, 'ApiDatabaseStack', databaseStackProps);
 
+    /* Separate stack for an Elastic IP so that the Elastic IP stack can be created first, then DNS updated, then the
+    EC2 stack can be created. If the EC2 stack is created immediately, certificate generation will fail. It must then
+    be retried manually */
+    const elasticIpStack = new ApiElasticIpStack(app, 'ApiElasticIpStack', {
+        env,
+    });
+
     const apiEc2StackProps: ApiEc2StackProps = {
         littil: littilEnvironmentSettings,
         apiVpc: vpcStack.vpc,
         env,
+        ecrRepository: {
+            awsAccount: sharedAccountId,
+            name: ecrApiRepositoryName,
+        },
+        elasticIp: elasticIpStack.elasticIp,
         database: {
+            host: Fn.importValue(crossStackReferenceExportNames.databaseHost),
             port: Fn.importValue(crossStackReferenceExportNames.databasePort),
+            name: Fn.importValue(crossStackReferenceExportNames.databaseName),
             securityGroup: {
                 id: Fn.importValue(crossStackReferenceExportNames.databaseSecurityGroup),
             },
