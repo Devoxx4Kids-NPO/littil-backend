@@ -26,5 +26,5 @@ about how to set up your local development environment.
 ### dev users
 
 When running the backend as a developer you can add previously created users at startup.
-Create a `dev-users.csv` file with the users you would like to add. when the backend is started.
+Create a `dev-users.csv` file in the project root with the users you would like to add. when the backend is started.
 Additional information can be found in the file `dev-users.example`.
