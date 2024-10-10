@@ -1,0 +1,14 @@
+# You can use a file 'dev-users.csv' to add users add startup of the backend.
+# for each user add the following information in one line, separated by a comma ,
+#  - email-address
+#  - address
+#  - zipcode  (with format 9999AA)
+# The users are only added to the database when
+#  - the email is valid
+#  - the zipcode is valid (format 9999AA)
+#  - the email is present in auth0
+# example :
+# empty lines and lines with # are skipped
+
+school1@littil.org,Some adress 1,1000AA
+teacher1@littil.org,other address 2, 2000BB
