@@ -49,8 +49,8 @@ public class ApplicationLifeCycle {
     boolean insertDevData;
 
     @Inject
-    @ConfigProperty(name = "org.littil.devservices.devdatafile", defaultValue = "dev-users.properties")
     String devUserDataFile;
+    @ConfigProperty(name = "org.littil.devservices.devdatafile", defaultValue = "dev-users.csv")
 
     @Inject
     @ConfigProperty(name = "org.littil.auth.token.claim.user_id")
