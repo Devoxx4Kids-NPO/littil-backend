@@ -49,8 +49,8 @@ public class ApplicationLifeCycle {
     boolean insertDevData;
 
     @Inject
-    String devUserDataFile;
     @ConfigProperty(name = "org.littil.devservices.devdatafile", defaultValue = "dev-users.csv")
+    Path devUserDataFile;
 
     @Inject
     @ConfigProperty(name = "org.littil.auth.token.claim.user_id")
@@ -172,7 +172,7 @@ public class ApplicationLifeCycle {
     private List<String> readDevUsersFromFile() {
         List<String> devUserData = new ArrayList<>();
         try {
-            devUserData = Files.readAllLines(Path.of(devUserDataFile));
+            devUserData = Files.readAllLines(devUserDataFile);
         } catch (IOException e) {
             log.warn("File with user config ignored");
         }
