@@ -65,7 +65,7 @@ export class ApiStack extends Stack {
             cpu: 256,
             enableExecuteCommand: true,
             taskImageOptions: {
-                image: ContainerImage.fromEcrRepository(apiEcrRepository, '1.3.1'),
+                image: ContainerImage.fromEcrRepository(apiEcrRepository, '1.3.2'),
                 containerPort: 8080,
                 containerName: 'api',
                 environment: {
