@@ -158,7 +158,7 @@ public class ApplicationLifeCycle {
     }
 
     private Map<String, Location> getDevUsersFromFile() {
-        return readDevUsersFromFile().stream() //
+        return readDevUsersFromFile()
                 .filter(s -> !s.contains("#"))
                 .map(s -> s.split(","))
                 .filter(a -> a.length ==  3)
@@ -169,14 +169,13 @@ public class ApplicationLifeCycle {
                 ));
     }
 
-    private List<String> readDevUsersFromFile() {
-        List<String> devUserData = new ArrayList<>();
+    private Stream<String> readDevUsersFromFile() {
         try {
-            devUserData = Files.readAllLines(devUserDataFile);
+            return Files.lines(devUserDataFile);
         } catch (IOException e) {
-            log.warn("File with user config ignored");
+            log.warn("File with user config ignored {}",devUserDataFile);
+            return Stream.empty();
         }
-        return devUserData;
     }
 
     private static boolean isValidString(String stringToValidate, String regex) {
