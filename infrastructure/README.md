@@ -94,3 +94,23 @@ The CLI can be downloaded at https://aws.amazon.com/cli/
 Specifically for the ECS Exec command, the session manager is required: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
 
 To authenticate with AWS, the AWS CLI can use named profiles (as used in this README): https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html
+
+# EC2 change
+
+## Updating the certificate
+
+To renew the certificate, the same command needs to be run:
+```bash
+sudo su
+letsencrypt certonly --standalone -d api.littil.org -m <email> --agree-tos --no-eff-email
+```
+
+To use port 80 for verification, stop the nginx webserver (way faster than shutting down and starting the back-end itself) for a moment:
+```bash
+systemctl stop nginx
+```
+
+Restart again using:
+```bash
+systemctl start nginx
+```

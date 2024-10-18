@@ -1,5 +1,5 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
-import { Vpc } from 'aws-cdk-lib/aws-ec2';
+import { ISubnet, Subnet, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
 export class VpcStack extends Stack {
@@ -13,7 +13,17 @@ export class VpcStack extends Stack {
 
         this.vpc = new Vpc(this, 'LittilBackendVpc', {
             maxAzs: 2,
-            natGateways: 1,
+            natGateways: 0,
+            subnetConfiguration: [
+                {
+                    name: 'LITTIL-Public-Subnet',
+                    subnetType: SubnetType.PUBLIC,
+                },
+                {
+                    name: 'LITTIL-Private-Subnet',
+                    subnetType: SubnetType.PRIVATE_ISOLATED,
+                }
+            ]
         });
     }
 }
