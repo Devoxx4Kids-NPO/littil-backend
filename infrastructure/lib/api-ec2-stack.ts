@@ -199,6 +199,7 @@ export class ApiEc2Stack extends Stack {
 
         /* Database access. */
         const databaseSecurityGroup = SecurityGroup.fromSecurityGroupId(this, 'DatabaseSecurityGroup', props.database.securityGroup.id);
+        // TODO: Uncomment, test and remove the allTcp rule
         // databaseSecurityGroup.connections.allowFrom(ec2SecurityGroup, Port.tcp(parseInt(props.database.port)));
         databaseSecurityGroup.connections.allowFrom(ec2SecurityGroup, Port.allTcp());
     }
