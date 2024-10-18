@@ -1,14 +1,13 @@
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { InstanceClass, InstanceSize, InstanceType, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
-import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import {
-    Credentials,
-    DatabaseInstance,
-    DatabaseInstanceEngine, DatabaseInstanceFromSnapshot,
+    DatabaseInstanceEngine,
+    DatabaseInstanceFromSnapshot,
     MariaDbEngineVersion,
-    ParameterGroup, SnapshotCredentials
+    ParameterGroup,
+    SnapshotCredentials
 } from 'aws-cdk-lib/aws-rds';
-import { DatabaseInstanceFromSnapshotProps, DatabaseInstanceProps } from 'aws-cdk-lib/aws-rds/lib/instance';
+import { DatabaseInstanceFromSnapshotProps } from 'aws-cdk-lib/aws-rds/lib/instance';
 import { Construct } from 'constructs';
 import { LittilEnvironmentSettings } from './littil-environment-settings';
 
