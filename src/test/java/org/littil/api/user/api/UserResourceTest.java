@@ -13,12 +13,13 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
+import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 
-import java.util.UUID;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,11 +53,31 @@ class UserResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenList_thenShouldReturnMultipleUsers() {
-        given()
+        String providerId = RandomStringUtils.randomAlphabetic(10);
+        User saved = createAndSaveUser(providerId);
+
+        AuthUser authUser = new AuthUser();
+        authUser.setRoles(Set.of("Role1", "Role2"));
+        authUser.setEmailAddress(saved.getEmailAddress());
+        authUser.setProviderId(saved.getProviderId());
+        authUser.setProvider(saved.getProvider());
+
+        doReturn(List.of(authUser)).when(authenticationService).listAuthUsers();
+
+        List<UserDTO> users = given()
                 .when()
                 .get("/user")
                 .then()
-                .statusCode(200);
+                .statusCode(200)
+                .extract().jsonPath().getList(".", UserDTO.class);
+
+        assertThat(users.isEmpty()).isFalse();
+        Optional<UserDTO> selectedUser = users.stream() //
+                .filter(user -> providerId.equals(user.getProviderId()))
+                .findFirst();
+
+        assertThat(selectedUser.isPresent()).isTrue();
+        assertThat(selectedUser.get().getRoles()).isEqualTo(authUser.getRoles());
     }
 
     @Test
