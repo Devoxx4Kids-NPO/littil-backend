@@ -35,21 +35,36 @@ public class UserService {
     PasswordService passwordService;
 
     public Optional<User> getUserById(UUID userId) {
-        return repository.findByIdOptional(userId).map(mapper::toDomain);
+        Optional<User> user = repository.findByIdOptional(userId).map(mapper::toDomain);
+        return extendWithAuthDetails(user);
     }
 
     public Optional<User> getUserByProviderId(String providerId) {
-        return repository.findByProviderId(providerId).map(mapper::toDomain);
+        Optional<User> user = repository.findByProviderId(providerId).map(mapper::toDomain);
+        return extendWithAuthDetails(user);
     }
 
     public Optional<User> getUserByEmailAddress(String email) {
-        return repository.findByEmailAddress(email).map(mapper::toDomain);
+        Optional<User> user = repository.findByEmailAddress(email).map(mapper::toDomain);
+        return extendWithAuthDetails(user);
     }
 
     public List<User> listUsers() {
         return repository.findAll().stream()
                 .map(mapper::toDomain)
+                .map(this::extendWithAuthDetails)
                 .toList();
+    }
+
+    private Optional<User> extendWithAuthDetails(Optional<User> user) {
+        user.ifPresent(this::extendWithAuthDetails);
+        return user;
+    }
+
+    private User extendWithAuthDetails(User user) {
+        Optional<AuthUser> authUser = authenticationService.getUserById(user.getProviderId());
+        authUser.ifPresent(value -> mapper.updateDomainFromAuthUser(value, user));
+        return user;
     }
 
     //todo can we refactor this method?

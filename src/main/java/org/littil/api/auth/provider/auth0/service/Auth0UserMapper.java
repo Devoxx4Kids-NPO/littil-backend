@@ -18,6 +18,7 @@ public class Auth0UserMapper {
         auth0User.setPassword(tempPassword.toCharArray());
         auth0User.setEmailVerified(true);
         auth0User.setAppMetadata(littleUser.getAppMetadata());
+        // TODO loginsCount,lastLogin
         return auth0User;
     }
 
@@ -30,6 +31,8 @@ public class Auth0UserMapper {
                 .collect(Collectors.toSet());
         authUser.setRoles(roleNames);
         authUser.setProvider(Provider.AUTH0);
+        authUser.setLoginsCount(user.getLoginsCount());
+        authUser.setLastLogin(user.getLastLogin());
         return authUser;
     }
 }
