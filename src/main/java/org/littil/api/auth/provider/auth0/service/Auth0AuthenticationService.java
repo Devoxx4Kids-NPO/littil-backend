@@ -1,5 +1,6 @@
 package org.littil.api.auth.provider.auth0.service;
 
+import com.auth0.client.mgmt.filter.RolesFilter;
 import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.APIException;
 import com.auth0.exception.Auth0Exception;
@@ -9,6 +10,7 @@ import com.auth0.json.mgmt.users.UsersPage;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jetbrains.annotations.NotNull;
 import org.littil.api.auth.provider.auth0.Auth0ManagementAPI;
 import org.littil.api.auth.provider.auth0.exception.Auth0AuthorizationException;
 import org.littil.api.auth.provider.auth0.exception.Auth0DuplicateUserException;
@@ -81,6 +83,52 @@ public class Auth0AuthenticationService implements AuthenticationService {
     private AuthUser getAuthUser(User user) throws Auth0Exception {
         List<Role> roles = auth0api.users().listRoles(user.getId(), null).execute().getBody().getItems();
         return auth0UserMapper.toDomain(user, roles);
+    }
+
+    @NotNull
+    private Map<Role, List<User>> GetRolesWithUserList() throws Auth0Exception {
+        List<Role> roles = auth0api.roles().list(new RolesFilter()).execute().getBody().getItems();
+        Map<Role, List<User>> roleWithUserListMap = new HashMap<>();
+        for (Role role: roles) {
+            List<User> usersForRole = getUsersForRole(role);
+            roleWithUserListMap.put(role, usersForRole);
+        }
+        return roleWithUserListMap;
+    }
+
+    private List<User> getUsersForRole(Role role) throws Auth0Exception {
+        return auth0api.roles()
+                .listUsers(role.getId(), null)
+                .execute()
+                .getBody()
+                .getItems();
+    }
+
+    @NotNull
+    private static Map<String, List<Role>> mapToUsersWithRoleList(Map<Role, List<User>> roleWithUserListMap) {
+        Map<String,List<Role>>  userWithRolesMap = new HashMap<>();
+        for (Map.Entry<Role, List<User>> entry : roleWithUserListMap.entrySet()) {
+            Role role = entry.getKey();
+            for (User user :  entry.getValue()) {
+                userWithRolesMap.computeIfAbsent(user.getEmail(), k -> new ArrayList<>()).add(role);
+            }
+        }
+        return userWithRolesMap;
+    }
+
+    @Override
+    public List<AuthUser> listAuthUsers()  {
+        try {
+            Map<Role, List<User>> rolesWithUserList = GetRolesWithUserList();
+            Map<String, List<Role>> usersWithRolesList = mapToUsersWithRoleList(rolesWithUserList);
+            List<User> users = auth0api.users().list(new UserFilter()).execute().getBody().getItems();
+            return users.stream() //
+                    .map(user -> auth0UserMapper.toDomain(user,
+                            usersWithRolesList.getOrDefault(user.getEmail(), new ArrayList<>()))) //
+                    .toList();
+        } catch(Auth0Exception exception) {
+            throw new Auth0UserException("Could not get list of authUsers", exception);
+        }
     }
 
     @Override
