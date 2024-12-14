@@ -216,6 +216,39 @@ class UserResourceTest {
                 .statusCode(404);
     }
 
+    @Test
+    void givenGetUserStatisticsUnauthorized_thenShouldReturnForbidden() {
+        given()
+                .when()
+                .get("/statistics")
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "admin")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetUserStatisticsWithAdminRole_thenShouldReturnSuccesfully() {
+        given()
+                .when()
+                .get("/statistics")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenGetUserStatisticsWithoutAdminRole_thenShouldReturnForbidden() {
+        given()
+                .when()
+                .get("/statistics")
+                .then()
+                .statusCode(403);
+    }
+
     private UserPostResource getDefaultUser() {
         UserPostResource user = new UserPostResource();
         user.setEmailAddress(RandomStringUtils.randomAlphabetic(10) + "@littil.org");
