@@ -13,7 +13,7 @@
       <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
       <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
       <!-- quarkus 3.17.# is causing in issue in the frontend with the generated openapi.json -->
-      <quarkus.platform.version>3.16.4</quarkus.platform.version>
+      <quarkus.platform.version>3.17.4</quarkus.platform.version>
       <quarkus.package.type>fast-jar</quarkus.package.type>
       <surefire-plugin.version>3.5.2</surefire-plugin.version>
       <sonar.host.url>https://sonarcloud.io</sonar.host.url>
