@@ -10,6 +10,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
+import org.littil.api.auth.service.AuthUser;
+import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
@@ -52,6 +54,13 @@ public class UserResource {
     @Inject
     TokenHelper tokenHelper;
 
+    @Inject
+    AuthenticationService authenticationService;
+
+    @Inject
+    UserDTOMapper userDTOMapper;
+
+
     @GET
     @Path("user")
     @RolesAllowed({"admin"})
@@ -61,12 +70,24 @@ public class UserResource {
             description = "Get all users",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.ARRAY, implementation = User.class)
+                    schema = @Schema(type = SchemaType.ARRAY, implementation = UserDTO.class)
             )
     )
     public Response list() {
-        List<User> users = userService.listUsers();
+        List<AuthUser> authUsers = authenticationService.listAuthUsers();
+        List<UserDTO> users = userService.listUsers()
+                .stream()
+                .map(userDTOMapper::toDTO)
+                .map(user -> extendUserWithAuthUserDetails(user, authUsers) )
+                .toList();
         return Response.ok(users).build();
+    }
+
+    private UserDTO extendUserWithAuthUserDetails(UserDTO user, List<AuthUser> authUsers) {
+        Optional<AuthUser> authUser =  authUsers.stream()
+                .filter(a -> a.getEmailAddress().equals(user.getEmailAddress()))
+                .findFirst();
+        return authUser.isEmpty() ? user : userDTOMapper.updateUserDTOFromAuthUser(authUser.get(), user);
     }
 
     @GET
@@ -78,7 +99,7 @@ public class UserResource {
             description = "User with Id found.",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)
+                    schema = @Schema(implementation = User.class)
             )
     )
     @APIResponse(
@@ -102,7 +123,7 @@ public class UserResource {
             description = "User with provider Id found.",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)
+                    schema = @Schema(implementation = User.class)
             )
     )
     @APIResponse(
@@ -132,7 +153,7 @@ public class UserResource {
             description = "User successfully created",
             content = @Content(
                     mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)
+                    schema = @Schema(implementation = User.class)
             )
     )
     @APIResponse(
