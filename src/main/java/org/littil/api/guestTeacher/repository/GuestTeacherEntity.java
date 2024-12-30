@@ -22,6 +22,10 @@ import java.util.UUID;
 @Builder
 @Entity(name = "GuestTeacher")
 @Table(name = "guest_teacher")
+@NamedQuery(
+        name = "GuestTeacherEntity.countAndMaxCreatedAt",
+        query = "SELECT COUNT(e.id), MAX(e.createdDate) FROM GuestTeacher e "
+)
 public class GuestTeacherEntity extends AbstractAuditableEntity {
 
     @Id

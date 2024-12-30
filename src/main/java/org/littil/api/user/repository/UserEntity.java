@@ -12,6 +12,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,6 +24,11 @@ import java.util.UUID;
 @Builder
 @Entity(name = "User")
 @Table(name = "user")
+@NamedQuery(
+        name = "UserEntity.countAndMaxCreatedAt",
+        query = "SELECT COUNT(e.id), MAX(e.createdDate) FROM User e "
+)
+
 public class UserEntity extends AbstractAuditableEntity {
 
     @Id

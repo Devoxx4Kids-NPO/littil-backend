@@ -14,6 +14,8 @@ import org.littil.api.exception.ErrorResponse;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
+import org.littil.api.user.service.UserStatistics;
+import org.littil.api.user.service.UserStatisticsService;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -29,6 +31,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +45,8 @@ import java.util.UUID;
 public class UserResource {
     @Inject
     UserService userService;
+    @Inject
+    UserStatisticsService userStatisticsService;
     @Inject
     UserMapper userMapper;
     @Inject
@@ -169,4 +174,22 @@ public class UserResource {
         userService.deleteUser(id);
         return Response.ok().build();
     }
+
+    @GET
+    @Path("statistics")
+    @RolesAllowed({"admin"})
+    @Operation(summary = "Get statistics of users")
+    @APIResponse(
+            responseCode = "200",
+            description = "Get statistics of users",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.ARRAY, implementation = UserStatistics.class)
+            )
+    )
+    public Response getUserStatistics() {
+        List<UserStatistics> userStatistics = userStatisticsService.getUserStatistics();
+        return Response.ok(userStatistics).build();
+    }
+
 }
