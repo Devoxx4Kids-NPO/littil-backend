@@ -47,7 +47,7 @@ public abstract class UserMapper {
 
     abstract void updateDomainFromEntity(UserEntity entity, @MappingTarget User domain);
 
-    abstract void updateDomainFromAuthUser(AuthUser authUser, @MappingTarget User domain);
+    abstract User updateDomainFromAuthUser(AuthUser authUser, @MappingTarget User domain);
 
     abstract void updateAuthUserFromEntity(UserEntity entity, @MappingTarget AuthUser authUser);
 

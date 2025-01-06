@@ -19,8 +19,10 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 @AllArgsConstructor
@@ -50,20 +52,27 @@ public class UserService {
     }
 
     public List<User> listUsers() {
+        List<AuthUser> authUsers = authenticationService.getAllUsers();
+        // Convert to a Map for efficient lookup
+        Map<String, AuthUser> authUserMap = authUsers.stream()
+                .collect(Collectors.toMap(AuthUser::getProviderId, authUser -> authUser));
+
         return repository.findAll().stream()
                 .map(mapper::toDomain)
-                .map(this::extendWithAuthDetails)
+                .map(user -> {
+                    AuthUser authUser = authUserMap.get(user.getProviderId());
+                    return authUser == null ? user : mapper.updateDomainFromAuthUser(authUser, user);
+                })
+
                 .toList();
     }
 
     private Optional<User> extendWithAuthDetails(Optional<User> user) {
-        user.ifPresent(this::extendWithAuthDetails);
-        return user;
-    }
-
-    private User extendWithAuthDetails(User user) {
-        Optional<AuthUser> authUser = authenticationService.getUserById(user.getProviderId());
-        authUser.ifPresent(value -> mapper.updateDomainFromAuthUser(value, user));
+        user.ifPresent(u ->
+                authenticationService
+                        .getUserById(u.getProviderId())
+                        .ifPresent(authUser -> mapper.updateDomainFromAuthUser(authUser, u))
+        );
         return user;
     }
 
