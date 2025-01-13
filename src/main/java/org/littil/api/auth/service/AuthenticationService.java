@@ -1,5 +1,6 @@
 package org.littil.api.auth.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,4 +16,5 @@ public interface AuthenticationService {
 
     void removeAuthorization(UUID littilUserId, AuthorizationType type, UUID id);
 
+    List<AuthUser> getAllUsers();
 }
