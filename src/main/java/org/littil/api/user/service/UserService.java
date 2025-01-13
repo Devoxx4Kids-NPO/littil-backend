@@ -19,8 +19,10 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 @AllArgsConstructor
@@ -35,20 +37,33 @@ public class UserService {
     PasswordService passwordService;
 
     public Optional<User> getUserById(UUID userId) {
-        return repository.findByIdOptional(userId).map(mapper::toDomain);
+        Optional<User> user = repository.findByIdOptional(userId).map(mapper::toDomain);
+        return extendWithAuthDetails(user);
     }
 
     public Optional<User> getUserByProviderId(String providerId) {
-        return repository.findByProviderId(providerId).map(mapper::toDomain);
+        Optional<User> user = repository.findByProviderId(providerId).map(mapper::toDomain);
+        return extendWithAuthDetails(user);
     }
 
     public Optional<User> getUserByEmailAddress(String email) {
-        return repository.findByEmailAddress(email).map(mapper::toDomain);
+        Optional<User> user = repository.findByEmailAddress(email).map(mapper::toDomain);
+        return extendWithAuthDetails(user);
     }
 
     public List<User> listUsers() {
+        List<AuthUser> authUsers = authenticationService.getAllUsers();
+        // Convert to a Map for efficient lookup
+        Map<String, AuthUser> authUserMap = authUsers.stream()
+                .collect(Collectors.toMap(AuthUser::getProviderId, authUser -> authUser));
+
         return repository.findAll().stream()
                 .map(mapper::toDomain)
+                .map(user -> {
+                    AuthUser authUser = authUserMap.get(user.getProviderId());
+                    return mapper.updateDomainFromAuthUser(authUser, user);
+                })
+
                 .toList();
     }
 
@@ -109,5 +124,19 @@ public class UserService {
         user.setProviderId(auth0id);
         user.setEmailAddress(email);
         this.repository.persist(user);
+    }
+
+    /*
+     * Method can not be used in stream operation.
+     * This will cause a com.auth0.exception.RateLimitException.
+     * HttpStatus 429 (Too Many Requests) is returned by auth0.
+     */
+    private Optional<User> extendWithAuthDetails(Optional<User> user) {
+        user.ifPresent(u ->
+                authenticationService
+                        .getUserById(u.getProviderId())
+                        .ifPresent(authUser -> mapper.updateDomainFromAuthUser(authUser, u))
+        );
+        return user;
     }
 }

@@ -42,14 +42,9 @@ public abstract class UserMapper {
         return authUser;
     }
 
-    //todo why does this method return a void?
-    abstract void updateEntityFromDomain(User domain, @MappingTarget UserEntity entity);
-
     abstract void updateDomainFromEntity(UserEntity entity, @MappingTarget User domain);
 
-    abstract void updateDomainFromAuthUser(AuthUser authUser, @MappingTarget User domain);
-
-    abstract void updateAuthUserFromEntity(UserEntity entity, @MappingTarget AuthUser authUser);
+    abstract User updateDomainFromAuthUser(AuthUser authUser, @MappingTarget User domain);
 
     abstract void updateEntityFromAuthUser(AuthUser authUser, @MappingTarget UserEntity entity);
 }
