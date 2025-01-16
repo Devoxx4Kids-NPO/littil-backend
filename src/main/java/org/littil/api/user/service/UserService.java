@@ -63,7 +63,6 @@ public class UserService {
                     AuthUser authUser = authUserMap.get(user.getProviderId());
                     return mapper.updateDomainFromAuthUser(authUser, user);
                 })
-
                 .toList();
     }
 
