@@ -7,8 +7,9 @@
 #  - the email is valid
 #  - the zipcode is valid (format 9999AA)
 #  - the email is present in auth0
-# example :
 # empty lines and lines with # are skipped
 
+# example :
+
 school1@littil.org,Some adress 1,1000AA
-teacher1@littil.org,other address 2, 2000BB
+teacher1@littil.org,other address 2,2000BB
