@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.littil.api.auth.provider.auth0.Auth0ManagementAPI;
 import org.littil.api.auth.provider.auth0.exception.Auth0RoleException;
 
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;

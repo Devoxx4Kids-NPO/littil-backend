@@ -3,7 +3,7 @@ package org.littil.api.school.service;
 import io.quarkus.security.UnauthorizedException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.InjectMock;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.provider.Provider;
@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-public class SchoolModuleServiceTest {
+class SchoolModuleServiceTest {
 
     @Inject
     SchoolModuleService schoolModuleService;
@@ -64,7 +64,7 @@ public class SchoolModuleServiceTest {
         List<Module> modules = schoolModuleService.getSchoolModulesBySchoolId(schoolId);
 
         assertThat(modules).isNotEmpty();
-        assertThat(modules.size()).isEqualTo(1);
+        assertThat(modules).hasSize(1);
         assertThat(modules.get(0).getId()).isEqualTo(expectedModuleId);
         assertThat(modules.get(0).getName()).isEqualTo(expectedModuleName);
 
@@ -251,17 +251,17 @@ public class SchoolModuleServiceTest {
     private SchoolEntity createSchoolEntity(UUID schoolId, UUID UserId) {
         SchoolEntity schoolEntity = new SchoolEntity();
         schoolEntity.setId(schoolId);
-        schoolEntity.setName(RandomStringUtils.randomAlphabetic(10));
+        schoolEntity.setName(RandomStringGenerator.generate(10));
         UserEntity user = new UserEntity(UserId, Provider.AUTH0, "providerId", "email@littil.org");
         schoolEntity.setUser(user);
         return schoolEntity;
     }
 
-    private SchoolModuleEntity createSchoolModuleEntities(SchoolEntity school, boolean ModuleDeleted) {
+    private SchoolModuleEntity createSchoolModuleEntities(SchoolEntity school, boolean moduleDeleted) {
         SchoolModuleEntity entity = new SchoolModuleEntity();
         entity.setId(UUID.randomUUID());
         entity.setSchool(school);
-        entity.setModule(new ModuleEntity(UUID.randomUUID(), "moduleName", ModuleDeleted));
+        entity.setModule(new ModuleEntity(UUID.randomUUID(), "moduleName", moduleDeleted));
         return entity;
     }
 }

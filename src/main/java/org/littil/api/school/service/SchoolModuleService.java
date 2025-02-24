@@ -19,7 +19,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -81,9 +80,9 @@ public class SchoolModuleService {
      *   get schoolEntity and validate user
      */
     @NotNull
-    protected SchoolEntity getSchoolEntity(@NotNull UUID school_id) {
+    protected SchoolEntity getSchoolEntity(@NotNull UUID schoolId) {
         UUID userId = tokenHelper.getCurrentUserId();
-        SchoolEntity school = schoolRepository.findByIdOptional(school_id)
+        SchoolEntity school = schoolRepository.findByIdOptional(schoolId)
                 .orElseThrow(() -> new NotFoundException("No School found for Id"));
         if ((school.getUser() == null) || !school.getUser().getId().equals(userId)) {
             throw new UnauthorizedException("Action not allowed, user is not the owner of this entity.");

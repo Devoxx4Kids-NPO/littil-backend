@@ -79,7 +79,7 @@ public class SearchResource {
         return expectedModules.stream() //
                 .filter(name -> !activeModules.contains(name)) //
                 .toList() //
-                .size() == 0;
+                .isEmpty();
     }
 
 }

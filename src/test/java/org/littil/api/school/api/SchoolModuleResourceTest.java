@@ -11,7 +11,7 @@ import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.doReturn;
 @QuarkusTest
 @TestHTTPEndpoint(SchoolModuleResource.class)
 @QuarkusTestResource(APIManagementMock.class)
-public class SchoolModuleResourceTest
+class SchoolModuleResourceTest
 {
 
     @InjectSpy
@@ -148,11 +148,11 @@ public class SchoolModuleResourceTest
 
     private School getDefaultSchool() {
         School school = new School();
-        school.setName(RandomStringUtils.randomAlphabetic(10));
-        school.setAddress(RandomStringUtils.randomAlphabetic(10));
-        school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
-        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
-        school.setSurname(RandomStringUtils.randomAlphabetic(10));
+        school.setName(RandomStringGenerator.generate(10));
+        school.setAddress(RandomStringGenerator.generate(10));
+        school.setPostalCode(RandomStringGenerator.generate(6));
+        school.setFirstName(RandomStringGenerator.generate(10));
+        school.setSurname(RandomStringGenerator.generate(10));
         return school;
     }
 }
