@@ -63,8 +63,7 @@ class GuestTeacherModuleServiceTest {
 
         List<Module>  modules = guestTeacherModuleService.getGuestTeacherModulesByGuestTeacherId(guestTeacherId);
 
-        assertThat(modules).isNotEmpty();
-        assertThat(modules).hasSize(1);
+        assertThat(modules).isNotEmpty().hasSize(1);
         assertThat(modules.get(0).getId()).isEqualTo(expectedModuleId);
         assertThat(modules.get(0).getName()).isEqualTo(expectedModuleName);
 
