@@ -3,7 +3,7 @@ package org.littil.api.userSetting.repository;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -24,7 +24,7 @@ class UserSettingRepositoryTest {
     @Test
     void givenFindUserSettingsByUserId_thenShouldReturnSuccessfully() {
         final UUID userId = UUID.randomUUID();
-        final List<UserSettingEntity> userSettings = List.of(new UserSettingEntity(userId, RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10)));
+        final List<UserSettingEntity> userSettings = List.of(new UserSettingEntity(userId, RandomStringGenerator.generate(5), RandomStringGenerator.generate(10)));
 
         final PanacheQuery<UserSettingEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("userId", userId);

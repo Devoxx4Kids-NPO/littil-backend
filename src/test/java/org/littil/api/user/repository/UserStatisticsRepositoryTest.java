@@ -22,7 +22,7 @@ import java.util.List;
 
 
 @QuarkusTest
-public class UserStatisticsRepositoryTest {
+class UserStatisticsRepositoryTest {
 
     @Mock
     EntityManager entityManager;
@@ -36,7 +36,7 @@ public class UserStatisticsRepositoryTest {
     }
 
     @Test
-    public void testGetUserStatistics() {
+    void testGetUserStatistics() {
         // Arrange
         Tuple userTuple = mock(Tuple.class);
         Tuple schoolTuple = mock(Tuple.class);
@@ -73,7 +73,6 @@ public class UserStatisticsRepositoryTest {
         assertTrue(actualStatistics.contains(expectedUserStatistics));
         assertTrue(actualStatistics.contains(expectedSchoolStatistics));
         assertTrue(actualStatistics.contains(expectedGuestTeacherStatistics));
-
 
     }
 }

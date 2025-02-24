@@ -4,7 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import java.util.Optional;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -27,7 +27,7 @@ class SchoolRepositoryTest {
 
     @Test
     void givenFindExistingSchoolByName_thenShouldReturnSuccessfully() {
-        String name = RandomStringUtils.randomAlphabetic(10);
+        String name = RandomStringGenerator.generate(10);
         List<SchoolEntity> school = List.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null, null));
 
         Object[] params = { "%" + name + "%" } ;
@@ -40,7 +40,7 @@ class SchoolRepositoryTest {
 
     @Test
     void givenFindNonExistingSchoolByName_thenShouldReturnEmptyOptional() {
-        final String name = RandomStringUtils.randomAlphabetic(10);
+        final String name = RandomStringGenerator.generate(10);
 
         Object[] params = { "%" + name + "%" };
         doReturn(Collections.emptyList()).when(repository).list(anyString(), eq(params));
@@ -52,7 +52,7 @@ class SchoolRepositoryTest {
 
     @Test
     void givenFindByLocation_thenShouldReturnSuccessfully() {
-        String name = RandomStringUtils.randomAlphabetic(10);
+        String name = RandomStringGenerator.generate(10);
         Optional<SchoolEntity> school = Optional.of(new SchoolEntity(UUID.randomUUID(), name, null, null, null, null));
 
         LocationEntity location = new LocationEntity();

@@ -4,7 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +27,8 @@ class GuestTeacherRepositoryTest {
 
     @Test
     void givenFindExistingTeacherByName_thenShouldReturnSuccessfully() {
-        String firstName = RandomStringUtils.randomAlphabetic(10);
-        String surname = RandomStringUtils.randomAlphabetic(10);
+        String firstName = RandomStringGenerator.generate(10);
+        String surname = RandomStringGenerator.generate(10);
         List<GuestTeacherEntity> teacherList = List.of(new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, null, null, null, null, null));
 
         doReturn(teacherList).when(repository).list("surname like ?1", "%" + surname + "%");
@@ -40,7 +40,7 @@ class GuestTeacherRepositoryTest {
 
     @Test
     void givenFindNonExistingTeacherByName_thenShouldReturnEmptyOptional() {
-        final String searchSurname = RandomStringUtils.randomAlphabetic(10);
+        final String searchSurname = RandomStringGenerator.generate(10);
 
         doReturn(Collections.emptyList()).when(repository).list("surname like ?1", "%" + searchSurname + "%");
 
@@ -51,9 +51,9 @@ class GuestTeacherRepositoryTest {
 
     @Test
     void givenFindFilledExistingTeacherByName_thenShouldReturnSuccessfully() {
-        String firstName = RandomStringUtils.randomAlphabetic(10);
-        String surname = RandomStringUtils.randomAlphabetic(10);
-        String prefix = RandomStringUtils.randomAlphabetic(10);
+        String firstName = RandomStringGenerator.generate(10);
+        String surname = RandomStringGenerator.generate(10);
+        String prefix = RandomStringGenerator.generate(10);
         LocationEntity location = new LocationEntity();
         LinkedHashSet<DayOfWeek> availibility = new LinkedHashSet<>(List.of(DayOfWeek.MONDAY));
         UserEntity user = new UserEntity();
@@ -72,8 +72,8 @@ class GuestTeacherRepositoryTest {
 
     @Test
     void givenFindByLocation_thenShouldReturnSuccessfully() {
-        String firstName = RandomStringUtils.randomAlphabetic(10);
-        String surname = RandomStringUtils.randomAlphabetic(10);
+        String firstName = RandomStringGenerator.generate(10);
+        String surname = RandomStringGenerator.generate(10);
         Optional<GuestTeacherEntity> teacher = Optional.of(new GuestTeacherEntity(UUID.randomUUID(), firstName, surname, null, null, null, null, null));
 
         LocationEntity location = new LocationEntity();

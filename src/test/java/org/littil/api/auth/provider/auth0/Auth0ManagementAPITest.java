@@ -1,6 +1,5 @@
 package org.littil.api.auth.provider.auth0;
 
-import com.auth0.exception.Auth0Exception;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,7 @@ class Auth0ManagementAPITest {
     private final Auth0ManagementAPI auth0api;
 
     @Test
-    void getManagementAPI() throws Auth0Exception {
+    void getManagementAPI() {
         // on init it starts with tokenExpired
         assertTrue(this.auth0api.tokenIsExpired());
 

@@ -3,7 +3,7 @@ package org.littil.api.search.service;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.InjectMock;
 
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -129,7 +129,7 @@ class SearchServiceTest {
 
     private static SchoolEntity getSchool() {
         SchoolEntity school = new SchoolEntity();
-        school.setName(RandomStringUtils.randomAlphabetic(10));
+        school.setName(RandomStringGenerator.generate(10));
         return school;
     }
 
@@ -149,9 +149,9 @@ class SearchServiceTest {
 
     private static GuestTeacherEntity getGuestTeacher() {
         GuestTeacherEntity teacher = new GuestTeacherEntity();
-        teacher.setFirstName(RandomStringUtils.randomAlphabetic(10));
+        teacher.setFirstName(RandomStringGenerator.generate(10));
         teacher.setPrefix("");
-        teacher.setSurname(RandomStringUtils.randomAlphabetic(10));
+        teacher.setSurname(RandomStringGenerator.generate(10));
         return teacher;
     }
 

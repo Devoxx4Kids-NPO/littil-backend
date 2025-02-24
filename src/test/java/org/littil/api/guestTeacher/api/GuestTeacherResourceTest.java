@@ -9,7 +9,7 @@ import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
@@ -117,7 +117,7 @@ class GuestTeacherResourceTest {
     void givenGetTeacherByUnknownName_thenShouldReturnNotFound() {
         given()
                 .when()
-                .get("/{name}", RandomStringUtils.randomAlphabetic(10))
+                .get("/{name}", RandomStringGenerator.generate(10))
                 .then()
                 .statusCode(404);
     }
@@ -262,7 +262,7 @@ class GuestTeacherResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")})
     void givenUpdatingFirstNameOfTeacherById_thenShouldUpdateSuccessfully() {
-        String newName = RandomStringUtils.randomAlphabetic(10);
+        String newName = RandomStringGenerator.generate(10);
         GuestTeacherPostResource teacher = getGuestTeacherPostResource();
         GuestTeacher saved = saveTeacher(teacher);
 
@@ -334,10 +334,10 @@ class GuestTeacherResourceTest {
 
     private GuestTeacherPostResource getGuestTeacherPostResource() {
         var teacher = new GuestTeacherPostResource();
-        teacher.setFirstName(RandomStringUtils.randomAlphabetic(10));
-        teacher.setSurname(RandomStringUtils.randomAlphabetic(10));
-        teacher.setAddress(RandomStringUtils.randomAlphabetic(10));
-        teacher.setPostalCode(RandomStringUtils.randomAlphabetic(10));
+        teacher.setFirstName(RandomStringGenerator.generate(10));
+        teacher.setSurname(RandomStringGenerator.generate(10));
+        teacher.setAddress(RandomStringGenerator.generate(10));
+        teacher.setPostalCode(RandomStringGenerator.generate(10));
         teacher.setAvailability(EnumSet.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
 
         return teacher;

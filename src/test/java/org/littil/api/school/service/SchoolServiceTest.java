@@ -3,7 +3,7 @@ package org.littil.api.school.service;
 import io.quarkus.security.UnauthorizedException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.InjectMock;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
@@ -72,7 +72,7 @@ class SchoolServiceTest {
     @Test
     void givenGetSchoolByName_thenShouldReturnSchool() {
         final UUID schoolId = UUID.randomUUID();
-        final String schoolName = RandomStringUtils.randomAlphabetic(10);
+        final String schoolName = RandomStringGenerator.generate(10);
         final SchoolEntity expectedSchool = createSchoolEntity(schoolId, schoolName); 
         final School mappedSchool = createSchool(schoolId, schoolName);
 
@@ -91,7 +91,7 @@ class SchoolServiceTest {
 
     @Test
     void givenGetSchoolByUnknownName_thenShouldReturnEmptyOptional() {
-        final String unknownName = RandomStringUtils.randomAlphabetic(10);
+        final String unknownName = RandomStringGenerator.generate(10);
 
         doReturn(Collections.emptyList()).when(repository).findBySchoolNameLike(unknownName);
 
@@ -105,7 +105,7 @@ class SchoolServiceTest {
     @Test
     void givenGetSchoolById_thenShouldReturnSchool() {
         final UUID schoolId = UUID.randomUUID();
-        final String schoolName = RandomStringUtils.randomAlphabetic(10);
+        final String schoolName = RandomStringGenerator.generate(10);
         final SchoolEntity expectedSchool = createSchoolEntity(schoolId, schoolName);
         final School mappedSchool = createSchool(schoolId, schoolName);
 
@@ -138,7 +138,7 @@ class SchoolServiceTest {
     @Test
     void giveFindAll_thenShouldReturnSchoolList() {
         final UUID schoolId = UUID.randomUUID();
-        final String schoolName = RandomStringUtils.randomAlphabetic(10);
+        final String schoolName = RandomStringGenerator.generate(10);
         final SchoolEntity expectedSchool = createSchoolEntity(schoolId, schoolName);
         final List<SchoolEntity> expectedSchoolEntities = Collections.nCopies(3, expectedSchool);
         final List<School> expectedSchools = expectedSchoolEntities.stream().map(mapper::toDomain).toList();
@@ -166,11 +166,11 @@ class SchoolServiceTest {
     @Test
     void givenSaveSchool_thenShouldReturnSchool() {
         final UUID schoolId = UUID.randomUUID();
-        final String name = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String name = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String contactPersonFirstName = RandomStringGenerator.generate(10);
+        final String contactPersonSurname = RandomStringGenerator.generate(10);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final ContactPersonEntity contactPerson = new ContactPersonEntity();
         contactPerson.setFirstName(contactPersonFirstName);
@@ -212,11 +212,11 @@ class SchoolServiceTest {
     @Test
     void givenSaveSchoolUnknownErrorOccurred_thenShouldThrowPersistenceException() {
         final UUID schoolId = UUID.randomUUID();
-        final String name = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String name = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String contactPersonFirstName = RandomStringGenerator.generate(10);
+        final String contactPersonSurname = RandomStringGenerator.generate(10);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final ContactPersonEntity contactPerson = new ContactPersonEntity();
         contactPerson.setFirstName(contactPersonFirstName);
@@ -249,11 +249,11 @@ class SchoolServiceTest {
     @Test
     void givenSaveSchoolForUnknownUser_thenShouldThrowServiceException() {
         final UUID schoolId = UUID.randomUUID();
-        final String name = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String name = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String contactPersonFirstName = RandomStringGenerator.generate(10);
+        final String contactPersonSurname = RandomStringGenerator.generate(10);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final ContactPersonEntity contactPerson = new ContactPersonEntity();
         contactPerson.setFirstName(contactPersonFirstName);
@@ -280,11 +280,11 @@ class SchoolServiceTest {
     @Test
     void givenDeleteSchoolWithModules_thenShouldDeleteSchoolAndUser() {
         final UUID schoolId = UUID.randomUUID();
-        final String name = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String name = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String contactPersonFirstName = RandomStringGenerator.generate(10);
+        final String contactPersonSurname = RandomStringGenerator.generate(10);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final UUID userId = UUID.randomUUID();
 
@@ -317,11 +317,11 @@ class SchoolServiceTest {
     @Test
     void givenDeleteSchoolWithoutModules_thenShouldDeleteSchoolAndNotDeleteUser() {
         final UUID schoolId = UUID.randomUUID();
-        final String name = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String name = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String contactPersonFirstName = RandomStringGenerator.generate(10);
+        final String contactPersonSurname = RandomStringGenerator.generate(10);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final UUID userId = UUID.randomUUID();
 
@@ -370,12 +370,12 @@ class SchoolServiceTest {
     @Test
     void givenUpdateSchool_thenShouldSuccessfullyUpdateSchool() {
         final UUID schoolId = UUID.randomUUID();
-        final String newName = RandomStringUtils.randomAlphabetic(10);
-        final String name = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonFirstName = RandomStringUtils.randomAlphabetic(10);
-        final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String newName = RandomStringGenerator.generate(10);
+        final String name = RandomStringGenerator.generate(10);
+        final String contactPersonFirstName = RandomStringGenerator.generate(10);
+        final String contactPersonSurname = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final ContactPersonEntity contactPerson = new ContactPersonEntity();
         contactPerson.setFirstName(contactPersonFirstName);
@@ -422,11 +422,11 @@ class SchoolServiceTest {
     void givenUpdateSchoolWithoutId_thenShouldThrowServiceException() {
         School school = new School();
         school.setId(UUID.randomUUID());
-        school.setName(RandomStringUtils.randomAlphabetic(10));
-        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
-        school.setSurname(RandomStringUtils.randomAlphabetic(10));
-        school.setAddress(RandomStringUtils.randomAlphabetic(10));
-        school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
+        school.setName(RandomStringGenerator.generate(10));
+        school.setFirstName(RandomStringGenerator.generate(10));
+        school.setSurname(RandomStringGenerator.generate(10));
+        school.setAddress(RandomStringGenerator.generate(10));
+        school.setPostalCode(RandomStringGenerator.generate(6));
 
         then(repository).shouldHaveNoInteractions();
         then(mapper).shouldHaveNoInteractions();
@@ -439,11 +439,11 @@ class SchoolServiceTest {
         final UUID schoolId = UUID.randomUUID();
         final School school = new School();
         school.setId(schoolId);
-        school.setName(RandomStringUtils.randomAlphabetic(10));
-        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
-        school.setSurname(RandomStringUtils.randomAlphabetic(10));
-        school.setAddress(RandomStringUtils.randomAlphabetic(10));
-        school.setPostalCode(RandomStringUtils.randomAlphabetic(6));
+        school.setName(RandomStringGenerator.generate(10));
+        school.setFirstName(RandomStringGenerator.generate(10));
+        school.setSurname(RandomStringGenerator.generate(10));
+        school.setAddress(RandomStringGenerator.generate(10));
+        school.setPostalCode(RandomStringGenerator.generate(6));
 
         doReturn(Optional.empty()).when(repository).findByIdOptional(schoolId);
         then(repository).shouldHaveNoMoreInteractions();
@@ -456,13 +456,13 @@ class SchoolServiceTest {
     void givenUpdateNotOwnedSchool_thenShouldThrowUnauthorizedException() {
         final UUID schoolId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
-        final String name = RandomStringUtils.randomAlphabetic(10);
+        final String name = RandomStringGenerator.generate(10);
 
         final School school = createSchool(schoolId, name);
-        school.setFirstName(RandomStringUtils.randomAlphabetic(10));
-        school.setSurname(RandomStringUtils.randomAlphabetic(10));
-        school.setAddress(RandomStringUtils.randomAlphabetic(10));
-        school.setPostalCode(RandomStringUtils.randomAlphabetic(10));
+        school.setFirstName(RandomStringGenerator.generate(10));
+        school.setSurname(RandomStringGenerator.generate(10));
+        school.setAddress(RandomStringGenerator.generate(10));
+        school.setPostalCode(RandomStringGenerator.generate(10));
 
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
 

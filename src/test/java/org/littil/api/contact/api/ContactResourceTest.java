@@ -98,7 +98,7 @@ class ContactResourceTest {
                 .statusCode(200)
                 .extract().jsonPath().getList(".", Contact.class);
 
-        assertThat(contacts.isEmpty()).isFalse();
+        assertThat(contacts).isNotEmpty();
     }
 
     private Response sendAndSave(ContactPostResource contact) {

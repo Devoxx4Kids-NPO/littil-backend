@@ -2,14 +2,10 @@ package org.littil.api.guestTeacher.service;
 
 import org.littil.api.guestTeacher.api.GuestTeacherPostResource;
 import org.littil.api.guestTeacher.repository.GuestTeacherEntity;
-import org.littil.api.guestTeacher.repository.GuestTeacherModuleEntity;
-import org.littil.api.module.service.Module;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-
-import java.util.List;
 
 @Mapper(componentModel = "cdi")
 public interface GuestTeacherMapper {

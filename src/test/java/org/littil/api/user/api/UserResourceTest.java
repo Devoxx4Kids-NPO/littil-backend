@@ -9,7 +9,7 @@ import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
@@ -93,7 +93,7 @@ class UserResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetUserByProviderId_thenShouldReturnSuccessfully() {
-        String providerId = RandomStringUtils.randomAlphabetic(10);
+        String providerId = RandomStringGenerator.generate(10);
         User saved = createAndSaveUser(providerId);
 
         doReturn(saved.getId()).when(tokenHelper).getCurrentUserId();
@@ -113,7 +113,7 @@ class UserResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetUnownedUserByProviderId_thenShouldReturnForbidden() {
-        String providerId = RandomStringUtils.randomAlphabetic(10);
+        String providerId = RandomStringGenerator.generate(10);
         UUID otherUserId = UUID.randomUUID();
         createAndSaveUser(providerId);
 
@@ -131,8 +131,8 @@ class UserResourceTest {
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetUserByUnknownProviderId_thenShouldReturnNotFound() {
-        String providerId = RandomStringUtils.randomAlphabetic(10);
-        String otherProviderId = RandomStringUtils.randomAlphabetic(10);
+        String providerId = RandomStringGenerator.generate(10);
+        String otherProviderId = RandomStringGenerator.generate(10);
         User saved = createAndSaveUser(providerId);
 
         doReturn(saved.getId()).when(tokenHelper).getCurrentUserId();
@@ -251,7 +251,7 @@ class UserResourceTest {
 
     private UserPostResource getDefaultUser() {
         UserPostResource user = new UserPostResource();
-        user.setEmailAddress(RandomStringUtils.randomAlphabetic(10) + "@littil.org");
+        user.setEmailAddress(RandomStringGenerator.generate(10) + "@littil.org");
         return user;
     }
 

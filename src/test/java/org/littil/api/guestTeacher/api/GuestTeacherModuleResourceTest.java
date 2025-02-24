@@ -11,7 +11,7 @@ import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.doReturn;
 @QuarkusTest
 @TestHTTPEndpoint(GuestTeacherModuleResource.class)
 @QuarkusTestResource(APIManagementMock.class)
-public class GuestTeacherModuleResourceTest
+class GuestTeacherModuleResourceTest
 {
 
     @InjectSpy
@@ -146,10 +146,10 @@ public class GuestTeacherModuleResourceTest
 
     private GuestTeacher getDefaultGuestTeacher() {
         GuestTeacher guestTeacher = new GuestTeacher();
-        guestTeacher.setAddress(RandomStringUtils.randomAlphabetic(10));
-        guestTeacher.setPostalCode(RandomStringUtils.randomAlphabetic(6));
-        guestTeacher.setFirstName(RandomStringUtils.randomAlphabetic(10));
-        guestTeacher.setSurname(RandomStringUtils.randomAlphabetic(10));
+        guestTeacher.setAddress(RandomStringGenerator.generate(10));
+        guestTeacher.setPostalCode(RandomStringGenerator.generate(6));
+        guestTeacher.setFirstName(RandomStringGenerator.generate(10));
+        guestTeacher.setSurname(RandomStringGenerator.generate(10));
         return guestTeacher;
     }
 }
