@@ -36,19 +36,8 @@ public class Auth0AuthenticationService implements AuthenticationService {
     private final Auth0ManagementAPI auth0api;
     private final Auth0RoleService roleService;
 
-    // TODO I don't like the dependency of userService
-    private final UserService userService;
-
     @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
     String authorizationsClaimName;
-
-    private String getAuth0IdFor(UUID littilUserId) {
-        Optional<org.littil.api.user.service.User> userById = userService.getUserById(littilUserId);
-        if (userById.isPresent()) {
-            return userById.get().getProviderId();
-        }
-        throw new Auth0UserException("Could not find auth0 id for littilUserId " + littilUserId);
-    }
 
     @Override
     public Optional<AuthUser> getUserById(String userId) {
@@ -86,8 +75,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public void deleteUser(UUID littilUserId) {
-        String userId = getAuth0IdFor(littilUserId);
+    public void deleteUser(String userId) {
         try {
             auth0api.users().delete(userId).execute();
         } catch (Auth0Exception exception) {
@@ -96,8 +84,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public void addAuthorization(UUID littilUserId, AuthorizationType type, UUID resourceId) {
-        String userId = getAuth0IdFor(littilUserId);
+    public void addAuthorization(String userId, AuthorizationType type, UUID resourceId) {
         try {
             manageAuthorization(userId, type, resourceId, AuthorizationAction.ADD);
         } catch (Auth0Exception e) {
@@ -107,12 +94,11 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public void removeAuthorization(UUID littilUserId, AuthorizationType type, UUID resourceId) {
-        String userId = getAuth0IdFor(littilUserId);
+    public void removeAuthorization(String userId, AuthorizationType type, UUID resourceId) {
         try {
             manageAuthorization(userId, type, resourceId, AuthorizationAction.REMOVE);
         } catch (Auth0Exception e) {
-            throw new Auth0AuthorizationException("Unable to remove the authorization from auth0 for userId " + littilUserId, e);
+            throw new Auth0AuthorizationException("Unable to remove the authorization from auth0 for userId " + userId, e);
         }
     }
 

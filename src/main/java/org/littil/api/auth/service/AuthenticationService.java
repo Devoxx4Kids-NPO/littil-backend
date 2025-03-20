@@ -4,17 +4,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * String userId here refers to Auth0 providerId (org.littil.api.user.service.User#providerId)
+ */
 public interface AuthenticationService {
 
     Optional<AuthUser> getUserById(String userId);
 
     AuthUser createUser(AuthUser user, String tempPassword);
 
-    void deleteUser(UUID littilUserId);
+    void deleteUser(String userId);
 
-    void addAuthorization(UUID littilUserId, AuthorizationType type, UUID id);
+    void addAuthorization(String userId, AuthorizationType type, UUID id);
 
-    void removeAuthorization(UUID littilUserId, AuthorizationType type, UUID id);
+    void removeAuthorization(String userId, AuthorizationType type, UUID id);
 
     List<AuthUser> getAllUsers();
 }

@@ -108,7 +108,7 @@ public class UserService {
     public void deleteUser(UUID id) {
         Optional<UserEntity> user = repository.findByIdOptional(id);
         user.ifPresentOrElse(userEntity -> {
-            authenticationService.deleteUser(userEntity.getId());
+            authenticationService.deleteUser(userEntity.getProviderId());
             repository.deleteById(userEntity.getId());
         }, () -> {
             throw new NotFoundException();

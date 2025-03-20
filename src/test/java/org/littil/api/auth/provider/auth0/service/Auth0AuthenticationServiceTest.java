@@ -39,7 +39,6 @@ public class Auth0AuthenticationServiceTest {
     Auth0UserMapper auth0UserMapper;
     private Auth0ManagementAPI auth0api;
     private Auth0RoleService roleService;
-    private UserService userService;
 
     private Response<User> userResponse;
     private Response<RolesPage> rolesPageResponse;
@@ -50,8 +49,6 @@ public class Auth0AuthenticationServiceTest {
     public void setUp() throws Auth0Exception {
         auth0api = mock(Auth0ManagementAPI.class);
         roleService = mock(Auth0RoleService.class);
-        userService = mock(UserService.class);
-
         userResponse = mock(Response.class);
         rolesPageResponse = mock(Response.class);
 
@@ -73,7 +70,7 @@ public class Auth0AuthenticationServiceTest {
         when(auth0api.users().removeRoles(any(), any()).execute()).thenReturn(mock(Response.class));
 
         // initiate authenticationService
-        authenticationService = new Auth0AuthenticationService(auth0UserMapper,auth0api, roleService, userService, CLAIM_NAME);
+        authenticationService = new Auth0AuthenticationService(auth0UserMapper,auth0api, roleService, CLAIM_NAME);
     }
 
     @Test
@@ -203,57 +200,36 @@ public class Auth0AuthenticationServiceTest {
     void whenUserExists_thenDeleteUser_deletesUser() {
         try {
             // Set up the mock behavior
-            UUID userId = UUID.randomUUID();
+            String providerId = UUID.randomUUID().toString();
             when(auth0api.users().delete(any()).execute()).thenReturn(mock(Response.class));
 
-            org.littil.api.user.service.User user = new org.littil.api.user.service.User();
-            when(userService.getUserById(any())).thenReturn(Optional.of(user));
-
             // Execute the code under test
-            authenticationService.deleteUser(userId);
+            authenticationService.deleteUser(providerId);
         } catch (Auth0Exception exception) {
-            fail("Unexpected excetpion", exception);
+            fail("Unexpected exception", exception);
         }
     }
 
     @Test
     void whenAuth0Exception_thenDeleteUser_returnAuth0UserException() throws Auth0Exception {
         // Set up the mock behavior
-        UUID userId = UUID.randomUUID();
+        String providerId = UUID.randomUUID().toString();
         when(auth0api.users().delete(any()).execute()).thenThrow(new Auth0Exception("simulated exception"));
 
-        org.littil.api.user.service.User user = new org.littil.api.user.service.User();
-        String providerId = UUID.randomUUID().toString();
-        user.setProviderId(providerId);
-        when(userService.getUserById(any())).thenReturn(Optional.of(user));
-
         // Execute the code under test
         Auth0UserException exception = assertThrows(Auth0UserException.class,
-                () -> authenticationService.deleteUser(userId));
+                () -> authenticationService.deleteUser(providerId));
         assertEquals("Could not remove user for id " + providerId, exception.getMessage());
-    }
-
-    @Test
-    void whenAuth0IdNotFound_thenDeleteUser_returnAuth0UserException() {
-        // Set up the mock behavior
-        UUID userId = UUID.randomUUID();
-        when(userService.getUserById(any())).thenReturn(Optional.empty());
-
-        // Execute the code under test
-        Auth0UserException exception = assertThrows(Auth0UserException.class,
-                () -> authenticationService.deleteUser(userId));
-        assertEquals("Could not find auth0 id for littilUserId " + userId, exception.getMessage());
     }
 
     @Test
     void addAuthorizationTest() throws Auth0Exception {
         // Set up the mock behavior
-        UUID littilUserId = UUID.randomUUID();
+        String providerId = UUID.randomUUID().toString();
         UUID resourceId = UUID.randomUUID();
 
         org.littil.api.user.service.User littilUser = new org.littil.api.user.service.User();
-        littilUser.setProviderId("providerId");
-        when(userService.getUserById(any())).thenReturn(Optional.of(littilUser));
+        littilUser.setProviderId(providerId);
 
         User user = new User();
         user.setAppMetadata(new HashMap<>());
@@ -263,38 +239,29 @@ public class Auth0AuthenticationServiceTest {
         when(roleService.getIdForRoleName(any())).thenReturn("roleId");
 
         // Execute the code under test
-        authenticationService.addAuthorization(littilUserId, AuthorizationType.SCHOOL, resourceId);
+        authenticationService.addAuthorization(providerId, AuthorizationType.SCHOOL, resourceId);
         // nothing to validate because addAuthorzation method is of type void
     }
 
     @Test
     void whenAuth0Exception_thenAddAuthorization_returnAuth0AuthorizationException() throws Auth0Exception {
         // Set up the mock behavior
-        UUID littilUserId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         String providerId = UUID.randomUUID().toString();
-
-        org.littil.api.user.service.User littilUser = new org.littil.api.user.service.User();
-        littilUser.setProviderId(providerId);
-        when(userService.getUserById(any())).thenReturn(Optional.of(littilUser));
 
         when(auth0api.users().get(any(),any()).execute()).thenThrow(new Auth0Exception("simulated exception"));
 
         // Execute the code under test
         Auth0AuthorizationException exception = assertThrows(Auth0AuthorizationException.class, () ->
-            authenticationService.addAuthorization(littilUserId, AuthorizationType.SCHOOL, resourceId));
+            authenticationService.addAuthorization(providerId, AuthorizationType.SCHOOL, resourceId));
         assertEquals("Unable to add the authorization from auth0 for userId " + providerId, exception.getMessage());
     }
 
     @Test
     void removeAuthorizationTest() throws Auth0Exception {
         // Set up the mock behavior
-        UUID littilUserId = UUID.randomUUID();
+        String providerId = UUID.randomUUID().toString();
         UUID resourceId = UUID.randomUUID();
-
-        org.littil.api.user.service.User littilUser = new org.littil.api.user.service.User();
-        littilUser.setProviderId("providerId");
-        when(userService.getUserById(any())).thenReturn(Optional.of(littilUser));
 
         User user = new User();
         List<String> authorizationsSchools = new ArrayList<>();
@@ -311,27 +278,23 @@ public class Auth0AuthenticationServiceTest {
         when(roleService.getIdForRoleName(any())).thenReturn("roleId");
 
         // Execute the code under test
-        authenticationService.removeAuthorization(littilUserId, AuthorizationType.SCHOOL, resourceId);
+        authenticationService.removeAuthorization(providerId, AuthorizationType.SCHOOL, resourceId);
         // nothing to validate because addAuthorzation method is of type void
     }
 
     @Test
     void whenAuth0Exception_thenRemoveAuthorization_returnAuth0AuthorizationException() throws Auth0Exception {
         // Set up the mock behavior
-        UUID littilUserId = UUID.randomUUID();
         UUID resourceId = UUID.randomUUID();
         String providerId = UUID.randomUUID().toString();
 
-        org.littil.api.user.service.User littilUser = new org.littil.api.user.service.User();
-        littilUser.setProviderId(providerId);
-        when(userService.getUserById(any())).thenReturn(Optional.of(littilUser));
 
         when(auth0api.users().get(any(),any()).execute()).thenThrow(new Auth0Exception("simulated exception"));
 
         // Execute the code under test
         Auth0AuthorizationException exception = assertThrows(Auth0AuthorizationException.class, () ->
-            authenticationService.removeAuthorization(littilUserId, AuthorizationType.SCHOOL, resourceId));
-        assertEquals("Unable to remove the authorization from auth0 for userId " + littilUserId, exception.getMessage());
+            authenticationService.removeAuthorization(providerId, AuthorizationType.SCHOOL, resourceId));
+        assertEquals("Unable to remove the authorization from auth0 for userId " + providerId, exception.getMessage());
     }
 
     @Test
