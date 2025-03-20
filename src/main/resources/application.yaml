@@ -41,6 +41,7 @@ quarkus:
     oidc-open-id-connect-url: ${org.littil.auth.tenant_uri}/authorize
     security-scheme-name: Auth0
     security-scheme: oauth2-implicit
+    open-api-version: 3.0.3
   oidc:
     roles:
       role-claim-path: '"https://littil.org/roles"'
