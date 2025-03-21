@@ -3,7 +3,7 @@ package org.littil.api.user.repository;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auth.provider.Provider;
 
@@ -21,9 +21,9 @@ class UserRepositoryTest {
 
     @Test
     void givenFindExistingUserByEmailAddress_thenShouldReturnSuccessfully() {
-        String email = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
+        String email = RandomStringGenerator.generate(10) + "@littil.org";
         final Optional<UserEntity> userEntityOptional
-                = getDefaultUser(RandomStringUtils.randomAlphabetic(10), email);
+                = getDefaultUser(RandomStringGenerator.generate(10), email);
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("emailAddress", email);
@@ -36,7 +36,7 @@ class UserRepositoryTest {
 
     @Test
     void givenFindNonExistingUserByEmailAddress_thenShouldReturnEmptyOptional() {
-        String email = RandomStringUtils.randomAlphabetic(10) + "@littil.org";
+        String email = RandomStringGenerator.generate(10) + "@littil.org";
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("emailAddress", email);
@@ -49,10 +49,10 @@ class UserRepositoryTest {
 
     @Test
     void givenFindExistingUserByProviderId_thenShouldReturnSuccessfully() {
-        String providerId = RandomStringUtils.randomAlphabetic(10);
+        String providerId = RandomStringGenerator.generate(10);
 
         final Optional<UserEntity> userEntityOptional
-                = getDefaultUser(providerId, RandomStringUtils.randomAlphabetic(10) + "@littil.org");
+                = getDefaultUser(providerId, RandomStringGenerator.generate(10) + "@littil.org");
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("providerId", providerId);
@@ -65,7 +65,7 @@ class UserRepositoryTest {
 
     @Test
     void givenFindNonExistingUserByProviderId_thenShouldReturnEmptyOptional() {
-        String providerId = RandomStringUtils.randomAlphabetic(10);
+        String providerId = RandomStringGenerator.generate(10);
 
         final PanacheQuery<UserEntity> query = mock(PanacheQuery.class);
         doReturn(query).when(repository).find("providerId", providerId);

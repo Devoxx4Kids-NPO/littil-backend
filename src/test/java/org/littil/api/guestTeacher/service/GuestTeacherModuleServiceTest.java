@@ -3,7 +3,7 @@ package org.littil.api.guestTeacher.service;
 import io.quarkus.security.UnauthorizedException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.InjectMock;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.provider.Provider;
@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @QuarkusTest
-public class GuestTeacherModuleServiceTest {
+class GuestTeacherModuleServiceTest {
 
     @Inject
     GuestTeacherModuleService guestTeacherModuleService;
@@ -63,8 +63,7 @@ public class GuestTeacherModuleServiceTest {
 
         List<Module>  modules = guestTeacherModuleService.getGuestTeacherModulesByGuestTeacherId(guestTeacherId);
 
-        assertThat(modules).isNotEmpty();
-        assertThat(modules.size()).isEqualTo(1);
+        assertThat(modules).isNotEmpty().hasSize(1);
         assertThat(modules.get(0).getId()).isEqualTo(expectedModuleId);
         assertThat(modules.get(0).getName()).isEqualTo(expectedModuleName);
 
@@ -247,17 +246,17 @@ public class GuestTeacherModuleServiceTest {
     private GuestTeacherEntity createGuestTeacherEntity(UUID guestTeacherId, UUID UserId) {
         GuestTeacherEntity guestTeacherEntity = new GuestTeacherEntity();
         guestTeacherEntity.setId(guestTeacherId);
-        guestTeacherEntity.setSurname(RandomStringUtils.randomAlphabetic(10));
+        guestTeacherEntity.setSurname(RandomStringGenerator.generate(10));
         UserEntity user = new UserEntity(UserId, Provider.AUTH0, "providerId", "email@littil.org");
         guestTeacherEntity.setUser(user);
         return guestTeacherEntity;
     }
 
-    private GuestTeacherModuleEntity createGuestTeacherModuleEntities(GuestTeacherEntity guestTeacher, boolean ModuleDeleted) {
+    private GuestTeacherModuleEntity createGuestTeacherModuleEntities(GuestTeacherEntity guestTeacher, boolean moduleDeleted) {
         GuestTeacherModuleEntity entity = new GuestTeacherModuleEntity();
         entity.setId(UUID.randomUUID());
         entity.setGuestTeacher(guestTeacher);
-        entity.setModule(new ModuleEntity(UUID.randomUUID(), "moduleName", ModuleDeleted));
+        entity.setModule(new ModuleEntity(UUID.randomUUID(), "moduleName", moduleDeleted));
         return entity;
     }
 }
