@@ -18,6 +18,7 @@ import org.littil.api.school.repository.SchoolModuleEntity;
 import org.littil.api.school.repository.SchoolModuleRepository;
 import org.littil.api.school.repository.SchoolRepository;
 import org.littil.api.user.repository.UserEntity;
+import org.littil.api.user.repository.UserRepository;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 
@@ -206,7 +207,7 @@ class SchoolServiceTest {
         assertNotNull(savedSchool);
         assertEquals(expectedSchool,savedSchool);
         
-        then(authenticationService).should().addAuthorization(userId, AuthorizationType.SCHOOL, schoolId);
+        then(authenticationService).should().addAuthorization(user.getProviderId(), AuthorizationType.SCHOOL, schoolId);
     }
     
     @Test
@@ -323,7 +324,8 @@ class SchoolServiceTest {
         final String contactPersonSurname = RandomStringUtils.randomAlphabetic(10);
         final String postalCode = RandomStringUtils.randomAlphabetic(6);
 
-        final UUID userId = UUID.randomUUID();
+        final User user = TestFactory.createUser();
+        final UUID userId = user.getId();
 
         final School school = new School();
         school.setId(schoolId);
@@ -336,15 +338,15 @@ class SchoolServiceTest {
         final SchoolEntity entity = createSchoolEntity(schoolId, name);
         entity.setModules(null);
 
+        doReturn(Optional.of(user)).when(userService).getUserById(userId);
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(schoolId);
         doReturn(2).when(tokenHelper).getNumberOfAuthorizations();
 
-        schoolService.deleteSchool(schoolId, userId);
+        schoolService.deleteSchool(schoolId, user.getId());
 
         then(repository).should().delete(entity);
         then(moduleRepository).shouldHaveNoInteractions();
-        then(userService).shouldHaveNoInteractions();
-        then(authenticationService).should().removeAuthorization(userId, AuthorizationType.SCHOOL, schoolId);
+        then(authenticationService).should().removeAuthorization(user.getProviderId(), AuthorizationType.SCHOOL, schoolId);
     }
 
     @Test
@@ -360,7 +362,7 @@ class SchoolServiceTest {
         assertThrows(NotFoundException.class, () -> schoolService.deleteSchool(schoolId, userId));
         
         then(authenticationService).shouldHaveNoInteractions();  
-        }
+    }
 
     @Test
     void givenDeleteNullSchool_thenShouldThrowNullPointer() {
