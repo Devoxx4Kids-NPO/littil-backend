@@ -2,7 +2,7 @@ package org.littil.api.userSetting.service;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.InjectMock;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.api.userSetting.repository.UserSettingEntity;
 import org.littil.api.userSetting.repository.UserSettingRepository;
@@ -38,8 +38,8 @@ class UserSettingServiceTest {
     @Test
     void givenFindAllByUserId_thenShouldReturnUserSetting() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(10);
+        final String key = RandomStringGenerator.generate(5);
+        final String value = RandomStringGenerator.generate(10);
 
         final UserSettingEntity expectedUserSetting = new UserSettingEntity(userId, key, value);
         final UserSetting mappedUserSetting = new UserSetting(key, value);
@@ -55,8 +55,8 @@ class UserSettingServiceTest {
     @Test
     void givenWhenGettingUserSettingByKey_thenShouldReturnUserSetting() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(10);
+        final String key = RandomStringGenerator.generate(5);
+        final String value = RandomStringGenerator.generate(10);
 
         final UserSettingEntity expectedUserSettingEntity = new UserSettingEntity(userId, key, value);
         final UserSetting mappedUserSetting = new UserSetting(key, value);
@@ -73,7 +73,7 @@ class UserSettingServiceTest {
     @Test
     void givenWhenGettingUserSettingByKeyWithNonMatchingUserId_thenShouldNotFound() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String key = RandomStringGenerator.generate(5);
 
         doReturn(Optional.empty()).when(repository).findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
         verifyNoMoreInteractions(mapper);
@@ -86,7 +86,7 @@ class UserSettingServiceTest {
     @Test
     void givenWhenUpdatingUserSetting_thenShouldUpdateAndReturnUpdatedDto() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String key = RandomStringGenerator.generate(5);
 
         doReturn(Optional.empty()).when(repository).findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
         verifyNoMoreInteractions(mapper);
@@ -99,8 +99,8 @@ class UserSettingServiceTest {
     @Test
     void givenDeleteUserSetting_thenShouldDeleteUserSetting() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(10);
+        final String key = RandomStringGenerator.generate(5);
+        final String value = RandomStringGenerator.generate(10);
 
         final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
 
@@ -113,7 +113,7 @@ class UserSettingServiceTest {
     @Test
     void givenDeleteUnknownUserSetting_thenShouldThrowNotFoundException() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String key = RandomStringGenerator.generate(5);
 
         doReturn(Optional.empty()).when(repository)
                 .findByIdOptional(new UserSettingEntity.UserSettingId(userId, key));
@@ -125,9 +125,9 @@ class UserSettingServiceTest {
     @Test
     void givenUpdateUserSetting_thenShouldSuccessfullyUpdateUserSetting() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(10);
-        final String newValue = RandomStringUtils.randomAlphabetic(10);
+        final String key = RandomStringGenerator.generate(5);
+        final String value = RandomStringGenerator.generate(10);
+        final String newValue = RandomStringGenerator.generate(10);
 
         final UserSetting userSetting = new UserSetting(key, value);
         final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
@@ -151,8 +151,8 @@ class UserSettingServiceTest {
     @Test
     void givenUpdateUnknownUserSetting_thenShouldThrowNotFoundException() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(10);
+        final String key = RandomStringGenerator.generate(5);
+        final String value = RandomStringGenerator.generate(10);
 
         final UserSetting userSetting = new UserSetting(key, value);
 
@@ -167,8 +167,8 @@ class UserSettingServiceTest {
     @Test
     void givenSaveUserSetting_thenShouldReturnPersistedUser() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(10);
+        final String key = RandomStringGenerator.generate(5);
+        final String value = RandomStringGenerator.generate(10);
 
         final UserSetting userSetting = new UserSetting(key, value);
         final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);
@@ -185,8 +185,10 @@ class UserSettingServiceTest {
     @Test
     void givenSaveUserSettingUnknownErrorOccurred_thenShouldThrowPersistenceException() {
         final UUID userId = UUID.randomUUID();
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(10);
+        final String key = RandomStringGenerator.generate(5);
+        System.out.println(key);
+        final String value = RandomStringGenerator.generate(10);
+        System.out.println(value);
 
         final UserSetting userSetting = new UserSetting(key, value);
         final UserSettingEntity userSettingEntity = new UserSettingEntity(userId, key, value);

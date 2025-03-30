@@ -3,7 +3,7 @@ package org.littil.api.guestTeacher.service;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.mockito.InjectSpy;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
@@ -108,11 +108,11 @@ class GuestTeacherServiceTest {
     @Test
     void giveFindAll_thenShouldReturPurgedTeachers() {
         final UUID id = UUID.randomUUID();
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
-        final String country = RandomStringUtils.randomAlphabetic(10);
+        final String firstName = RandomStringGenerator.generate(10);
+        final String surname = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String postalCode = RandomStringGenerator.generate(6);
+        final String country = RandomStringGenerator.generate(10);
 
         final GuestTeacherEntity guestTeacherEntity = createGuestTeacherEntity(id, firstName, surname );
         final LocationEntity location = new LocationEntity();
@@ -153,12 +153,12 @@ class GuestTeacherServiceTest {
     @Test
     void givenSaveTeacher_thenShouldReturnTeacher() {
         final UUID teacherId = UUID.randomUUID();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
-        final String prefix = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String locale = RandomStringUtils.randomAlphabetic(2);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String surname = RandomStringGenerator.generate(10);
+        final String firstName = RandomStringGenerator.generate(10);
+        final String prefix = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String locale = RandomStringGenerator.generate(2);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final GuestTeacher guestTeacher = new GuestTeacher();
         guestTeacher.setFirstName(firstName);
@@ -206,11 +206,11 @@ class GuestTeacherServiceTest {
         final UUID teacherId = UUID.randomUUID();
         User user = TestFactory.createUser();
         final UUID userId = user.getId();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String locale = RandomStringUtils.randomAlphabetic(2);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String surname = RandomStringGenerator.generate(10);
+        final String firstName = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String locale = RandomStringGenerator.generate(2);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final GuestTeacher guestTeacher = createGuestTeacher(null, firstName, surname, address, postalCode, locale);
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
@@ -225,11 +225,11 @@ class GuestTeacherServiceTest {
     @Test
     void givenSaveTeacherForUnknownUser_thenShouldThrowServiceException() {
         final UUID teacherId = UUID.randomUUID();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String locale = RandomStringUtils.randomAlphabetic(2);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String surname = RandomStringGenerator.generate(10);
+        final String firstName = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String locale = RandomStringGenerator.generate(2);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final GuestTeacher guestTeacher = createGuestTeacher(null, firstName, surname, address, postalCode, locale);
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
@@ -247,8 +247,8 @@ class GuestTeacherServiceTest {
     void givenDeleteGuestTeacherWithModules_thenShouldDeleteTeacherAndUser() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final String surname = RandomStringGenerator.generate(10);
+        final String firstName = RandomStringGenerator.generate(10);
 
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
         final GuestTeacherModuleEntity moduleEntity = new GuestTeacherModuleEntity();
@@ -272,8 +272,8 @@ class GuestTeacherServiceTest {
     void givenDeleteGuestTeacherWithOutModules_thenShouldDeleteTeacherAndNotDeleteUser() {
         final UUID teacherId = UUID.randomUUID();
         final User user = TestFactory.createUser();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
+        final String surname = RandomStringGenerator.generate(10);
+        final String firstName = RandomStringGenerator.generate(10);
 
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
         entity.setModules(null);
@@ -311,12 +311,12 @@ class GuestTeacherServiceTest {
     void givenUpdateTeacher_thenShouldSuccessfullyUpdateTeacher() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
-        final String newSurname = RandomStringUtils.randomAlphabetic(10);
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String locale = RandomStringUtils.randomAlphabetic(2);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String newSurname = RandomStringGenerator.generate(10);
+        final String surname = RandomStringGenerator.generate(10);
+        final String firstName = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String locale = RandomStringGenerator.generate(2);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final GuestTeacher guestTeacher = createGuestTeacher(teacherId, firstName, surname, address, postalCode, locale);
 
@@ -347,11 +347,11 @@ class GuestTeacherServiceTest {
     @Test
     void givenUpdateTeacherWithoutUserId_thenShouldThrowServiceException() {
         final UUID teacherId = UUID.randomUUID();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String locale = RandomStringUtils.randomAlphabetic(2);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String surname = RandomStringGenerator.generate(10);
+        final String firstName = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String locale = RandomStringGenerator.generate(2);
+        final String postalCode = RandomStringGenerator.generate(6);
         final GuestTeacher guestTeacher = createGuestTeacher(teacherId, firstName, surname, address, postalCode, locale);
 
         then(repository).shouldHaveNoInteractions();
@@ -364,11 +364,11 @@ class GuestTeacherServiceTest {
     void givenUpdateUnknownTeacher_thenShouldThrowNotFoundException() {
         final UUID teacherId = UUID.randomUUID();
         final UUID userId = UUID.randomUUID();
-        final String surname = RandomStringUtils.randomAlphabetic(10);
-        final String firstName = RandomStringUtils.randomAlphabetic(10);
-        final String address = RandomStringUtils.randomAlphabetic(10);
-        final String locale = RandomStringUtils.randomAlphabetic(2);
-        final String postalCode = RandomStringUtils.randomAlphabetic(6);
+        final String surname = RandomStringGenerator.generate(10);
+        final String firstName = RandomStringGenerator.generate(10);
+        final String address = RandomStringGenerator.generate(10);
+        final String locale = RandomStringGenerator.generate(2);
+        final String postalCode = RandomStringGenerator.generate(6);
 
         final GuestTeacher guestTeacher = createGuestTeacher(teacherId, firstName, surname, address, postalCode, locale);
 

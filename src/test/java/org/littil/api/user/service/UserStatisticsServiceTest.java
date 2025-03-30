@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @QuarkusTest
-public class UserStatisticsServiceTest {
+class UserStatisticsServiceTest {
 
     @Mock
     UserStatisticsRepository repository;
@@ -33,7 +33,7 @@ public class UserStatisticsServiceTest {
 
     @Test
     @Transactional
-    public void testGetUserStatistics() {
+    void testGetUserStatistics() {
         // Arrange
         UserStatistics stat1 = new UserStatistics("role1", 2L, LocalDateTime.now());
         UserStatistics stat2 = new UserStatistics("role2", 1L, LocalDateTime.now());

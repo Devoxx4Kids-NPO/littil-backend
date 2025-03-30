@@ -10,7 +10,7 @@ import com.auth0.net.client.Auth0HttpClient;
 import com.auth0.net.client.DefaultHttpClient;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
-import io.quarkus.oidc.OidcTenantConfig;
+import io.quarkus.oidc.runtime.OidcTenantConfig;
 import io.quarkus.oidc.runtime.DefaultTenantConfigResolver;
 import io.quarkus.oidc.runtime.TenantConfigBean;
 import io.quarkus.oidc.runtime.TenantConfigContext;
@@ -104,8 +104,8 @@ public class Auth0ManagementAPI {
                 .map(DefaultTenantConfigResolver::getTenantConfigBean)
                 .map(TenantConfigBean::getDefaultTenant)
                 .map(TenantConfigContext::getOidcTenantConfig)
-                .map(OidcTenantConfig::getToken)
-                .flatMap(OidcTenantConfig.Token::getAudience)
+                .map(OidcTenantConfig::token)
+                .flatMap(OidcTenantConfig.Token::audience)
                 .orElseGet(Collections::emptyList);
         return audience.stream().findFirst();
     }

@@ -7,7 +7,7 @@ import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.api.exception.ErrorResponse;
 import org.littil.api.userSetting.service.UserSetting;
@@ -142,7 +142,7 @@ class UserSettingResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")
     })
     void givenGetByKey_thenShouldReturnUserSetting() {
-        String key = RandomStringUtils.randomAlphabetic(5);
+        String key = RandomStringGenerator.generate(5);
         UserSetting userSetting = createUserSetting();
         userSetting.setKey(key);
 
@@ -171,8 +171,8 @@ class UserSettingResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")
     })
     void givenUpdate_thenShouldUpdateAndReturnUpdatedDto() {
-        String key = RandomStringUtils.randomAlphabetic(5);
-        String newValue = RandomStringUtils.randomAlphabetic(10);
+        String key = RandomStringGenerator.generate(5);
+        String newValue = RandomStringGenerator.generate(10);
         UserSetting userSetting = createUserSetting();
         userSetting.setKey(key);
 
@@ -213,7 +213,7 @@ class UserSettingResourceTest {
                 .contentType(ContentType.JSON)
                 .when()
                 .body(userSetting)
-                .put("/{key}", RandomStringUtils.randomAlphabetic(5))
+                .put("/{key}", RandomStringGenerator.generate(5))
                 .then()
                 .statusCode(500)
                 .extract().as(ErrorResponse.class);
@@ -231,7 +231,7 @@ class UserSettingResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")
     })
     void givenUpdateOfUnknownUserSetting_thenShouldReturnNotFound() {
-        String key = RandomStringUtils.randomAlphabetic(5);
+        String key = RandomStringGenerator.generate(5);
         UserSetting userSetting = createUserSetting();
         userSetting.setKey(key);
 
@@ -250,7 +250,7 @@ class UserSettingResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")
     })
     void givenUpdateWithInvalidUserSettingDto_thenShouldReturnErrorResponse() {
-        String key = RandomStringUtils.randomAlphabetic(5);
+        String key = RandomStringGenerator.generate(5);
         UserSetting userSetting = createUserSetting();
         userSetting.setKey(key);
 
@@ -287,7 +287,7 @@ class UserSettingResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf")
     })
     void givenDeleteOfExistingUserSetting_thenShouldDeleteAndRespondOk() {
-        String key = RandomStringUtils.randomAlphabetic(5);
+        String key = RandomStringGenerator.generate(5);
         UserSetting userSetting = createUserSetting();
         userSetting.setKey(key);
 
@@ -321,12 +321,12 @@ class UserSettingResourceTest {
     void givenDeleteOfUnknownUserSetting_thenShouldReponseNotFound() {
         given()
                 .contentType(ContentType.JSON)
-                .delete("/{key}", RandomStringUtils.randomAlphabetic(5))
+                .delete("/{key}", RandomStringGenerator.generate(5))
                 .then()
                 .statusCode(404);
     }
 
     private UserSetting createUserSetting() {
-        return new UserSetting(RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10));
+        return new UserSetting(RandomStringGenerator.generate(5), RandomStringGenerator.generate(10));
     }
 }
