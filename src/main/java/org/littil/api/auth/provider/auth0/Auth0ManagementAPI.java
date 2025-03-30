@@ -8,7 +8,9 @@ import com.auth0.exception.Auth0Exception;
 import com.auth0.net.TokenRequest;
 import com.auth0.net.client.Auth0HttpClient;
 import com.auth0.net.client.DefaultHttpClient;
-import io.quarkus.oidc.runtime.OidcTenantConfig;
+import io.github.resilience4j.ratelimiter.RateLimiter;
+import io.github.resilience4j.ratelimiter.RateLimiterConfig;
+import io.quarkus.oidc.OidcTenantConfig;
 import io.quarkus.oidc.runtime.DefaultTenantConfigResolver;
 import io.quarkus.oidc.runtime.TenantConfigBean;
 import io.quarkus.oidc.runtime.TenantConfigContext;
@@ -18,6 +20,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.inject.Singleton;
 import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -29,6 +32,7 @@ public class Auth0ManagementAPI {
     private final AuthAPI authAPI;
     final String audience;
     private Instant expiresAt;
+    private final RateLimiter rateLimiter;
 
     Auth0ManagementAPI(
         @ConfigProperty(name = "org.littil.auth.provider_api") String providerApiUri,
@@ -46,21 +50,31 @@ public class Auth0ManagementAPI {
                 .build();
         this.audience = getAudienceFromOidcTenantConfig(defaultTenantConfigResolver)
                 .orElseThrow(() -> new Auth0UserException("No audience is set to fetch a token."));
+
+        // request to auth0 management api  are limited to 2 requests per second
+        // see https://auth0.com/docs/troubleshoot/customer-support/operational-policies/rate-limit-policy/rate-limit-configurations/free-public
+        RateLimiterConfig config = getRateLimiterConfig();
+        this.rateLimiter = RateLimiter.of("auth0RateLimiter", config);
     }
 
-    public UsersEntity users() {
-        return getManagementAPI().users();
+    private static RateLimiterConfig getRateLimiterConfig() {
+        return RateLimiterConfig.custom()
+                .timeoutDuration(Duration.ofMillis(1000))
+                .limitRefreshPeriod(Duration.ofSeconds(1))
+                .limitForPeriod(2)
+                .build();
     }
 
-    public RolesEntity roles() {
-        return getManagementAPI().roles();
-    }
+    public UsersEntity users() { return getManagementAPI().users(); }
+
+    public RolesEntity roles() { return getManagementAPI().roles(); }
 
     boolean tokenIsExpired() {
         return this.expiresAt==null || this.expiresAt.isBefore(Instant.now());
     }
 
     ManagementAPI getManagementAPI() {
+        RateLimiter.waitForPermission(rateLimiter);
         if (tokenIsExpired()) {
             updateAccessToken();
         }

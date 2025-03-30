@@ -61,13 +61,11 @@ public class SchoolService {
     School saveSchool(@Valid School school, UUID userId) {
         SchoolEntity entity = mapper.toEntity(school);
         // todo I don't like having to inject the user mapper and user service for this usecase.
-        Optional<User> user = userService.getUserById(userId);
-        if (user.isEmpty()) {
-            throw new ServiceException(String.format("Unable to create School due to the fact the corresponding user with provider id %s does not exists.", userId));
-        }
+        UserEntity user = userService.getUserById(userId)
+                .map(userMapper::toEntity)
+                .orElseThrow(() -> new ServiceException(String.format("Unable to create School due to the fact the corresponding user with provider id %s does not exists.", userId)));
         // todo why store entire user in entity, we could also only store id. Would prevent us from using userService here
-        UserEntity userEntity = userMapper.toEntity(user.get());
-        entity.setUser(userEntity);
+        entity.setUser(user);
         contactPersonRepository.persist(entity.getContactPerson());
         locationRepository.persist(entity.getLocation());
         if (entity.getId() == null) {
@@ -76,7 +74,7 @@ public class SchoolService {
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
-            authenticationService.addAuthorization(userId, AuthorizationType.SCHOOL, entity.getId());
+            authenticationService.addAuthorization(user.getProviderId(), AuthorizationType.SCHOOL, entity.getId());
             return mapper.updateDomainFromEntity(entity, school);
         } else {
             throw new PersistenceException("Something went wrong when persisting School for user " + userId);
@@ -102,7 +100,9 @@ public class SchoolService {
         if (tokenHelper.getNumberOfAuthorizations() < 2) {
             userService.deleteUser(userId);
         } else {
-            authenticationService.removeAuthorization(userId, AuthorizationType.SCHOOL, id);
+            userService.getUserById(userId)
+                    .map(User::getProviderId)
+                    .ifPresent(providerId -> authenticationService.removeAuthorization(providerId, AuthorizationType.SCHOOL, id));
         }
     }
 

@@ -13,7 +13,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.19.4</quarkus.platform.version>
+        <quarkus.platform.version>3.21.0</quarkus.platform.version>
         <quarkus.package.type>fast-jar</quarkus.package.type>
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -26,6 +26,7 @@
         <jacoco.version>0.8.12</jacoco.version>
         <auth0.version>2.18.0</auth0.version>
         <wiremock.version>3.12.1</wiremock.version>
+        <resilience4j.version>2.3.0</resilience4j.version>
         <apache.commons.text.version>1.13.0</apache.commons.text.version>
     </properties>
     <dependencyManagement>
@@ -114,6 +115,11 @@
             <groupId>com.auth0</groupId>
             <artifactId>auth0</artifactId>
             <version>${auth0.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-ratelimiter</artifactId>
+            <version>${resilience4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -238,6 +244,12 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <!-- see versions at https://search.maven.org/search?q=g:org.sonarsource.scanner.maven%20AND%20a:sonar-maven-plugin -->
+                <version>5.1.0.4751</version>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>

@@ -13,16 +13,22 @@ import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
 import org.littil.api.auth.TokenHelper;
+import org.littil.api.auth.provider.Provider;
+import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.mock.auth0.APIManagementMock;
 
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @QuarkusTest
 @TestHTTPEndpoint(UserResource.class)
@@ -65,7 +71,10 @@ class UserResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenGetUserById_thenShouldReturnSuccessfully() {
         UserPostResource user = getDefaultUser();
-        User saved = saveUser(user);
+        AuthUser authUser = getAuthUser(user);
+        User saved = saveUser(user, authUser);
+
+        when(authenticationService.getUserById(any())).thenReturn(Optional.of(authUser));
 
         User got = given()
                 .when()
@@ -253,6 +262,20 @@ class UserResourceTest {
         UserPostResource user = new UserPostResource();
         user.setEmailAddress(RandomStringGenerator.generate(10) + "@littil.org");
         return user;
+    }
+
+    private AuthUser getAuthUser(UserPostResource user) {
+        AuthUser authUser = new AuthUser();
+        authUser.setEmailAddress(user.getEmailAddress());
+        authUser.setProvider(Provider.AUTH0);
+        authUser.setRoles(Set.of("role1", "role2"));
+        return authUser;
+    }
+
+    private User saveUser(UserPostResource user, AuthUser authUser) {
+        User savedUser = saveUser(user);
+        savedUser.setRoles(authUser.getRoles());
+        return savedUser;
     }
 
     private User saveUser(UserPostResource user) {
