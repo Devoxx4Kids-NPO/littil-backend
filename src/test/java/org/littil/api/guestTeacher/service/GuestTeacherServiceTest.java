@@ -273,7 +273,7 @@ class GuestTeacherServiceTest {
         final UUID teacherId = UUID.randomUUID();
         final User user = TestFactory.createUser();
         final String surname = RandomStringGenerator.generate(10);
-        final String firstName = RandomStringGenerator.generate(10)
+        final String firstName = RandomStringGenerator.generate(10);
 
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
         entity.setModules(null);

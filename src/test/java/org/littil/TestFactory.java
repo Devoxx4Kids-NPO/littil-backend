@@ -14,7 +14,7 @@ public class TestFactory {
     public static User createUser(UUID userId) {
         User user = new User();
         user.setId(userId);
-        user.setEmailAddress(RandomStringUtils.randomAlphabetic(10) + "@littil.org");
+        user.setEmailAddress(RandomStringGenerator.generate(10) + "@littil.org");
         user.setProviderId(UUID.randomUUID().toString());
         return user;
     }
