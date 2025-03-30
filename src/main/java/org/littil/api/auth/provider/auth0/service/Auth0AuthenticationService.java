@@ -35,18 +35,9 @@ public class Auth0AuthenticationService implements AuthenticationService {
     private final Auth0UserMapper auth0UserMapper;
     private final Auth0ManagementAPI auth0api;
     private final Auth0RoleService roleService;
-    private final UserService userService;
 
     @ConfigProperty(name = "org.littil.auth.token.claim.authorizations")
     String authorizationsClaimName;
-
-    private String getAuth0IdFor(UUID littilUserId) {
-        Optional<org.littil.api.user.service.User> userById = userService.getUserById(littilUserId);
-        if (userById.isPresent()) {
-            return userById.get().getProviderId();
-        }
-        throw new Auth0UserException("Could not find auth0 id for littilUserId " + littilUserId);
-    }
 
     @Override
     public Optional<AuthUser> getUserById(String userId) {
@@ -69,7 +60,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
         try {
             UsersPage usersForEmail = auth0api.users().list(new UserFilter().withQuery("email:" + authUser.getEmailAddress())).execute().getBody();
             if (!usersForEmail.getItems().isEmpty()) {
-                throw new Auth0DuplicateUserException("User already exists for" + authUser.getEmailAddress());
+                throw new Auth0DuplicateUserException("User already exists for " + authUser.getEmailAddress());
             }
             User user = auth0api.users().create(auth0UserMapper.toProviderEntity(authUser, tempPassword)).execute().getBody();
             return getAuthUser(user);
@@ -84,8 +75,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public void deleteUser(UUID littilUserId) {
-        String userId = getAuth0IdFor(littilUserId);
+    public void deleteUser(String userId) {
         try {
             auth0api.users().delete(userId).execute();
         } catch (Auth0Exception exception) {
@@ -94,8 +84,7 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public void addAuthorization(UUID littilUserId, AuthorizationType type, UUID resourceId) {
-        String userId = getAuth0IdFor(littilUserId);
+    public void addAuthorization(String userId, AuthorizationType type, UUID resourceId) {
         try {
             manageAuthorization(userId, type, resourceId, AuthorizationAction.ADD);
         } catch (Auth0Exception e) {
@@ -105,13 +94,38 @@ public class Auth0AuthenticationService implements AuthenticationService {
     }
 
     @Override
-    public void removeAuthorization(UUID littilUserId, AuthorizationType type, UUID resourceId) {
-        String userId = getAuth0IdFor(littilUserId);
+    public void removeAuthorization(String userId, AuthorizationType type, UUID resourceId) {
         try {
             manageAuthorization(userId, type, resourceId, AuthorizationAction.REMOVE);
         } catch (Auth0Exception e) {
-            throw new Auth0AuthorizationException("Unable to remove the authorization from auth0 for userId " + littilUserId, e);
+            throw new Auth0AuthorizationException("Unable to remove the authorization from auth0 for userId " + userId, e);
         }
+    }
+
+    @Override
+    public List<AuthUser> getAllUsers() {
+        try {
+            Map<Role, List<User>> rolesWithUserList = roleService.getRolesWithUserList();
+            Map<String, List<Role>> usersWithRolesList = mapToUsersWithRoleList(rolesWithUserList);
+            List<User> users = auth0api.users().list(new UserFilter()).execute().getBody().getItems();
+            return users.stream() //
+                    .map(user -> auth0UserMapper.toDomain(user,
+                            usersWithRolesList.getOrDefault(user.getEmail(), new ArrayList<>()))) //
+                    .toList();
+        } catch(Auth0Exception exception) {
+            throw new Auth0UserException("Could not get list of authUsers", exception);
+        }
+    }
+
+    private static Map<String, List<Role>> mapToUsersWithRoleList(Map<Role, List<User>> roleWithUserListMap) {
+        Map<String,List<Role>>  userWithRolesMap = new HashMap<>();
+        for (Map.Entry<Role, List<User>> entry : roleWithUserListMap.entrySet()) {
+            Role role = entry.getKey();
+            for (User user :  entry.getValue()) {
+                userWithRolesMap.computeIfAbsent(user.getEmail(), k -> new ArrayList<>()).add(role);
+            }
+        }
+        return userWithRolesMap;
     }
 
     private void manageAuthorization(String userId, AuthorizationType type, UUID resourceId, AuthorizationAction action) throws Auth0Exception {

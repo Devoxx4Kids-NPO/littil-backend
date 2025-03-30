@@ -62,14 +62,11 @@ public class GuestTeacherService {
 
     GuestTeacher saveTeacher(@Valid GuestTeacher guestTeacher, UUID userId) {
         GuestTeacherEntity entity = mapper.toEntity(guestTeacher);
-        Optional<User> user = userService.getUserById(userId);
-        if (user.isEmpty()) {
-            throw new ServiceException(String.format("Unable to create GuestTeacher due to the fact the corresponding user with provider id %s does not exists.", userId));
-        }
-
+        UserEntity user = userService.getUserById(userId)
+                .map(userMapper::toEntity)
+                .orElseThrow(() -> new ServiceException(String.format("Unable to create GuestTeacher due to the fact the corresponding user with provider id %s does not exists.", userId)));
         // todo why store entire user in entity, we could also only store id. Would prevent us from using userService here
-        UserEntity userEntity = userMapper.toEntity(user.get());
-        entity.setUser(userEntity);
+        entity.setUser(user);
         locationRepository.persist(entity.getLocation());
         if (entity.getId() == null) {
             entity.setId(UUID.randomUUID());
@@ -77,7 +74,7 @@ public class GuestTeacherService {
         repository.persist(entity);
 
         if (repository.isPersistent(entity)) {
-            authenticationService.addAuthorization(userId, AuthorizationType.GUEST_TEACHER, entity.getId());
+            authenticationService.addAuthorization(user.getProviderId(), AuthorizationType.GUEST_TEACHER, entity.getId());
             return mapper.updateDomainFromEntity(entity, guestTeacher);
         } else {
             throw new PersistenceException("Something went wrong when persisting GuestTeacher for user " + userId);
@@ -98,7 +95,9 @@ public class GuestTeacherService {
         if (tokenHelper.getNumberOfAuthorizations() < 2) {
             userService.deleteUser(userId);
         } else {
-            authenticationService.removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, id);
+            userService.getUserById(userId)
+                    .map(User::getProviderId)
+                    .ifPresent(providerId -> authenticationService.removeAuthorization(providerId, AuthorizationType.GUEST_TEACHER, id));
         }
     }
 

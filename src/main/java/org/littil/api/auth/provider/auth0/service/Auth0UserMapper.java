@@ -30,6 +30,8 @@ public class Auth0UserMapper {
                 .collect(Collectors.toSet());
         authUser.setRoles(roleNames);
         authUser.setProvider(Provider.AUTH0);
+        authUser.setLoginsCount(user.getLoginsCount());
+        authUser.setLastLogin(user.getLastLogin());
         return authUser;
     }
 }

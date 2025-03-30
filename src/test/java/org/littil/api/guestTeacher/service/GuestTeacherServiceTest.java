@@ -271,22 +271,22 @@ class GuestTeacherServiceTest {
     @Test
     void givenDeleteGuestTeacherWithOutModules_thenShouldDeleteTeacherAndNotDeleteUser() {
         final UUID teacherId = UUID.randomUUID();
-        final UUID userId = UUID.randomUUID();
+        final User user = TestFactory.createUser();
         final String surname = RandomStringUtils.randomAlphabetic(10);
         final String firstName = RandomStringUtils.randomAlphabetic(10);
 
         final GuestTeacherEntity entity = createGuestTeacherEntity(teacherId, firstName, surname);
         entity.setModules(null);
 
+        doReturn(Optional.of(user)).when(userService).getUserById(user.getId());
         doReturn(Optional.of(entity)).when(repository).findByIdOptional(teacherId);
         doReturn(2).when(tokenHelper).getNumberOfAuthorizations();
 
-        service.deleteGuestTeacher(teacherId, userId);
+        service.deleteGuestTeacher(teacherId, user.getId());
 
         then(repository).should().delete(entity);
         then(moduleRepository).shouldHaveNoInteractions();
-        then(authenticationService).should().removeAuthorization(userId, AuthorizationType.GUEST_TEACHER, teacherId);
-        then(userService).shouldHaveNoInteractions();
+        then(authenticationService).should().removeAuthorization(user.getProviderId(), AuthorizationType.GUEST_TEACHER, teacherId);
     }
 
     @Test
