@@ -127,8 +127,7 @@ public class UserService {
 
     /*
      * Method can not be used in stream operation.
-     * This will cause a com.auth0.exception.RateLimitException.
-     * HttpStatus 429 (Too Many Requests) is returned by auth0.
+     * It will be throttled by Auth0 (com.auth0.exception.RateLimitException)
      */
     private Optional<User> extendWithAuthDetails(Optional<User> user) {
         user.ifPresent(u ->
