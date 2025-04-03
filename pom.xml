@@ -23,7 +23,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <assertj.version>3.27.3</assertj.version>
         <archunit.version>1.4.0</archunit.version>
-        <jacoco.version>0.8.12</jacoco.version>
+        <jacoco.version>0.8.13</jacoco.version>
         <auth0.version>2.19.0</auth0.version>
         <wiremock.version>3.12.1</wiremock.version>
         <resilience4j.version>2.3.0</resilience4j.version>
