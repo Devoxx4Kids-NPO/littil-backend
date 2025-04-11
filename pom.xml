@@ -27,7 +27,7 @@
         <auth0.version>2.19.0</auth0.version>
         <wiremock.version>3.12.1</wiremock.version>
         <resilience4j.version>2.3.0</resilience4j.version>
-        <apache.commons.text.version>1.13.0</apache.commons.text.version>
+        <apache.commons.text.version>1.13.1</apache.commons.text.version>
     </properties>
     <dependencyManagement>
         <dependencies>
