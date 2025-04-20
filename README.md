@@ -22,7 +22,6 @@ Please
 read [the following guide](https://devoxx4kids-npo.github.io/littil-documentation/platform/local-development/set-up-backend-environment/)
 about how to set up your local development environment.
 
-
 ### dev users
 
 When running the backend as a developer you can add previously created users at startup.
