@@ -22,7 +22,7 @@
         <lombok.version>1.18.38</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <assertj.version>3.27.3</assertj.version>
-        <archunit.version>1.4.0</archunit.version>
+        <archunit.version>1.4.1</archunit.version>
         <jacoco.version>0.8.13</jacoco.version>
         <auth0.version>2.20.0</auth0.version>
         <wiremock.version>3.13.0</wiremock.version>
