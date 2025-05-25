@@ -20,7 +20,8 @@ jobs:
           java-version: 17
           java-distribution: temurin
           maven-version: 3.8.6
-      - run: mvn verify --batch-mode
+      - name: Verify project
+        run: mvn verify --batch-mode
       - name: Save test results
         uses: scacap/action-surefire-report@v1
         if: ${{ github.actor != 'dependabot[bot]' }}
