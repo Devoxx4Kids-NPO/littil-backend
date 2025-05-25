@@ -97,6 +97,19 @@ To authenticate with AWS, the AWS CLI can use named profiles (as used in this RE
 
 # EC2 change
 
+To reduce costs, the infrastructure has been changed from ECS to EC2. To log into the EC2 instance, look up the public IP in the EC2 console and:
+```bash
+ssh -i openssh.pem ec2-user@<public-ip>
+```
+
+The SSH CLI utility will ask for a password of the openssh.pem interactively.
+
+## Lost private key
+
+If the file or passwords are ever lost, generate a new one locally and use the public key material to create a new EC2 key that can be used in a new EC2 instance (see `new KeyPair` in `api-ec2-stack.ts`).
+
+Alternatively, follow the guide at https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html#how-to-generate-your-own-key-and-import-it-to-aws to import a keypair and reference it in `api-ec2-stack.ts`.
+
 ## Updating the certificate
 
 To renew the certificate, the same command needs to be run:
