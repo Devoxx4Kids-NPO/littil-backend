@@ -24,7 +24,7 @@
         <assertj.version>3.27.3</assertj.version>
         <archunit.version>1.4.1</archunit.version>
         <jacoco.version>0.8.13</jacoco.version>
-        <auth0.version>2.20.0</auth0.version>
+        <auth0.version>2.21.0</auth0.version>
         <wiremock.version>3.13.0</wiremock.version>
         <resilience4j.version>2.3.0</resilience4j.version>
         <apache.commons.text.version>1.13.1</apache.commons.text.version>
