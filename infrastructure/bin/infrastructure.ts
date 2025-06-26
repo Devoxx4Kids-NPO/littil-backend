@@ -78,6 +78,8 @@ if (!littilEnvironment) {
     const littilDomain = littilEnvironment !== LittilEnvironment.production
         ? littilEnvironment + '.littil.org'
         : 'littil.org';
+    const dockerTag = '1.5.2';
+    const namePostfix = '152';
 
     const littilEnvironmentSettings: LittilEnvironmentSettings = {
         environment: littilEnvironment,
@@ -111,7 +113,7 @@ if (!littilEnvironment) {
     /* Separate stack for an Elastic IP so that the Elastic IP stack can be created first, then DNS updated, then the
     EC2 stack can be created. If the EC2 stack is created immediately, certificate generation will fail. It must then
     be retried manually */
-    const elasticIpStack = new ApiElasticIpStack(app, 'ApiElasticIpStack', {
+    const elasticIpStack = new ApiElasticIpStack(app, 'ApiElasticIpStack152', {
         env,
     });
 
@@ -133,7 +135,7 @@ if (!littilEnvironment) {
             },
         },
     };
-    new ApiEc2Stack(app, 'ApiEc2Stack', apiEc2StackProps);
+    new ApiEc2Stack(app, 'ApiEc2Stack152', apiEc2StackProps, namePostfix, dockerTag);
 
     const apiStackProps: ApiStackProps = {
         littil: littilEnvironmentSettings,

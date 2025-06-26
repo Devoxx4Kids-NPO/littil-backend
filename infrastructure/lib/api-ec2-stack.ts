@@ -46,10 +46,13 @@ export interface ApiEc2StackProps extends StackProps {
 export class ApiEc2Stack extends Stack {
     constructor(scope: Construct,
                 id: string,
-                props: ApiEc2StackProps) {
+                props: ApiEc2StackProps,
+                namePostfix: string,
+                dockerTag: string) {
         super(scope, id, props);
 
         const ec2SecurityGroup = new SecurityGroup(this, 'ApiInstanceSecurityGroup', {
+            securityGroupName: 'ApiInstanceSecurityGroup' + namePostfix,
             vpc: props.apiVpc,
         });
         ec2SecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(443), 'HTTPS over IPv4');
@@ -61,7 +64,7 @@ export class ApiEc2Stack extends Stack {
 
 
         const keypair = new KeyPair(this, 'ApiEc2Keypair', {
-            keyPairName: 'EC2 Keypair',
+            keyPairName: 'EC2 Keypair' + namePostfix,
             publicKeyMaterial: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN5OhXLM34h3omM+5AoaYgUktcBMUBrC5awrPoItmf3S prod@littil.org',
         });
 
@@ -72,13 +75,12 @@ export class ApiEc2Stack extends Stack {
             .replaceAll('%API_DOMAIN%', apiDomain);
 
         /* Logging. */
-        const logGroupName = 'BackendApiEc2Logs';
+        const logGroupName = 'BackendApiEc2Logs' + namePostfix;
         const apiEc2LoggingStack = new LoggingStack(this, 'ApiEc2LoggingStack', {
             littil: props.littil,
-            logGroupName,
+            logGroupName: logGroupName + namePostfix,
         });
 
-        const dockerTag = '1.3.1';
         const dockerImage = props.ecrRepository.awsAccount + '.dkr.ecr.eu-west-1.amazonaws.com/' + props.ecrRepository.name + ':' + dockerTag;
 
         const littilOidcSecretName = 'littil/backend/' + props.littil.environment + '/oidc';
@@ -176,7 +178,7 @@ export class ApiEc2Stack extends Stack {
         );
 
         /**/
-        const ec2Instance = new Instance(this, 'ApiInstance', {
+        const ec2Instance = new Instance(this, 'ApiInstance' + namePostfix, {
             vpc: props.apiVpc,
             instanceType: InstanceType.of(InstanceClass.T3A, InstanceSize.MICRO),
             machineImage: new AmazonLinuxImage({
