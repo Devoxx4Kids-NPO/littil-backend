@@ -199,7 +199,7 @@
         <dependency>
             <groupId>io.quarkiverse.logging.cloudwatch</groupId>
             <artifactId>quarkus-logging-cloudwatch</artifactId>
-            <version>6.13.0</version>
+            <version>6.14.2</version>
         </dependency>
         <!--
         Timing Attack [Critical Severity][https://security.snyk.io/vuln/SNYK-JAVA-ORGGRAALVMSDK-9728156] in org.graalvm.sdk:graal-sdk@23.1.2
