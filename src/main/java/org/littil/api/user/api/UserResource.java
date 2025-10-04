@@ -24,6 +24,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -192,4 +193,12 @@ public class UserResource {
         return Response.ok(userStatistics).build();
     }
 
+    @PATCH
+    @Path("user/{id}/email")
+    public Response updateEmail(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
+    		@NotNull ChangeEmailResource changeEmailResource) {
+    	// TODO validate changeEmailResource
+        User user = userService.changeEmail(id, changeEmailResource.getNewEmailAddress());
+        return Response.ok(user).build();
+    }
 }

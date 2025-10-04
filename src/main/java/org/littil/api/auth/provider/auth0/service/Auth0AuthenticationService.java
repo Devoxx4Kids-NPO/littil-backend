@@ -117,6 +117,19 @@ public class Auth0AuthenticationService implements AuthenticationService {
         }
     }
 
+    @Override
+    public void changeEmailAddress(String providerId, String newEmailAddress) {
+        // validate email doesn't exist
+    	try {
+    		User user  = new User();
+    	    user.setEmail(newEmailAddress);
+    		auth0api.users().update(providerId, user).execute();
+    	} catch (Auth0Exception e) {
+            throw new Auth0UserException("Could not change email for user with providerId " + providerId, e);
+       	}
+    }
+    
+    
     private static Map<String, List<Role>> mapToUsersWithRoleList(Map<Role, List<User>> roleWithUserListMap) {
         Map<String,List<Role>>  userWithRolesMap = new HashMap<>();
         for (Map.Entry<Role, List<User>> entry : roleWithUserListMap.entrySet()) {

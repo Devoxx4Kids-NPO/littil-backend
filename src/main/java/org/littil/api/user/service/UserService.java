@@ -137,4 +137,24 @@ public class UserService {
         );
         return user;
     }
+
+    @Transactional
+	public User changeEmail(UUID userId, String newEmailAddress) {
+		  Optional<UserEntity> alreadyExistingUser = repository.findByEmailAddress(newEmailAddress);
+          if(alreadyExistingUser.isPresent()) {
+	           log.warn("Failed to change email address due to the fact that user with id " + alreadyExistingUser.get().getId()
+	                    +  " already has the same emailAddress.");
+	           throw new EntityAlreadyExistsException();
+	      }
+    	  Optional<User> optionalUser = getUserById(userId);
+		  if (optionalUser.isEmpty()) { 
+	            throw new NotFoundException();
+		  }
+	
+		  User user  = optionalUser.get();
+          user.setEmailAddress(newEmailAddress);
+          authenticationService.changeEmailAddress(user.getProviderId(), newEmailAddress);
+          this.repository.persist(mapper.toEntity(user));
+		  return user;
+	}
 }
