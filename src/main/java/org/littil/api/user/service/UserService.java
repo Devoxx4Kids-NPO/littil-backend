@@ -11,6 +11,7 @@ import org.littil.api.auth.service.ProviderService;
 import org.littil.api.exception.EntityAlreadyExistsException;
 import org.littil.api.mail.MailService;
 import org.littil.api.metrics.LittilMetrics;
+import org.littil.api.user.api.ChangeEmailResource;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
@@ -33,6 +34,7 @@ public class UserService {
     ProviderService providerService;
     UserRepository repository;
     MailService mailService;
+    VerificationCodeService verifictionCodeService;
     UserMapper mapper;
     PasswordService passwordService;
 
@@ -139,7 +141,9 @@ public class UserService {
     }
 
     @Transactional
-	public User changeEmail(UUID userId, String newEmailAddress) {
+	public User changeEmail(UUID userId, ChangeEmailResource changeEmailResource) {
+    	String newEmailAddress = getEmailAddress(changeEmailResource);
+    	
 		  Optional<UserEntity> alreadyExistingUser = repository.findByEmailAddress(newEmailAddress);
           if(alreadyExistingUser.isPresent()) {
 	           log.warn("Failed to change email address due to the fact that user with id " + alreadyExistingUser.get().getId()
@@ -148,13 +152,21 @@ public class UserService {
 	      }
     	  Optional<User> optionalUser = getUserById(userId);
 		  if (optionalUser.isEmpty()) { 
-	            throw new NotFoundException();
+	            throw new NotFoundException("User with id " + userId + " not found.");
 		  }
 	
 		  User user  = optionalUser.get();
           user.setEmailAddress(newEmailAddress);
+          
+          this.repository.getEntityManager().merge(mapper.toEntity(user));
           authenticationService.changeEmailAddress(user.getProviderId(), newEmailAddress);
-          this.repository.persist(mapper.toEntity(user));
-		  return user;
+          return user;
+	}
+
+	private String getEmailAddress(ChangeEmailResource changeEmailResource) {
+		if (verifictionCodeService.isValidVerificationCode(changeEmailResource.getVerificationCode(), changeEmailResource.getNewEmailAddress())) {
+			return changeEmailResource.getNewEmailAddress();
+		}
+		throw new IllegalArgumentException("verification code is not valid");
 	}
 }

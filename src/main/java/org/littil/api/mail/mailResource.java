@@ -6,6 +6,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
+import org.littil.api.user.service.VerificationCodeService;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -25,6 +26,10 @@ public class mailResource {
 
     @Inject
     MailService mailService;
+    
+    @Inject
+    VerificationCodeService verificationCodeService;
+
     @Inject
     TokenHelper tokenHelper;
 
@@ -64,8 +69,9 @@ public class mailResource {
 //    )
     public Response sendEmailWithVerificationCode(@NotNull EmailVerficationResource emailVerificationResource)
     {
-    	String emailAddress = emailVerificationResource.getEmailAddress();     	
-    	mailService.sendVerificationCode(emailAddress);
+    	String emailAddress = emailVerificationResource.getEmailAddress();  
+    	String verificationCode = verificationCodeService.getVerificationCode(emailAddress);
+    	mailService.sendVerificationCode(emailAddress, verificationCode);
         return Response.ok().build();
     }
 

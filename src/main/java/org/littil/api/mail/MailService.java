@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @ApplicationScoped
 public class MailService {
-	
-	public static Map<String, VerificationCodeDetails> verificationCodeMap = new HashMap<>();
 
     @Inject
     @ConfigProperty(name = "org.littil.feedback.email")
@@ -75,41 +73,13 @@ public class MailService {
         send(template);
     }
 
-	public void sendVerificationCode(String newEmailAddress) {
-		String verificationCode = getVerificationCode(newEmailAddress);
-		var template = Templates.verificationcode(verificationCode)
-				.to(newEmailAddress)
+	public void sendVerificationCode(String emailAddress, String verificationCode) {
+				var template = Templates.verificationcode(verificationCode)
+				.to(emailAddress)
 				.subject("LiTTiL email verificatie code");
         send(template);
 	}
 	
-	public boolean verifyVerificationCode(String emailAddress, String verificationCode) {
-		cleanVerificationCodeMap();
-		if (verificationCodeMap.containsKey(emailAddress)) {
-			throw new IllegalArgumentException("Verification code not found");   // TODO correct ExceptionType ?
-		}
-		return verificationCodeMap.get(emailAddress).getVerificationCode().equals(verificationCode);
-	}
-	
-	private String getVerificationCode(String emailAddress) {
-		cleanVerificationCodeMap();
-		// validate e-mailaddress		
-		if (verificationCodeMap.containsKey(emailAddress)) {
-			throw new IllegalArgumentException("Verification process still in progress");  // TODO correct ExceptionType ?
-		}
-		// create verification code and store
-		VerificationCodeDetails verificationCodeDetails = new VerificationCodeDetails(emailAddress);
-		verificationCodeMap.put(emailAddress, verificationCodeDetails);
-		return  verificationCodeDetails.getVerificationCode();
-	}
-	
-	private void cleanVerificationCodeMap() {
-		// remove expired e-mailaddresses from map
-		verificationCodeMap = verificationCodeMap.entrySet().stream() //
-				.filter(entry -> entry.getValue().getExpireTime() <= System.currentTimeMillis())
-			    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-	}
-    
     private void send(MailTemplate.MailTemplateInstance template) {
         log.info("sending {}",template);
         try {
@@ -124,17 +94,4 @@ public class MailService {
         }
     }
     
-    @Getter
-    class VerificationCodeDetails {
-    	final String emailAddress;
-    	final String verificationCode;
-    	final Long expireTime;
-    	
-    	public VerificationCodeDetails(String emailAddress) {
-    		this.emailAddress = emailAddress;
-    		this.verificationCode = "123-456";
-    		this.expireTime = System.currentTimeMillis() + 5 * 60 * 1000; // TODO constant + mention in mail)
-    	}
-    }
-
 }

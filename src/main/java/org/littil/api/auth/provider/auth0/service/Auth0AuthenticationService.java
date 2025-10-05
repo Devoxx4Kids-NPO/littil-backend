@@ -123,6 +123,8 @@ public class Auth0AuthenticationService implements AuthenticationService {
     	try {
     		User user  = new User();
     	    user.setEmail(newEmailAddress);
+    	    user.setName(newEmailAddress);
+    	    user.setEmailVerified(true);
     		auth0api.users().update(providerId, user).execute();
     	} catch (Auth0Exception e) {
             throw new Auth0UserException("Could not change email for user with providerId " + providerId, e);

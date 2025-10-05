@@ -193,12 +193,12 @@ public class UserResource {
         return Response.ok(userStatistics).build();
     }
 
+        
     @PATCH
     @Path("user/{id}/email")
     public Response updateEmail(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
     		@NotNull ChangeEmailResource changeEmailResource) {
-    	// TODO validate changeEmailResource
-        User user = userService.changeEmail(id, changeEmailResource.getNewEmailAddress());
+        User user = userService.changeEmail(id, changeEmailResource);
         return Response.ok(user).build();
     }
 }
