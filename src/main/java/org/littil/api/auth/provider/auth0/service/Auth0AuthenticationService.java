@@ -16,7 +16,6 @@ import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
-import org.littil.api.user.service.UserService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

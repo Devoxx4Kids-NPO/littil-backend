@@ -9,7 +9,7 @@ public class ChangeEmailResource {
 
 	@NotEmpty
 	@Email
-	private String oldEmailAddress;
+	private String oldEmailAddress;  // TODO not used yet
 
 	@NotEmpty
 	@Email

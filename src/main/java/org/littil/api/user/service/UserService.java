@@ -34,7 +34,7 @@ public class UserService {
     ProviderService providerService;
     UserRepository repository;
     MailService mailService;
-    VerificationCodeService verifictionCodeService;
+    VerificationCodeService verificationCodeService;
     UserMapper mapper;
     PasswordService passwordService;
 
@@ -140,6 +140,12 @@ public class UserService {
         return user;
     }
 
+    
+    public void sendVerificationCode(String emailAddress) {
+    	String verificationCode = verificationCodeService.getVerificationCode(emailAddress);
+    	mailService.sendVerificationCode(emailAddress, verificationCode);
+    }
+    
     @Transactional
 	public User changeEmail(UUID userId, ChangeEmailResource changeEmailResource) {
     	String newEmailAddress = getEmailAddress(changeEmailResource);
@@ -164,7 +170,9 @@ public class UserService {
 	}
 
 	private String getEmailAddress(ChangeEmailResource changeEmailResource) {
-		if (verifictionCodeService.isValidVerificationCode(changeEmailResource.getVerificationCode(), changeEmailResource.getNewEmailAddress())) {
+		String emailAddress = changeEmailResource.getNewEmailAddress();
+		String verificationCode = changeEmailResource.getVerificationCode();
+		if (verificationCodeService.isValidVerificationCode(verificationCode, emailAddress)) {
 			return changeEmailResource.getNewEmailAddress();
 		}
 		throw new IllegalArgumentException("verification code is not valid");

@@ -15,7 +15,7 @@ class VerificationCodeServiceTest {
     private VerificationCodeService service;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         service = new VerificationCodeService();
     }
 

@@ -11,11 +11,13 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.exception.ErrorResponse;
+import org.littil.api.mail.MailService;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
 import org.littil.api.user.service.UserStatistics;
 import org.littil.api.user.service.UserStatisticsService;
+import org.littil.api.user.service.VerificationCodeService;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -52,7 +54,7 @@ public class UserResource {
     UserMapper userMapper;
     @Inject
     TokenHelper tokenHelper;
-
+ 
     @GET
     @Path("user")
     @RolesAllowed({"admin"})
@@ -193,7 +195,7 @@ public class UserResource {
         return Response.ok(userStatistics).build();
     }
 
-        
+    // TODO    
     @PATCH
     @Path("user/{id}/email")
     public Response updateEmail(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
@@ -201,4 +203,49 @@ public class UserResource {
         User user = userService.changeEmail(id, changeEmailResource);
         return Response.ok(user).build();
     }
+    
+
+    @POST
+    @Path("/user/{id}/email/verification")
+    @RolesAllowed({"admin"})  // TODO school / guestTeacher
+    @Operation(summary = "Send email with verification code for register/change email address")
+    @APIResponse(
+            responseCode = "204",
+            description = "email send with verification code",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON //,
+//                    schema = @Schema(type = SchemaType.OBJECT, implementation = GuestTeacher.class)
+            )
+    )
+//    @APIResponse(
+//            responseCode = "400",
+//            description = "Validation errors occurred.",
+//            content = @Content(
+//                    mediaType = MediaType.APPLICATION_JSON,
+//                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
+//            )
+//    )
+//    @APIResponse(
+//            responseCode = "404",
+//            description = "No Teacher found for id provided"
+//    )
+//    @APIResponse(
+//            responseCode = "409",
+//            description = "Current user already has authorizations"
+//    )
+//    @APIResponse(
+//            responseCode = "500",
+//            description = "Persistence error occurred. Failed to persist teacher.",
+//            content = @Content(mediaType = MediaType.APPLICATION_JSON)
+//    )
+    public Response sendEmailWithVerificationCode(@NotNull EmailVerficationResource emailVerificationResource)
+    {
+    	String emailAddress = emailVerificationResource.getEmailAddress();
+    	userService.sendVerificationCode(emailAddress);
+        return Response.noContent().build();
+    }
+
+    
+    
+    
 }

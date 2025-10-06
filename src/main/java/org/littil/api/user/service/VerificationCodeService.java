@@ -19,11 +19,13 @@ import java.util.concurrent.ThreadLocalRandom;
 public class VerificationCodeService {
 
     /** Stores verification code details mapped by email address */
-    private static Map<String, VerificationCodeDetails> verificationCodeMap = new HashMap<>();
+    private Map<String, VerificationCodeDetails> verificationCodeMap = new HashMap<>();
 
     /** Expiration time for verification codes in milliseconds (5 minutes) */
-    private static final long VERIFICATION_CODE_EXPIRATION_MS = 5 * 60 * 1000;
+    private static final long VERIFICATION_CODE_EXPIRATION_MS = 5 * 60 * 1_000L;
 
+    //TODO all methods static / hide constructor
+    
     /**
      * Validates the provided verification code for the given email address.
      *
