@@ -37,6 +37,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -195,57 +196,53 @@ public class UserResource {
         return Response.ok(userStatistics).build();
     }
 
-    // TODO    
-    @PATCH
-    @Path("user/{id}/email")
-    public Response updateEmail(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
-    		@NotNull ChangeEmailResource changeEmailResource) {
-        User user = userService.changeEmail(id, changeEmailResource);
-        return Response.ok(user).build();
-    }
-    
-
     @POST
     @Path("/user/{id}/email/verification")
-    @RolesAllowed({"admin"})  // TODO school / guestTeacher
+    @RolesAllowed({"schools", "guest_teachers"})  // TODO school / guestTeacher
     @Operation(summary = "Send email with verification code for register/change email address")
     @APIResponse(
             responseCode = "204",
-            description = "email send with verification code",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON //,
-//                    schema = @Schema(type = SchemaType.OBJECT, implementation = GuestTeacher.class)
-            )
+            description = "email send with verification code"
     )
-//    @APIResponse(
-//            responseCode = "400",
-//            description = "Validation errors occurred.",
-//            content = @Content(
-//                    mediaType = MediaType.APPLICATION_JSON,
-//                    schema = @Schema(type = SchemaType.OBJECT, implementation = ErrorResponse.class)
-//            )
-//    )
-//    @APIResponse(
-//            responseCode = "404",
-//            description = "No Teacher found for id provided"
-//    )
-//    @APIResponse(
-//            responseCode = "409",
-//            description = "Current user already has authorizations"
-//    )
-//    @APIResponse(
-//            responseCode = "500",
-//            description = "Persistence error occurred. Failed to persist teacher.",
-//            content = @Content(mediaType = MediaType.APPLICATION_JSON)
-//    )
-    public Response sendEmailWithVerificationCode(@NotNull EmailVerficationResource emailVerificationResource)
+    @APIResponse(
+            responseCode = "401",
+            description = "User is not authorized to send verification code for other user."
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "Verification process still in progress. Please wait before requesting a new code."
+    )
+    public Response sendEmailWithVerificationCode(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
+                          @NotNull EmailVerficationResource emailVerificationResource)
     {
-    	String emailAddress = emailVerificationResource.getEmailAddress();
+        if ( ! tokenHelper.getCurrentUserId().equals(id) ) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        String emailAddress = emailVerificationResource.getEmailAddress();
     	userService.sendVerificationCode(emailAddress);
         return Response.noContent().build();
     }
 
-    
-    
-    
+
+    // TODO
+    @PATCH
+    @Path("user/{id}/email")
+    @RolesAllowed({"schools", "guest_teachers"})  // TODO school / guestTeacher
+
+    @APIResponse(
+            responseCode = "401",
+            description = "User is not authorized to change email for other user."
+    )
+    public Response changeEmail(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
+                                @NotNull ChangeEmailResource changeEmailResource) {
+        if ( ! tokenHelper.getCurrentUserId().equals(id) ) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        User user = userService.changeEmail(id, changeEmailResource);
+        return Response.ok(user).build();
+    }
+
+
+
+
 }
