@@ -25,7 +25,7 @@ class VerificationCodeServiceTest {
         String code = service.getVerificationCode(email);
 
         assertNotNull(code);
-        assertTrue(code.matches("\\d{3}-\\d{3}"));
+        assertTrue(code.matches("[A-Z0-9]{3}-[A-Z0-9]{3}"));
     }
 
     @Test

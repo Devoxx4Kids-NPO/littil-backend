@@ -1,5 +1,6 @@
 package org.littil.api.user.service;
 
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -17,6 +18,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @ApplicationScoped
 public class VerificationCodeService {
+
 
     /** Stores verification code details mapped by email address */
     private Map<String, VerificationCodeDetails> verificationCodeMap = new HashMap<>();
@@ -79,6 +81,9 @@ public class VerificationCodeService {
         final String verificationCode;
         final Long expireTime;
 
+        /** Character pool for generating random verification codes */
+        private static final String CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
         /**
          * Constructs a new VerificationCodeDetails instance for the given email address.
          * The verification code is randomly generated and expires after a fixed duration.
@@ -97,9 +102,18 @@ public class VerificationCodeService {
          * @return a randomly generated verification code
          */
         private String generateRandomCode() {
-            int part1 = ThreadLocalRandom.current().nextInt(100, 1000);
-            int part2 = ThreadLocalRandom.current().nextInt(100, 1000);
-            return String.format("%03d-%03d", part1, part2);
+           SecureRandom secureRandom = new SecureRandom();
+           return generateRandomString(secureRandom, 3) + "-" + generateRandomString(secureRandom, 3);
         }
+
+        private static String generateRandomString(SecureRandom secureRandom, int length) {
+            StringBuilder sb = new StringBuilder(length);
+            for (int i = 0; i < length; i++) {
+                int index = secureRandom.nextInt(CHAR_POOL.length());
+                sb.append(CHAR_POOL.charAt(index));
+            }
+            return sb.toString();
+        }
+
     }
 }
