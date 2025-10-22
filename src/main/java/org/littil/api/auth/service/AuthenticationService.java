@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.auth0.json.mgmt.users.User;
-
 /**
  * String userId here refers to Auth0 providerId (org.littil.api.user.service.User#providerId)
  */
