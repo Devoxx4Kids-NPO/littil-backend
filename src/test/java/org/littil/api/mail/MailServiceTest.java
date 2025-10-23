@@ -142,7 +142,7 @@ class MailServiceTest {
         VerificationCode verificationCode = new VerificationCode(email);
 
         // sut
-        mailService.sendVerificationCode(email, verificationCode);
+        mailService.sendVerificationCode(verificationCode);
 
         // verify
         assertEquals(1 , mailbox.getTotalMessagesSent());
@@ -151,8 +151,6 @@ class MailServiceTest {
         assertEquals("LiTTiL email verificatie code", sent.get().getSubject());
         assertEquals(1, sent.get().getTo().size());
         assertEquals(email, sent.get().getTo().get(0));
-//        assertTrue(sent.get().getText().contains(verificationCode.getVerificationCode()));
+        assertTrue(sent.get().getText().contains(verificationCode.getToken()));
     }
-
-
 }

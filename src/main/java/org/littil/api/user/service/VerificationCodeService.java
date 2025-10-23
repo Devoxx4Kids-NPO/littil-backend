@@ -19,19 +19,19 @@ public class VerificationCodeService {
 
 
     /**
-     * Validates the provided verification code for the given email address.
+     * Validates the provided token code for the given email address.
      *
      * @param emailAddress     the email address associated with the verification code
-     * @param verificationCode the verification code to validate
+     * @param token the verification code to validate
      * @return true if the code is valid and matches; false otherwise
      * @throws NoSuchElementException if no verification code exists for the email address
      */
-    public boolean isValidVerificationCode(String emailAddress, String verificationCode) {
+    public boolean isValidToken(String emailAddress, String token) {
         cleanVerificationCodeMap();
         if (!verificationCodeMap.containsKey(emailAddress)) {
             throw new NoSuchElementException("Verification code is missing or expired");  // TODO final Exception ?
         }
-        return verificationCodeMap.get(emailAddress).getVerificationCode().equals(verificationCode);
+        return verificationCodeMap.get(emailAddress).getToken().equals(token);
     }
 
     /**

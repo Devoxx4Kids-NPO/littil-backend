@@ -2,7 +2,7 @@ Beste meneer/mevrouw,
 
 Hierbij ontvangt U de verificatie code die nodig is voor het wijzigen van uw e-mailadres.
 
-Uw verificatie code {verificationCode}
+Uw verificatie code {token}
 
 De code is {expiresInMinutes} minuten geldig.
 

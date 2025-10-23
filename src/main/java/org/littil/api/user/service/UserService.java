@@ -143,7 +143,7 @@ public class UserService {
     
     public void sendVerificationCode(String emailAddress) {
     	VerificationCode verificationCode = verificationCodeService.getVerificationCode(emailAddress);
-    	mailService.sendVerificationCode(emailAddress, verificationCode);
+    	mailService.sendVerificationCode(verificationCode);
     }
     
     @Transactional
@@ -172,7 +172,7 @@ public class UserService {
 	private String getEmailAddress(ChangeEmailResource changeEmailResource) {
 		String emailAddress = changeEmailResource.getNewEmailAddress();
 		String verificationCode = changeEmailResource.getVerificationCode();
-		if (verificationCodeService.isValidVerificationCode(verificationCode, emailAddress)) {
+		if (verificationCodeService.isValidToken(verificationCode, emailAddress)) {
 			return changeEmailResource.getNewEmailAddress();
 		}
 		throw new IllegalArgumentException("verification code is not valid");

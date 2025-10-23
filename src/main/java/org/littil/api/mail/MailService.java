@@ -28,7 +28,7 @@ public class MailService {
         public static native MailTemplate.MailTemplateInstance contactRecipient(String contactMessage, String contactMedium);
         public static native MailTemplate.MailTemplateInstance contactInitiatingUser(String contactMessage, String contactMedium);
         public static native MailTemplate.MailTemplateInstance feedback(String feedbackType, String message);
-        public static native MailTemplate.MailTemplateInstance verificationCode(String verificationCode, int expiresInMinutes);
+        public static native MailTemplate.MailTemplateInstance verificationCode(String token, int expiresInMinutes);
     }
 
     public void sendWelcomeMail(User user, String password) {
@@ -68,10 +68,11 @@ public class MailService {
         send(template);
     }
 
-	public void sendVerificationCode(String emailAddress, VerificationCode verificationCode) {
-        String email = verificationCode.getEmailAddress();
-        int exipresInMinutes = verificationCode.getExpiresIn() / 60;
-    	var template = Templates.verificationCode(email,exipresInMinutes)
+	public void sendVerificationCode(VerificationCode verificationCode) {
+        String emailAddress = verificationCode.getEmailAddress();
+        String token = verificationCode.getToken();
+        int expiresInMinutes = verificationCode.getExpiresIn() / 60;
+    	var template = Templates.verificationCode(token, expiresInMinutes)
     			.to(emailAddress)
 				.subject("LiTTiL email verificatie code");
         send(template);

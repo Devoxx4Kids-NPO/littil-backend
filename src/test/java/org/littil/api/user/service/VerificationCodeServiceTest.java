@@ -25,8 +25,8 @@ class VerificationCodeServiceTest {
         VerificationCode verificationCode = service.getVerificationCode(email);
 
         assertNotNull(verificationCode);
-        assertNotNull(verificationCode.getVerificationCode());
-        assertTrue(verificationCode.getVerificationCode().matches("[A-Z0-9]{3}-[A-Z0-9]{3}"));
+        assertNotNull(verificationCode.getToken());
+        assertTrue(verificationCode.getToken().matches("[A-Z0-9]{3}-[A-Z0-9]{3}"));
     }
 
     @Test
@@ -38,24 +38,24 @@ class VerificationCodeServiceTest {
     }
 
     @Test
-    void testIsValidVerificationCode_Success() {
+    void testIsValidToken_Success() {
         String email = "user3@example.com";
         VerificationCode code = service.getVerificationCode(email);
 
-        assertTrue(service.isValidVerificationCode(email, code.getVerificationCode()));
+        assertTrue(service.isValidToken(email, code.getToken()));
     }
 
     @Test
-    void testIsValidVerificationCode_InvalidCode_ReturnsFalse() {
+    void testIsValidToken_ReturnsFalse() {
         String email = "user4@example.com";
         service.getVerificationCode(email);
 
-        assertFalse(service.isValidVerificationCode(email, "000-000"));
+        assertFalse(service.isValidToken(email, "000-000"));
     }
 
     @Test
-    void testIsValidVerificationCode_NoCode_ThrowsException() {
+    void testIsValidToken_ThrowsException() {
         assertThrows(NoSuchElementException.class, () ->
-                service.isValidVerificationCode("missing@example.com", "123-456"));
+                service.isValidToken("missing@example.com", "123-456"));
     }
 }

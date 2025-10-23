@@ -357,7 +357,7 @@ class UserResourceTest {
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
-        doReturn(true   ).when(verificationCodeService).isValidVerificationCode(any(),any());
+        doReturn(true   ).when(verificationCodeService).isValidToken(any(),any());
 
         given()
                 .when()
@@ -402,7 +402,7 @@ class UserResourceTest {
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
-        doReturn(true   ).when(verificationCodeService).isValidVerificationCode(any(),any());
+        doReturn(true   ).when(verificationCodeService).isValidToken(any(),any());
 
         given()
                 .when()
