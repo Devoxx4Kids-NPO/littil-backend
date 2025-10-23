@@ -22,10 +22,11 @@ class VerificationCodeServiceTest {
     @Test
     void testGetVerificationCode_Success() {
         String email = "user1@example.com";
-        String code = service.getVerificationCode(email);
+        VerificationCode verificationCode = service.getVerificationCode(email);
 
-        assertNotNull(code);
-        assertTrue(code.matches("[A-Z0-9]{3}-[A-Z0-9]{3}"));
+        assertNotNull(verificationCode);
+        assertNotNull(verificationCode.getVerificationCode());
+        assertTrue(verificationCode.getVerificationCode().matches("[A-Z0-9]{3}-[A-Z0-9]{3}"));
     }
 
     @Test
@@ -39,9 +40,9 @@ class VerificationCodeServiceTest {
     @Test
     void testIsValidVerificationCode_Success() {
         String email = "user3@example.com";
-        String code = service.getVerificationCode(email);
+        VerificationCode code = service.getVerificationCode(email);
 
-        assertTrue(service.isValidVerificationCode(email, code));
+        assertTrue(service.isValidVerificationCode(email, code.getVerificationCode()));
     }
 
     @Test
@@ -57,5 +58,4 @@ class VerificationCodeServiceTest {
         assertThrows(NoSuchElementException.class, () ->
                 service.isValidVerificationCode("missing@example.com", "123-456"));
     }
-
 }

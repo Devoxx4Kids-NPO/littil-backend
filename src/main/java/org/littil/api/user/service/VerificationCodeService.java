@@ -1,17 +1,11 @@
 package org.littil.api.user.service;
 
-import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import lombok.Getter;
-
-
-
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Service class responsible for generating and validating email verification codes.
@@ -21,10 +15,8 @@ public class VerificationCodeService {
 
 
     /** Stores verification code details mapped by email address */
-    private Map<String, VerificationCodeDetails> verificationCodeMap = new HashMap<>();
+    private Map<String, VerificationCode> verificationCodeMap = new HashMap<>();
 
-    /** Expiration time for verification codes in milliseconds (5 minutes) */
-    private static final long VERIFICATION_CODE_EXPIRATION_MS = 5 * 60 * 1_000L;
 
     /**
      * Validates the provided verification code for the given email address.
@@ -50,15 +42,14 @@ public class VerificationCodeService {
      * @return the newly generated verification code
      * @throws IllegalStateException if a verification process is already in progress
      */
-    public String getVerificationCode(String emailAddress) {
+    public VerificationCode getVerificationCode(String emailAddress) {
         cleanVerificationCodeMap();
         if (verificationCodeMap.containsKey(emailAddress)) {
             throw new IllegalStateException("Verification process still in progress");
         }
-        VerificationCodeDetails verificationCodeDetails = new VerificationCodeDetails(emailAddress);
-        verificationCodeMap.put(emailAddress, verificationCodeDetails);
-        // TODO: Mention VERIFICATION_CODE_EXPIRATION_MS in the email sent to the user
-        return verificationCodeDetails.getVerificationCode();
+        VerificationCode verificationCode = new VerificationCode(emailAddress);
+        verificationCodeMap.put(emailAddress, verificationCode);
+        return verificationCode;
     }
 
     /**
@@ -66,52 +57,8 @@ public class VerificationCodeService {
      */
     private void cleanVerificationCodeMap() {
         verificationCodeMap = verificationCodeMap.entrySet().stream()
-                .filter(entry -> entry.getValue().getExpireTime() > System.currentTimeMillis())
+                .filter( entry -> !entry.getValue().isExpired())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    /**
-     * Inner class representing the details of a verification code.
-     */
-    @Getter
-    class VerificationCodeDetails {
-        final String emailAddress;
-        final String verificationCode;
-        final Long expireTime;
-
-        /** Character pool for generating random verification codes */
-        private static final String CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-        /**
-         * Constructs a new VerificationCodeDetails instance for the given email address.
-         * The verification code is randomly generated and expires after a fixed duration.
-         *
-         * @param emailAddress the email address to associate with the verification code
-         */
-        public VerificationCodeDetails(String emailAddress) {
-            this.emailAddress = emailAddress;
-            this.verificationCode = generateRandomCode();
-            this.expireTime = System.currentTimeMillis() + VERIFICATION_CODE_EXPIRATION_MS;
-        }
-
-        /**
-         * Generates a random 6-digit verification code in the format "XXX-XXX".
-         *
-         * @return a randomly generated verification code
-         */
-        private String generateRandomCode() {
-           SecureRandom secureRandom = new SecureRandom();
-           return generateRandomString(secureRandom, 3) + "-" + generateRandomString(secureRandom, 3);
-        }
-
-        private static String generateRandomString(SecureRandom secureRandom, int length) {
-            StringBuilder sb = new StringBuilder(length);
-            for (int i = 0; i < length; i++) {
-                int index = secureRandom.nextInt(CHAR_POOL.length());
-                sb.append(CHAR_POOL.charAt(index));
-            }
-            return sb.toString();
-        }
-
-    }
 }

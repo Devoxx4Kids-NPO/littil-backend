@@ -4,6 +4,8 @@ Hierbij ontvangt U de verificatie code die nodig is voor het wijzigen van uw e-m
 
 Uw verificatie code {verificationCode}
 
+De code is {expiresInMinutes} minuten geldig.
+
 Met vriendelijke groet,
 
 LiTTiL

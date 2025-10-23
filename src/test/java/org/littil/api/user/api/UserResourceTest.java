@@ -16,9 +16,9 @@ import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
-import org.littil.api.mail.MailService;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
+import org.littil.api.user.service.VerificationCode;
 import org.littil.api.user.service.VerificationCodeService;
 import org.littil.mock.auth0.APIManagementMock;
 
@@ -42,9 +42,6 @@ class UserResourceTest {
 
     @InjectMock
     VerificationCodeService verificationCodeService;
-
-    @InjectMock
-    MailService mailService;
 
     @InjectSpy
     UserService userService;
@@ -272,12 +269,13 @@ class UserResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPostSendEmailWithVerificationCode_thenShouldReturnNoContent() {
 
+        String email = "email@littil.org";
         EmailVerficationResource emailVerficationResource = new EmailVerficationResource();
-        emailVerficationResource.setEmailAddress("email@littil.org");
+        emailVerficationResource.setEmailAddress(email);
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
-        doReturn("secret").when(verificationCodeService).getVerificationCode(any());
+        doReturn(new VerificationCode(email)).when(verificationCodeService).getVerificationCode(any());
 
         given()
                 .when()

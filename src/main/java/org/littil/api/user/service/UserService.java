@@ -142,7 +142,7 @@ public class UserService {
 
     
     public void sendVerificationCode(String emailAddress) {
-    	String verificationCode = verificationCodeService.getVerificationCode(emailAddress);
+    	VerificationCode verificationCode = verificationCodeService.getVerificationCode(emailAddress);
     	mailService.sendVerificationCode(emailAddress, verificationCode);
     }
     
