@@ -9,6 +9,8 @@ import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
@@ -266,14 +268,6 @@ class UserResourceTest {
                 .statusCode(403);
     }
 
-//  TODO
-//    @ParameterizedTest
-//    @ValueSource(strings = {"schools", "teachers", "admins"})
-//    void givenPostSendEmailWithVerificationCode_thenShouldReturnNoContent(String role) {
-//        QuarkusTestSecurity.setUser("littil").roles(role);
-//        // test logic
-//    }
-
     @Test
     @TestSecurity(user = "littil", roles = "schools")
     @OidcSecurity(claims = {
@@ -353,9 +347,6 @@ class UserResourceTest {
                 .then()
                 .statusCode(403);
     }
-
-
-// TODO
 
     @Test
     @TestSecurity(user = "littil", roles = "schools")

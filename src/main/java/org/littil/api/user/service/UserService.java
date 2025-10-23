@@ -150,7 +150,7 @@ public class UserService {
 	public User changeEmail(UUID userId, ChangeEmailResource changeEmailResource) {
     	String newEmailAddress = getEmailAddress(changeEmailResource);
     	
-		  Optional<UserEntity> alreadyExistingUser = repository.findByEmailAddress(newEmailAddress);
+		  Optional<User> alreadyExistingUser = getUserByEmailAddress(newEmailAddress);
           if(alreadyExistingUser.isPresent()) {
 	           log.warn("Failed to change email address due to the fact that user with id " + alreadyExistingUser.get().getId()
 	                    +  " already has the same emailAddress.");
