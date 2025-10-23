@@ -2,7 +2,6 @@ package org.littil.api.user.service;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.security.SecureRandom;
 
@@ -13,19 +12,19 @@ import java.security.SecureRandom;
 @Getter
 public class VerificationCode {
 
-    @Schema(description = "Email address associated with the verification code", example = "user@example.com")
-
+    /** Email address associated with the verification code */
     final String emailAddress;
 
-    @Schema(description = "The token sent to the user", example = "AB1-C23")
+    /** Verification code */
     final String token;
 
-    @Schema(description = "Expiration time in epoch milliseconds (internal use only)", hidden = true)
+    /** Duration in seconds for which the code is valid */
+    final int expiresIn;
+
+    /** Exact expiration time in milliseconds since epoch */
     @Getter(AccessLevel.NONE)
     private final Long expireTime;
 
-    @Schema(description = "Duration in seconds for which the code is valid", example = "900")
-    final int expiresIn;
 
     /** Expire time for verification codes in milliseconds (5 minutes) */
     private static final int VERIFICATION_CODE_EXPIRATION_SECONDS = 5 * 60;
