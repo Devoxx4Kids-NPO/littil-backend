@@ -9,8 +9,6 @@ import io.quarkus.test.security.TestSecurity;
 import io.quarkus.test.security.oidc.Claim;
 import io.quarkus.test.security.oidc.OidcSecurity;
 import io.restassured.http.ContentType;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.littil.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.littil.TestFactory;
@@ -269,7 +267,7 @@ class UserResourceTest {
     }
 
     @Test
-    @TestSecurity(user = "littil", roles = "schools")
+    @TestSecurity(user = "littil", roles = "school")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPostSendEmailWithVerificationCode_thenShouldReturnNoContent() {
@@ -291,7 +289,7 @@ class UserResourceTest {
     }
 
     @Test
-    @TestSecurity(user = "littil", roles = "guest_teachers")
+    @TestSecurity(user = "littil", roles = "guest_teacher")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPostSendEmailWithVerificationCodeForExistingEmail_thenShouldReturnConflict() {
@@ -314,7 +312,7 @@ class UserResourceTest {
     }
 
     @Test
-    @TestSecurity(user = "littil", roles = "guest_teachers")
+    @TestSecurity(user = "littil", roles = "guest_teacher")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPostSendEmailWithVerificationCodeWithOtherUserId_thenShouldReturnNotAuthorized() {
@@ -349,7 +347,7 @@ class UserResourceTest {
     }
 
     @Test
-    @TestSecurity(user = "littil", roles = "schools")
+    @TestSecurity(user = "littil", roles = "school")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPatchChangeEmailSchools_thenShouldReturnOK() {
@@ -373,7 +371,7 @@ class UserResourceTest {
     }
 
     @Test
-    @TestSecurity(user = "littil", roles = "schools")
+    @TestSecurity(user = "littil", roles = "school")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPatchChangeEmailOtherUserId_thenShouldReturnUnauthorized() {
@@ -393,7 +391,7 @@ class UserResourceTest {
     }
 
     @Test
-    @TestSecurity(user = "littil", roles = "schools")
+    @TestSecurity(user = "littil", roles = "school")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPatchChangeEmailForExistingEmail_thenShouldReturnConflict() {

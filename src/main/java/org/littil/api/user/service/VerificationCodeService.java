@@ -26,8 +26,6 @@ public class VerificationCodeService {
     /** Expiration time for verification codes in milliseconds (5 minutes) */
     private static final long VERIFICATION_CODE_EXPIRATION_MS = 5 * 60 * 1_000L;
 
-    //TODO all methods static / hide constructor
-    
     /**
      * Validates the provided verification code for the given email address.
      *
@@ -39,7 +37,7 @@ public class VerificationCodeService {
     public boolean isValidVerificationCode(String emailAddress, String verificationCode) {
         cleanVerificationCodeMap();
         if (!verificationCodeMap.containsKey(emailAddress)) {
-            throw new NoSuchElementException("Verification code not found");  // TODO final Exception ?
+            throw new NoSuchElementException("Verification code is missing or expired");  // TODO final Exception ?
         }
         return verificationCodeMap.get(emailAddress).getVerificationCode().equals(verificationCode);
     }

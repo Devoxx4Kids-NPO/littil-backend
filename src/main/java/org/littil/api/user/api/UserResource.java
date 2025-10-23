@@ -198,7 +198,7 @@ public class UserResource {
 
     @POST
     @Path("/user/{id}/email/verification")
-    @RolesAllowed({"schools", "guest_teachers"})  // TODO school / guestTeacher
+    @RolesAllowed({"school", "guest_teacher"})
     @Operation(summary = "Send email with verification code for register/change email address")
     @APIResponse(
             responseCode = "204",
@@ -227,7 +227,7 @@ public class UserResource {
     // TODO
     @PATCH
     @Path("user/{id}/email")
-    @RolesAllowed({"schools", "guest_teachers"})  // TODO school / guestTeacher
+    @RolesAllowed({"school", "guest_teacher"})
 
     @APIResponse(
             responseCode = "401",

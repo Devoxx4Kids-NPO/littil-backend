@@ -9,10 +9,6 @@ public class ChangeEmailResource {
 
 	@NotEmpty
 	@Email
-	private String oldEmailAddress;  // TODO not used yet
-
-	@NotEmpty
-	@Email
 	private String newEmailAddress;
 	
 	@NotEmpty
