@@ -16,6 +16,7 @@ import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.exception.VerificationCodeException;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
 import org.littil.api.user.service.VerificationCode;
@@ -298,7 +299,7 @@ class UserResourceTest {
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
         when(verificationCodeService.getVerificationCode(any()))
-                .thenThrow(new IllegalArgumentException("Verification process still in progress"));
+                .thenThrow(new VerificationCodeException("Verification process still in progress"));
 
         given()
                 .when()

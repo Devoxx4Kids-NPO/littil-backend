@@ -4,8 +4,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 
 @Provider
-public class IllegalArgumentExceptionMapper extends AbstractExceptionMapper<IllegalArgumentException> {
-    public IllegalArgumentExceptionMapper() {
+public class VerificationCodeExceptionMapper extends AbstractExceptionMapper<VerificationCodeException> {
+    public VerificationCodeExceptionMapper() {
         super(Response.Status.CONFLICT);
     }
 }

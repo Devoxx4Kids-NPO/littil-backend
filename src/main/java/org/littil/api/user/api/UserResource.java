@@ -11,13 +11,11 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.exception.ErrorResponse;
-import org.littil.api.mail.MailService;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserMapper;
 import org.littil.api.user.service.UserService;
 import org.littil.api.user.service.UserStatistics;
 import org.littil.api.user.service.UserStatisticsService;
-import org.littil.api.user.service.VerificationCodeService;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -37,7 +35,6 @@ import jakarta.ws.rs.core.UriBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -228,10 +225,21 @@ public class UserResource {
     @PATCH
     @Path("user/{id}/email")
     @RolesAllowed({"school", "guest_teacher"})
-
+    @APIResponse(
+            responseCode = "200",
+            description = "Email changed successfully",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_JSON,
+                    schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)
+            )
+    )
     @APIResponse(
             responseCode = "401",
             description = "User is not authorized to change email for other user."
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "Verification code is missing or expired"
     )
     public Response changeEmail(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
                                 @NotNull ChangeEmailResource changeEmailResource) {
@@ -241,8 +249,5 @@ public class UserResource {
         User user = userService.changeEmail(id, changeEmailResource);
         return Response.ok(user).build();
     }
-
-
-
 
 }

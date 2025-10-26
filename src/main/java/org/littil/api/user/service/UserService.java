@@ -9,6 +9,7 @@ import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.PasswordService;
 import org.littil.api.auth.service.ProviderService;
 import org.littil.api.exception.EntityAlreadyExistsException;
+import org.littil.api.exception.VerificationCodeException;
 import org.littil.api.mail.MailService;
 import org.littil.api.metrics.LittilMetrics;
 import org.littil.api.user.api.ChangeEmailResource;
@@ -175,6 +176,6 @@ public class UserService {
 		if (verificationCodeService.isValidToken(verificationCode, emailAddress)) {
 			return changeEmailResource.getNewEmailAddress();
 		}
-		throw new IllegalArgumentException("verification code is not valid");
+		throw new VerificationCodeException("verification code is not valid");
 	}
 }

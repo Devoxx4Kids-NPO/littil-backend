@@ -4,8 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
-
-import java.util.NoSuchElementException;
+import org.littil.api.exception.VerificationCodeException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,7 +33,7 @@ class VerificationCodeServiceTest {
         String email = "user2@example.com";
         service.getVerificationCode(email);
 
-        assertThrows(IllegalStateException.class, () -> service.getVerificationCode(email));
+        assertThrows(VerificationCodeException.class, () -> service.getVerificationCode(email));
     }
 
     @Test
@@ -55,7 +54,7 @@ class VerificationCodeServiceTest {
 
     @Test
     void testIsValidToken_ThrowsException() {
-        assertThrows(NoSuchElementException.class, () ->
+        assertThrows(VerificationCodeException.class, () ->
                 service.isValidToken("missing@example.com", "123-456"));
     }
 }

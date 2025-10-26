@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import org.littil.api.exception.VerificationCodeException;
 
 /**
  * Service class responsible for generating and validating email verification codes.
@@ -29,7 +30,7 @@ public class VerificationCodeService {
     public boolean isValidToken(String emailAddress, String token) {
         cleanVerificationCodeMap();
         if (!verificationCodeMap.containsKey(emailAddress)) {
-            throw new NoSuchElementException("Verification code is missing or expired");  // TODO final Exception ?
+            throw new VerificationCodeException("Verification code is missing or expired");
         }
         return verificationCodeMap.get(emailAddress).getToken().equals(token);
     }
@@ -45,7 +46,7 @@ public class VerificationCodeService {
     public VerificationCode getVerificationCode(String emailAddress) {
         cleanVerificationCodeMap();
         if (verificationCodeMap.containsKey(emailAddress)) {
-            throw new IllegalStateException("Verification process still in progress");
+            throw new VerificationCodeException("Verification process still in progress");
         }
         VerificationCode verificationCode = new VerificationCode(emailAddress);
         verificationCodeMap.put(emailAddress, verificationCode);

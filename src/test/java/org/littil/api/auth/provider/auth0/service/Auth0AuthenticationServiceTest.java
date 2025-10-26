@@ -20,8 +20,6 @@ import org.littil.api.auth.provider.auth0.exception.Auth0DuplicateUserException;
 import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthorizationType;
-import org.littil.api.user.service.UserService;
-
 
 import java.util.*;
 
@@ -355,4 +353,36 @@ public class Auth0AuthenticationServiceTest {
                 () -> authenticationService.getAllUsers());
         assertEquals("Could not get list of authUsers" , exception.getMessage());
     }
+
+    @Test
+    void changeEmailAddressTest() throws Auth0Exception {
+
+        // Set up the mock behavior
+        UsersEntity usersEntity = mock(UsersEntity.class);
+        Request<User> updateRequest = mock(Request.class);
+
+        when(auth0api.users()).thenReturn(usersEntity);
+        when(usersEntity.update(any(), any())).thenReturn(updateRequest);
+        when(updateRequest.execute()).thenReturn(null);
+
+        // Execute the code under test
+        authenticationService.changeEmailAddress("providerId", "email@littil.org");
+
+        verify(usersEntity, times(1)).update(any(), any());
+        verify(updateRequest, times(1)).execute();
+    }
+
+    @Test
+    void whenAuth0Exception_thenChangeEmailAddress_returnAuth0userException() throws Auth0Exception {
+
+        // Set up the mock behavior
+        when(auth0api.users().update(any(),any()).execute())
+                .thenThrow(new Auth0Exception("simulated exception"));
+
+        // Execute the code under test
+        Auth0UserException exception = assertThrows(Auth0UserException.class,
+                () -> authenticationService.changeEmailAddress("providerId", "email@littil.org"));
+        assertEquals("Could not change email for user with providerId providerId" , exception.getMessage());
+    }
+
 }
