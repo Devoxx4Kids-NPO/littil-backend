@@ -149,7 +149,7 @@ public class UserService {
     
     @Transactional
 	public User changeEmail(UUID userId, ChangeEmailResource changeEmailResource) {
-    	String newEmailAddress = getEmailAddress(changeEmailResource);
+    	String newEmailAddress = getEmailAddressIfTokenIsValid(changeEmailResource);
     	
 		  Optional<User> alreadyExistingUser = getUserByEmailAddress(newEmailAddress);
           if(alreadyExistingUser.isPresent()) {
@@ -170,7 +170,7 @@ public class UserService {
           return user;
 	}
 
-	private String getEmailAddress(ChangeEmailResource changeEmailResource) {
+	private String getEmailAddressIfTokenIsValid(ChangeEmailResource changeEmailResource) {
 		String emailAddress = changeEmailResource.getNewEmailAddress();
 		String verificationCode = changeEmailResource.getVerificationCode();
 		if (verificationCodeService.isValidToken(verificationCode, emailAddress)) {
