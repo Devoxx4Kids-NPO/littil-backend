@@ -373,6 +373,31 @@ class UserResourceTest {
     @TestSecurity(user = "littil", roles = "school")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPatchChangeEmailSchools_thenShouldReturnNotFound() {
+
+        String newEmail = "email-test-404@littil.org";
+        ChangeEmailResource resource = new ChangeEmailResource();
+        resource.setNewEmailAddress(newEmail);
+        resource.setVerificationCode("secret");
+        UUID userId = UUID.randomUUID();
+
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+        doReturn(true   ).when(verificationCodeService).isValidToken(any(),any());
+        doReturn(Optional.empty()).when(userService).getUserByProviderId(any());
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(resource)
+                .patch("/user/{id}/email", userId)
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "school")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPatchChangeEmailOtherUserId_thenShouldReturnUnauthorized() {
 
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
