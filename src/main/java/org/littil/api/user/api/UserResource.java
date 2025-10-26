@@ -220,8 +220,6 @@ public class UserResource {
         return Response.noContent().build();
     }
 
-
-    // TODO
     @PATCH
     @Path("user/{id}/email")
     @RolesAllowed({"school", "guest_teacher"})
