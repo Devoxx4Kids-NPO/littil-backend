@@ -30,7 +30,7 @@ import static org.wildfly.common.Assert.assertTrue;
 
 @QuarkusTest
 @SuppressWarnings("unchecked")
-public class Auth0AuthenticationServiceTest {
+class Auth0AuthenticationServiceTest {
 
     private static final String CLAIM_NAME = "authorizations";
     @Inject
@@ -44,7 +44,7 @@ public class Auth0AuthenticationServiceTest {
     Auth0AuthenticationService authenticationService;
 
     @BeforeEach
-    public void setUp() throws Auth0Exception {
+    void setUp() throws Auth0Exception {
         auth0api = mock(Auth0ManagementAPI.class);
         roleService = mock(Auth0RoleService.class);
         userResponse = mock(Response.class);
@@ -238,7 +238,11 @@ public class Auth0AuthenticationServiceTest {
 
         // Execute the code under test
         authenticationService.addAuthorization(providerId, AuthorizationType.SCHOOL, resourceId);
-        // nothing to validate because addAuthorzation method is of type void
+
+        // Verify: auth0api call was invoked
+        verify(auth0api.users().get(anyString(), any()))
+                .execute();
+
     }
 
     @Test

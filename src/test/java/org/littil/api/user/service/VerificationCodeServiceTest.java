@@ -69,7 +69,8 @@ class VerificationCodeServiceTest {
 
     @Test
     void testIsValidToken_ThrowsException() {
+        UUID userId = UUID.randomUUID();
         assertThrows(VerificationCodeException.class, () ->
-                service.isValidToken(UUID.randomUUID(),"missing@example.com", "123-456"));
+                service.isValidToken(userId,"missing@example.com", "123-456"));
     }
 }

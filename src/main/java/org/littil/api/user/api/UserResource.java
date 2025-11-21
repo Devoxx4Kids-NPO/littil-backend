@@ -240,7 +240,7 @@ public class UserResource {
         if ( ! tokenHelper.getCurrentUserId().equals(id) ) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
-        User user = userService.changeEmail(id, changeEmailResource);
+        userService.changeEmail(id, changeEmailResource);
         return Response.noContent().build();
     }
 

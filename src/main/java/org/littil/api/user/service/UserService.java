@@ -148,7 +148,7 @@ public class UserService {
     }
     
     @Transactional
-	public User changeEmail(UUID userId, ChangeEmailResource changeEmailResource) {
+	public void changeEmail(UUID userId, ChangeEmailResource changeEmailResource) {
     	String newEmailAddress = getEmailAddressIfTokenIsValid(userId, changeEmailResource);
     	
 		  Optional<User> alreadyExistingUser = getUserByEmailAddress(newEmailAddress);
@@ -167,7 +167,6 @@ public class UserService {
           
           this.repository.getEntityManager().merge(mapper.toEntity(user));
           authenticationService.changeEmailAddress(user.getProviderId(), newEmailAddress);
-          return user;
 	}
 
 	private String getEmailAddressIfTokenIsValid(UUID userId, ChangeEmailResource changeEmailResource) {
