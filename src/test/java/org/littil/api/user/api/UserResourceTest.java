@@ -276,7 +276,7 @@ class UserResourceTest {
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
-        doReturn(new VerificationCode(email)).when(verificationCodeService).getVerificationCode(any());
+        doReturn(new VerificationCode(userId, email)).when(verificationCodeService).getVerificationCode(any(),any());
 
         given()
                 .when()
@@ -298,7 +298,7 @@ class UserResourceTest {
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
-        when(verificationCodeService.getVerificationCode(any()))
+        when(verificationCodeService.getVerificationCode(any(),any()))
                 .thenThrow(new VerificationCodeException("Verification process still in progress"));
 
         given()
@@ -349,7 +349,7 @@ class UserResourceTest {
     @TestSecurity(user = "littil", roles = "school")
     @OidcSecurity(claims = {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
-    void givenPatchChangeEmailSchools_thenShouldReturnOK() {
+    void givenPatchChangeEmailSchools_thenShouldReturnNoContent() {
 
         String newEmail = "new-email@littil.org";
         ChangeEmailResource resource = new ChangeEmailResource();
@@ -358,7 +358,7 @@ class UserResourceTest {
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
-        doReturn(true   ).when(verificationCodeService).isValidToken(any(),any());
+        doReturn(true).when(verificationCodeService).isValidToken(any(),any(),any());
 
         given()
                 .when()
@@ -366,7 +366,7 @@ class UserResourceTest {
                 .body(resource)
                 .patch("/user/{id}/email", userId)
                 .then()
-                .statusCode(200);
+                .statusCode(204);
     }
 
     @Test
@@ -382,7 +382,7 @@ class UserResourceTest {
         UUID userId = UUID.randomUUID();
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
-        doReturn(true   ).when(verificationCodeService).isValidToken(any(),any());
+        doReturn(true).when(verificationCodeService).isValidToken(any(),any(),any());
         doReturn(Optional.empty()).when(userService).getUserByProviderId(any());
 
         given()
@@ -428,7 +428,7 @@ class UserResourceTest {
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
-        doReturn(true   ).when(verificationCodeService).isValidToken(any(),any());
+        doReturn(true).when(verificationCodeService).isValidToken(any(),any(),any());
 
         given()
                 .when()

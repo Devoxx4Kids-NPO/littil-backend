@@ -139,7 +139,7 @@ class MailServiceTest {
     void testSendVerificationCodeMail() {
         User user = TestFactory.createUser();
         String email = user.getEmailAddress();
-        VerificationCode verificationCode = new VerificationCode(email);
+        VerificationCode verificationCode = new VerificationCode(user.getId(),email);
 
         // sut
         mailService.sendVerificationCode(verificationCode);

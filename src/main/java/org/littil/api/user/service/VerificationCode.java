@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 
 import java.security.SecureRandom;
+import java.util.UUID;
 
 /**
  * Class representing the details of an email verification code.
@@ -11,6 +12,9 @@ import java.security.SecureRandom;
 
 @Getter
 public class VerificationCode {
+
+    /** userId who requested the verification code */
+    UUID userId;
 
     /** Email address associated with the verification code */
     final String emailAddress;
@@ -36,9 +40,11 @@ public class VerificationCode {
      * Constructs a new VerificationCodeDetails instance for the given email address.
      * The verification code is randomly generated and expires after a fixed duration.
      *
+     * @param userId the user how requested the verification code
      * @param emailAddress the email address to associate with the verification code
      */
-    public VerificationCode(String emailAddress) {
+    public VerificationCode(UUID userId, String emailAddress) {
+        this.userId = userId;
         this.emailAddress = emailAddress;
         this.token = generateRandomCode();
         this.expiresIn = VERIFICATION_CODE_EXPIRATION_SECONDS;

@@ -216,7 +216,7 @@ public class UserResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         String emailAddress = emailVerificationResource.getEmailAddress();
-    	userService.sendVerificationCode(emailAddress);
+    	userService.sendVerificationCode(id, emailAddress);
         return Response.noContent().build();
     }
 
@@ -224,12 +224,8 @@ public class UserResource {
     @Path("user/{id}/email")
     @RolesAllowed({"school", "guest_teacher"})
     @APIResponse(
-            responseCode = "200",
-            description = "Email changed successfully",
-            content = @Content(
-                    mediaType = MediaType.APPLICATION_JSON,
-                    schema = @Schema(type = SchemaType.OBJECT, implementation = User.class)
-            )
+            responseCode = "204",
+            description = "Email changed successfully"
     )
     @APIResponse(
             responseCode = "401",
@@ -245,7 +241,7 @@ public class UserResource {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         User user = userService.changeEmail(id, changeEmailResource);
-        return Response.ok(user).build();
+        return Response.noContent().build();
     }
 
 }

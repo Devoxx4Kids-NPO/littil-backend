@@ -3,6 +3,7 @@ package org.littil.api.user.service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,23 +17,26 @@ public class VerificationCodeService {
 
 
     /** Stores verification code details mapped by email address */
-    private Map<String, VerificationCode> verificationCodeMap = new HashMap<>();
+    private Map<UUID, VerificationCode> verificationCodeMap = new HashMap<>();
 
 
     /**
      * Validates the provided token code for the given email address.
      *
-     * @param emailAddress     the email address associated with the verification code
+     * @param userId the userId how requeted the verificationCode
+     * @param emailAddress the email address associated with the verification code
      * @param token the verification code to validate
      * @return true if the code is valid and matches; false otherwise
      * @throws NoSuchElementException if no verification code exists for the email address
      */
-    public boolean isValidToken(String emailAddress, String token) {
+    public boolean isValidToken(UUID userId, String emailAddress, String token) {
         cleanVerificationCodeMap();
-        if (!verificationCodeMap.containsKey(emailAddress)) {
+        if (!verificationCodeMap.containsKey(userId)) {
             throw new VerificationCodeException("Verification code is missing or expired");
         }
-        return verificationCodeMap.get(emailAddress).getToken().equals(token);
+        VerificationCode verificationCode = verificationCodeMap.get(userId);
+        return verificationCode.getEmailAddress().equals(emailAddress)  &&
+             verificationCode.getToken().equals(token);
     }
 
     /**
@@ -43,13 +47,13 @@ public class VerificationCodeService {
      * @return the newly generated verification code
      * @throws IllegalStateException if a verification process is already in progress
      */
-    public VerificationCode getVerificationCode(String emailAddress) {
+    public VerificationCode getVerificationCode(UUID userId, String emailAddress) {
         cleanVerificationCodeMap();
-        if (verificationCodeMap.containsKey(emailAddress)) {
+        if (verificationCodeMap.containsKey(userId)) {
             throw new VerificationCodeException("Verification process still in progress");
         }
-        VerificationCode verificationCode = new VerificationCode(emailAddress);
-        verificationCodeMap.put(emailAddress, verificationCode);
+        VerificationCode verificationCode = new VerificationCode(userId, emailAddress);
+        verificationCodeMap.put(userId, verificationCode);
         return verificationCode;
     }
 

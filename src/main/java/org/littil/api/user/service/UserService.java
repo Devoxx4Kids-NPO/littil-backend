@@ -142,14 +142,14 @@ public class UserService {
     }
 
     
-    public void sendVerificationCode(String emailAddress) {
-    	VerificationCode verificationCode = verificationCodeService.getVerificationCode(emailAddress);
+    public void sendVerificationCode(UUID userId, String emailAddress) {
+    	VerificationCode verificationCode = verificationCodeService.getVerificationCode(userId, emailAddress);
     	mailService.sendVerificationCode(verificationCode);
     }
     
     @Transactional
 	public User changeEmail(UUID userId, ChangeEmailResource changeEmailResource) {
-    	String newEmailAddress = getEmailAddressIfTokenIsValid(changeEmailResource);
+    	String newEmailAddress = getEmailAddressIfTokenIsValid(userId, changeEmailResource);
     	
 		  Optional<User> alreadyExistingUser = getUserByEmailAddress(newEmailAddress);
           if(alreadyExistingUser.isPresent()) {
@@ -170,10 +170,10 @@ public class UserService {
           return user;
 	}
 
-	private String getEmailAddressIfTokenIsValid(ChangeEmailResource changeEmailResource) {
+	private String getEmailAddressIfTokenIsValid(UUID userId, ChangeEmailResource changeEmailResource) {
 		String emailAddress = changeEmailResource.getNewEmailAddress();
 		String verificationCode = changeEmailResource.getVerificationCode();
-		if (verificationCodeService.isValidToken(verificationCode, emailAddress)) {
+		if (verificationCodeService.isValidToken(userId, emailAddress, verificationCode)) {
 			return changeEmailResource.getNewEmailAddress();
 		}
 		throw new VerificationCodeException("verification code is not valid");

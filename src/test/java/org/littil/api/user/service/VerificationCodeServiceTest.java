@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import io.quarkus.test.junit.QuarkusTest;
 import org.littil.api.exception.VerificationCodeException;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
@@ -19,9 +21,10 @@ class VerificationCodeServiceTest {
     }
 
     @Test
-    void testGetVerificationCode_Success() {
+    void GetVerificationCode_Success() {
+        UUID userId = UUID.randomUUID();
         String email = "user1@example.com";
-        VerificationCode verificationCode = service.getVerificationCode(email);
+        VerificationCode verificationCode = service.getVerificationCode(userId, email);
 
         assertNotNull(verificationCode);
         assertNotNull(verificationCode.getToken());
@@ -30,31 +33,43 @@ class VerificationCodeServiceTest {
 
     @Test
     void testGetVerificationCode_AlreadyExists_ThrowsException() {
+        UUID userId = UUID.randomUUID();
         String email = "user2@example.com";
-        service.getVerificationCode(email);
+        service.getVerificationCode(userId, email);
 
-        assertThrows(VerificationCodeException.class, () -> service.getVerificationCode(email));
+        assertThrows(VerificationCodeException.class, () -> service.getVerificationCode(userId, email));
     }
 
     @Test
     void testIsValidToken_Success() {
+        UUID userId = UUID.randomUUID();
         String email = "user3@example.com";
-        VerificationCode code = service.getVerificationCode(email);
+        VerificationCode code = service.getVerificationCode(userId, email);
 
-        assertTrue(service.isValidToken(email, code.getToken()));
+        assertTrue(service.isValidToken(userId, email, code.getToken()));
     }
 
     @Test
-    void testIsValidToken_ReturnsFalse() {
+    void testIsValidTokenWithIncorrectToken_ReturnsFalse() {
+        UUID userId = UUID.randomUUID();
         String email = "user4@example.com";
-        service.getVerificationCode(email);
+        service.getVerificationCode(userId, email);
 
-        assertFalse(service.isValidToken(email, "000-000"));
+        assertFalse(service.isValidToken(userId, email, "000-000"));
+    }
+
+    @Test
+    void testIsValidTokenWithIncorrectEmail_ReturnsFalse() {
+        UUID userId = UUID.randomUUID();
+        String email = "user4@example.com";
+        VerificationCode verificationCode = service.getVerificationCode(userId, email);
+
+        assertFalse(service.isValidToken(userId, "other-email@example.com", verificationCode.getToken()));
     }
 
     @Test
     void testIsValidToken_ThrowsException() {
         assertThrows(VerificationCodeException.class, () ->
-                service.isValidToken("missing@example.com", "123-456"));
+                service.isValidToken(UUID.randomUUID(),"missing@example.com", "123-456"));
     }
 }
