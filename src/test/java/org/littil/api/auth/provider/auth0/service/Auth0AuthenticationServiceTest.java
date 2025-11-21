@@ -240,8 +240,7 @@ class Auth0AuthenticationServiceTest {
         authenticationService.addAuthorization(providerId, AuthorizationType.SCHOOL, resourceId);
 
         // Verify: auth0api call was invoked
-        verify(auth0api.users().get(anyString(), any()))
-                .execute();
+        verify(auth0api.users().get(anyString(), any())).execute();
 
     }
 
@@ -281,8 +280,9 @@ class Auth0AuthenticationServiceTest {
 
         // Execute the code under test
         authenticationService.removeAuthorization(providerId, AuthorizationType.SCHOOL, resourceId);
-        // nothing to validate because addAuthorzation method is of type void
-    }
+
+        // Verify: auth0api call was invoked
+        verify(auth0api.users().get(anyString(), any())).execute();}
 
     @Test
     void whenAuth0Exception_thenRemoveAuthorization_returnAuth0AuthorizationException() throws Auth0Exception {
