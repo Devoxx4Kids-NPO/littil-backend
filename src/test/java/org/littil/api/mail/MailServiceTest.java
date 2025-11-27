@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.littil.TestFactory;
 import org.littil.api.user.service.User;
+import org.littil.api.user.service.VerificationCode;
 
 import java.util.Optional;
 
@@ -134,4 +135,22 @@ class MailServiceTest {
         assertEquals(0 , mailbox.getTotalMessagesSent());
     }
 
+    @Test
+    void testSendVerificationCodeMail() {
+        User user = TestFactory.createUser();
+        String email = user.getEmailAddress();
+        VerificationCode verificationCode = new VerificationCode(user.getId(),email);
+
+        // sut
+        mailService.sendVerificationCode(verificationCode);
+
+        // verify
+        assertEquals(1 , mailbox.getTotalMessagesSent());
+        Optional<MailMessage> sent = mailbox.getMailMessagesSentTo(email).stream().findFirst();
+        assertTrue(sent.isPresent());
+        assertEquals("LiTTiL email verificatie code", sent.get().getSubject());
+        assertEquals(1, sent.get().getTo().size());
+        assertEquals(email, sent.get().getTo().get(0));
+        assertTrue(sent.get().getText().contains(verificationCode.getToken()));
+    }
 }

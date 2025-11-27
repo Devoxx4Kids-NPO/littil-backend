@@ -16,8 +16,11 @@ import org.littil.api.auth.TokenHelper;
 import org.littil.api.auth.provider.Provider;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
+import org.littil.api.exception.VerificationCodeException;
 import org.littil.api.user.service.User;
 import org.littil.api.user.service.UserService;
+import org.littil.api.user.service.VerificationCode;
+import org.littil.api.user.service.VerificationCodeService;
 import org.littil.mock.auth0.APIManagementMock;
 
 import java.util.Optional;
@@ -37,6 +40,9 @@ class UserResourceTest {
 
     @InjectMock
     AuthenticationService authenticationService;
+
+    @InjectMock
+    VerificationCodeService verificationCodeService;
 
     @InjectSpy
     UserService userService;
@@ -254,6 +260,196 @@ class UserResourceTest {
         given()
                 .when()
                 .get("/statistics")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "school")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPostSendEmailWithVerificationCode_thenShouldReturnNoContent() {
+
+        String email = "email@littil.org";
+        EmailVerficationCodeResource emailVerficationCodeResource = new EmailVerficationCodeResource();
+        emailVerficationCodeResource.setEmailAddress(email);
+        UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
+
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+        doReturn(new VerificationCode(userId, email)).when(verificationCodeService).getVerificationCode(any(),any());
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(emailVerficationCodeResource)
+                .post("/{id}/email-change/request", userId)
+                .then()
+                .statusCode(204);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "guest_teacher")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPostSendEmailWithVerificationCodeForExistingEmail_thenShouldReturnConflict() {
+
+        EmailVerficationCodeResource emailVerficationCodeResource = new EmailVerficationCodeResource();
+        emailVerficationCodeResource.setEmailAddress("email@littil.org");
+        UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
+
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+        when(verificationCodeService.getVerificationCode(any(),any()))
+                .thenThrow(new VerificationCodeException("Verification process still in progress"));
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(emailVerficationCodeResource)
+                .post("/{id}/email-change/request", userId)
+                .then()
+                .statusCode(409);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "guest_teacher")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPostSendEmailWithVerificationCodeWithOtherUserId_thenShouldReturnNotAuthorized() {
+
+        UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
+        UUID otherUserId = UUID.randomUUID();
+
+        doReturn(otherUserId).when(tokenHelper).getCurrentUserId();
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(new EmailVerficationCodeResource())
+                .post("/{id}/email-change/request", userId)
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPostSendEmailWithVerificationCodeUnauthorized_thenShouldReturnNotAuthorized() {
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(new EmailVerficationCodeResource())
+                .post("/{id}/email-change/request", UUID.randomUUID())
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "school")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPatchChangeEmailSchools_thenShouldReturnNoContent() {
+
+        String newEmail = "new-email@littil.org";
+        ChangeEmailResource resource = new ChangeEmailResource();
+        resource.setNewEmailAddress(newEmail);
+        resource.setVerificationCode("secret");
+        UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
+
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+        doReturn(true).when(verificationCodeService).isValidToken(any(),any(),any());
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(resource)
+                .patch("/{id}/email-change/verify", userId)
+                .then()
+                .statusCode(204);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "school")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPatchChangeEmailSchools_thenShouldReturnNotFound() {
+
+        String newEmail = "email-test-404@littil.org";
+        ChangeEmailResource resource = new ChangeEmailResource();
+        resource.setNewEmailAddress(newEmail);
+        resource.setVerificationCode("secret");
+        UUID userId = UUID.randomUUID();
+
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+        doReturn(true).when(verificationCodeService).isValidToken(any(),any(),any());
+        doReturn(Optional.empty()).when(userService).getUserByProviderId(any());
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(resource)
+                .patch("/{id}/email-change/verify", userId)
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "school")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPatchChangeEmailOtherUserId_thenShouldReturnUnauthorized() {
+
+        UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
+        UUID otherUserId = UUID.randomUUID();
+
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(new ChangeEmailResource())
+                .patch("/{id}/email-change/verify", otherUserId)
+                .then()
+                .statusCode(401);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "school")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPatchChangeEmailForExistingEmail_thenShouldReturnConflict() {
+
+        String existingEmail = createAndSaveUser(UUID.randomUUID().toString()).getEmailAddress();
+
+        ChangeEmailResource resource = new ChangeEmailResource();
+        resource.setNewEmailAddress(existingEmail);
+        resource.setVerificationCode("secret");
+        UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
+
+        doReturn(userId).when(tokenHelper).getCurrentUserId();
+        doReturn(true).when(verificationCodeService).isValidToken(any(),any(),any());
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(resource)
+                .patch("/{id}/email-change/verify", userId)
+                .then()
+                .statusCode(409);
+    }
+
+    @Test
+    @TestSecurity(user = "littil", roles = "viewer")
+    @OidcSecurity(claims = {
+            @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
+    void givenPatchChangeEmailUnauthorized_thenShouldReturnNotAuthorized() {
+
+        given()
+                .when()
+                .contentType(ContentType.JSON)
+                .body(new ChangeEmailResource())
+                .patch("/{id}/email-change/verify", UUID.randomUUID())
                 .then()
                 .statusCode(403);
     }

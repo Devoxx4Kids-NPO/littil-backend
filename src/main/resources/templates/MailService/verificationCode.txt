@@ -1,0 +1,13 @@
+Beste meneer/mevrouw,
+
+Hierbij ontvangt U de verificatie code die nodig is voor het wijzigen van uw e-mailadres.
+
+Uw verificatie code {token}
+
+De code is {expiresInMinutes} minuten geldig.
+
+Met vriendelijke groet,
+
+LiTTiL
+
+Heeft u vragen naar aanleiding van deze mail, neem dan contact op met info@littil.org

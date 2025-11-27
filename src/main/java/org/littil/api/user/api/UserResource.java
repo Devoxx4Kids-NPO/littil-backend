@@ -179,4 +179,64 @@ public class UserResource {
         return Response.ok(userStatistics).build();
     }
 
+    @POST
+    @Path("{id}/email-change/request")
+    @RolesAllowed({"school", "guest_teacher"})
+    @Operation(summary = "Send email with verification code to new email address")
+    @APIResponse(
+            responseCode = "204",
+            description = "email send with verification code"
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User is not authorized to send verification code for other user."
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "Email address already in use."
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "Verification process still in progress. Please wait before requesting a new code."
+    )
+    public Response sendEmailWithVerificationCode(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
+                          @NotNull EmailVerficationCodeResource emailVerificationResource)
+    {
+        if ( ! tokenHelper.getCurrentUserId().equals(id) ) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        String emailAddress = emailVerificationResource.getEmailAddress();
+    	userService.sendVerificationCode(id, emailAddress);
+        return Response.noContent().build();
+    }
+
+    @PATCH
+    @Path("{id}/email-change/verify")
+    @RolesAllowed({"school", "guest_teacher"})
+    @Operation(summary = "Change email address upon successful verification")
+    @APIResponse(
+            responseCode = "204",
+            description = "Email changed successfully"
+    )
+    @APIResponse(
+            responseCode = "401",
+            description = "User is not authorized to change email for other user."
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "Email address already in use."
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "Verification code is missing or expired"
+    )
+    public Response changeEmail(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
+                                @NotNull ChangeEmailResource changeEmailResource) {
+        if ( ! tokenHelper.getCurrentUserId().equals(id) ) {
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
+        userService.changeEmail(id, changeEmailResource);
+        return Response.noContent().build();
+    }
+
 }
