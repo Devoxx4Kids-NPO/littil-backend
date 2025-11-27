@@ -35,6 +35,7 @@ public class VerificationCodeService {
             throw new VerificationCodeException("Verification code is missing or expired");
         }
         VerificationCode verificationCode = verificationCodeMap.get(userId);
+        verificationCodeMap.remove(userId);
         return verificationCode.getEmailAddress().equals(emailAddress)  &&
              verificationCode.getToken().equals(token);
     }

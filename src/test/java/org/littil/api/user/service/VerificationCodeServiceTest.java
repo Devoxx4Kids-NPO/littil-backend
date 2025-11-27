@@ -47,6 +47,10 @@ class VerificationCodeServiceTest {
         VerificationCode code = service.getVerificationCode(userId, email);
 
         assertTrue(service.isValidToken(userId, email, code.getToken()));
+
+        // can not validate token twice
+        assertThrows(VerificationCodeException.class, () ->
+                service.isValidToken(userId, email, code.getToken()));
     }
 
     @Test

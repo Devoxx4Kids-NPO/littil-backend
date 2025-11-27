@@ -271,8 +271,8 @@ class UserResourceTest {
     void givenPostSendEmailWithVerificationCode_thenShouldReturnNoContent() {
 
         String email = "email@littil.org";
-        EmailVerficationResource emailVerficationResource = new EmailVerficationResource();
-        emailVerficationResource.setEmailAddress(email);
+        EmailVerficationCodeResource emailVerficationCodeResource = new EmailVerficationCodeResource();
+        emailVerficationCodeResource.setEmailAddress(email);
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
@@ -281,7 +281,7 @@ class UserResourceTest {
         given()
                 .when()
                 .contentType(ContentType.JSON)
-                .body(emailVerficationResource)
+                .body(emailVerficationCodeResource)
                 .post("/user/{id}/email/verification", userId)
                 .then()
                 .statusCode(204);
@@ -293,8 +293,8 @@ class UserResourceTest {
             @Claim(key = "https://littil.org/littil_user_id", value = "0ea41f01-cead-4309-871c-c029c1fe19bf") })
     void givenPostSendEmailWithVerificationCodeForExistingEmail_thenShouldReturnConflict() {
 
-        EmailVerficationResource emailVerficationResource = new EmailVerficationResource();
-        emailVerficationResource.setEmailAddress("email@littil.org");
+        EmailVerficationCodeResource emailVerficationCodeResource = new EmailVerficationCodeResource();
+        emailVerficationCodeResource.setEmailAddress("email@littil.org");
         UUID userId = UUID.fromString("0ea41f01-cead-4309-871c-c029c1fe19bf");
 
         doReturn(userId).when(tokenHelper).getCurrentUserId();
@@ -304,7 +304,7 @@ class UserResourceTest {
         given()
                 .when()
                 .contentType(ContentType.JSON)
-                .body(emailVerficationResource)
+                .body(emailVerficationCodeResource)
                 .post("/user/{id}/email/verification", userId)
                 .then()
                 .statusCode(409);
@@ -324,7 +324,7 @@ class UserResourceTest {
         given()
                 .when()
                 .contentType(ContentType.JSON)
-                .body(new EmailVerficationResource())
+                .body(new EmailVerficationCodeResource())
                 .post("/user/{id}/email/verification", userId)
                 .then()
                 .statusCode(401);
@@ -339,7 +339,7 @@ class UserResourceTest {
         given()
                 .when()
                 .contentType(ContentType.JSON)
-                .body(new EmailVerficationResource())
+                .body(new EmailVerficationCodeResource())
                 .post("/user/{id}/email/verification", UUID.randomUUID())
                 .then()
                 .statusCode(403);

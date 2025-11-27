@@ -210,7 +210,7 @@ public class UserResource {
             description = "Verification process still in progress. Please wait before requesting a new code."
     )
     public Response sendEmailWithVerificationCode(@Parameter(name = "id", required = true) @PathParam("id")final UUID id,
-                          @NotNull EmailVerficationResource emailVerificationResource)
+                          @NotNull EmailVerficationCodeResource emailVerificationResource)
     {
         if ( ! tokenHelper.getCurrentUserId().equals(id) ) {
             return Response.status(Response.Status.UNAUTHORIZED).build();

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data
-public class EmailVerficationResource {
+public class EmailVerficationCodeResource {
 
 	@NotEmpty
 	@Email
