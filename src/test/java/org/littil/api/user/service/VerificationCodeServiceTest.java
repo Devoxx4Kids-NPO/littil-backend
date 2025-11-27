@@ -44,13 +44,14 @@ class VerificationCodeServiceTest {
     void testIsValidToken_Success() {
         UUID userId = UUID.randomUUID();
         String email = "user3@example.com";
-        VerificationCode code = service.getVerificationCode(userId, email);
+        VerificationCode verificationCode = service.getVerificationCode(userId, email);
+        String token = verificationCode.getToken();
 
-        assertTrue(service.isValidToken(userId, email, code.getToken()));
+        assertTrue(service.isValidToken(userId, email, token));
 
         // can not validate token twice
         assertThrows(VerificationCodeException.class, () ->
-                service.isValidToken(userId, email, code.getToken()));
+                service.isValidToken(userId, email, token));
     }
 
     @Test
