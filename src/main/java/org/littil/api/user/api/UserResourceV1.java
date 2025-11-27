@@ -2,14 +2,6 @@ package org.littil.api.user.api;
 
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -19,19 +11,39 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.littil.api.auth.TokenHelper;
 import org.littil.api.exception.ErrorResponse;
-import org.littil.api.user.service.*;
+import org.littil.api.user.service.User;
+import org.littil.api.user.service.UserMapper;
+import org.littil.api.user.service.UserService;
+import org.littil.api.user.service.UserStatistics;
+import org.littil.api.user.service.UserStatisticsService;
+
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Path("/api/v2/users")
+@Path("/api/v1/users")
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Users", description = "CRUD Operations for users")
-public class UserResource {
+@Deprecated
+public class UserResourceV1 {
     @Inject
     UserService userService;
     @Inject
@@ -42,6 +54,7 @@ public class UserResource {
     TokenHelper tokenHelper;
 
     @GET
+    @Path("user")
     @RolesAllowed({"admin"})
     @Operation(summary = "Get all users")
     @APIResponse(
@@ -58,7 +71,7 @@ public class UserResource {
     }
 
     @GET
-    @Path("{id}")
+    @Path("user/{id}")
     @RolesAllowed({"admin"})
     @Operation(summary = "Fetch a specific user by Id")
     @APIResponse(
@@ -82,7 +95,7 @@ public class UserResource {
     }
 
     @GET
-    @Path("provider/{id}")
+    @Path("user/provider/{id}")
     @Authenticated
     @Operation(summary = "Fetch a specific user by provider Id")
     @APIResponse(
@@ -113,6 +126,7 @@ public class UserResource {
     }
 
     @POST
+    @Path("user")
     @Operation(summary = "Create a new user")
     @APIResponse(
             responseCode = "201",
@@ -141,12 +155,12 @@ public class UserResource {
     public Response create(@NotNull @Valid UserPostResource userPostResource) {
         User user = userMapper.toDomain(userPostResource);
         User createdUser = userService.createUser(user);
-        URI uri = UriBuilder.fromResource(UserResource.class).path("/user/" + createdUser.getId()).build();
+        URI uri = UriBuilder.fromResource(UserResourceV1.class).path("/user/" + createdUser.getId()).build();
         return Response.created(uri).entity(createdUser).build();
     }
 
     @DELETE
-    @Path("{id}")
+    @Path("user/{id}")
     @RolesAllowed({"admin"})
     @Operation(summary = "Delete a user specified with an id")
     @APIResponse(
