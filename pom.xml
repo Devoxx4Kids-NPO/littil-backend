@@ -20,7 +20,7 @@
         <sonar.organization>littil</sonar.organization>
         <sonar.projectKey>littil-backend</sonar.projectKey>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <lombok.version>1.18.38</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <assertj.version>3.27.4</assertj.version>
         <archunit.version>1.4.1</archunit.version>
