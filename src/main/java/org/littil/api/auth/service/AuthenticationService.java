@@ -20,4 +20,6 @@ public interface AuthenticationService {
     void removeAuthorization(String userId, AuthorizationType type, UUID id);
 
     List<AuthUser> getAllUsers();
+
+	void changeEmailAddress(String providerId, String newEmailAddress);
 }

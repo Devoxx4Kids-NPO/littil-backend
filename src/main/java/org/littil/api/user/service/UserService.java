@@ -9,8 +9,10 @@ import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.PasswordService;
 import org.littil.api.auth.service.ProviderService;
 import org.littil.api.exception.EntityAlreadyExistsException;
+import org.littil.api.exception.VerificationCodeException;
 import org.littil.api.mail.MailService;
 import org.littil.api.metrics.LittilMetrics;
+import org.littil.api.user.api.ChangeEmailResource;
 import org.littil.api.user.repository.UserEntity;
 import org.littil.api.user.repository.UserRepository;
 
@@ -33,6 +35,7 @@ public class UserService {
     ProviderService providerService;
     UserRepository repository;
     MailService mailService;
+    VerificationCodeService verificationCodeService;
     UserMapper mapper;
     PasswordService passwordService;
 
@@ -137,4 +140,69 @@ public class UserService {
         );
         return user;
     }
+
+    public void sendVerificationCode(UUID userId, String emailAddress) {
+        validateEmailIsAvailable(emailAddress);
+        VerificationCode verificationCode = verificationCodeService.getVerificationCode(userId, emailAddress);
+    	mailService.sendVerificationCode(verificationCode);
+    }
+
+    @Transactional
+	public void changeEmail(UUID userId, ChangeEmailResource changeEmailResource) {
+    	String newEmailAddress = getEmailAddressIfTokenIsValid(userId, changeEmailResource);
+        validateEmailIsAvailable(newEmailAddress);
+        Optional<User> optionalUser = getUserById(userId);
+		  if (optionalUser.isEmpty()) {
+	            throw new NotFoundException("User with id " + userId + " not found.");
+		  }
+
+		  User user  = optionalUser.get();
+          user.setEmailAddress(newEmailAddress);
+
+          this.repository.getEntityManager().merge(mapper.toEntity(user));
+          authenticationService.changeEmailAddress(user.getProviderId(), newEmailAddress);
+	}
+
+    /**
+     * Validates that the given email address is not already associated with an existing user.
+     * <p>
+     * This method queries the user repository by the provided email address. If a user is found,
+     * it logs a warning and throws an {@link EntityAlreadyExistsException}. Use this method
+     * before creating a new user or changing a user's email to enforce uniqueness.
+     * </p>
+     *
+     * @param emailAddress the email address to check; must be a non-null, non-blank string
+     * @throws EntityAlreadyExistsException if the provided {@code emailAddress} is already in use
+     */
+    private void validateEmailIsAvailable(String emailAddress) {
+        Optional<User> alreadyExistingUser = getUserByEmailAddress(emailAddress);
+        if(alreadyExistingUser.isPresent()) {
+            log.warn("Failed to change email address due to the fact that user with id " + alreadyExistingUser.get().getId()
+                    +  " already has the same emailAddress.");
+            throw new EntityAlreadyExistsException();
+        }
+    }
+
+    /**
+     * Returns the new email address from the given {@link ChangeEmailResource} if the provided
+     * verification token is valid for the specified user and email address.
+     * <p>
+     * This method delegates token validation to {@code verificationCodeService.isValidToken(userId, emailAddress, verificationCode)}.
+     * If the token is valid, the new email address is returned. Otherwise, a {@link VerificationCodeException}
+     * is thrown to indicate an invalid or expired verification code.
+     * </p>
+     *
+     * @param userId the identifier of the user requesting the email change; must not be {@code null}
+     * @param changeEmailResource the DTO containing the new email address and verification code; must not be {@code null}
+     * @return the new email address if the verification token is valid
+     * @throws VerificationCodeException if the verification code is invalid, mismatched, or expired
+     */
+    private String getEmailAddressIfTokenIsValid(UUID userId, ChangeEmailResource changeEmailResource) {
+		String emailAddress = changeEmailResource.getNewEmailAddress();
+		String verificationCode = changeEmailResource.getVerificationCode();
+		if (verificationCodeService.isValidToken(userId, emailAddress, verificationCode)) {
+			return changeEmailResource.getNewEmailAddress();
+		}
+		throw new VerificationCodeException("verification code is not valid");
+	}
 }

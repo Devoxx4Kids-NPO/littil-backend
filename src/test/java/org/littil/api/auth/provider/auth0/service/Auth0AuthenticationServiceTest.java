@@ -20,8 +20,6 @@ import org.littil.api.auth.provider.auth0.exception.Auth0DuplicateUserException;
 import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthorizationType;
-import org.littil.api.user.service.UserService;
-
 
 import java.util.*;
 
@@ -32,7 +30,7 @@ import static org.wildfly.common.Assert.assertTrue;
 
 @QuarkusTest
 @SuppressWarnings("unchecked")
-public class Auth0AuthenticationServiceTest {
+class Auth0AuthenticationServiceTest {
 
     private static final String CLAIM_NAME = "authorizations";
     @Inject
@@ -46,7 +44,7 @@ public class Auth0AuthenticationServiceTest {
     Auth0AuthenticationService authenticationService;
 
     @BeforeEach
-    public void setUp() throws Auth0Exception {
+    void setUp() throws Auth0Exception {
         auth0api = mock(Auth0ManagementAPI.class);
         roleService = mock(Auth0RoleService.class);
         userResponse = mock(Response.class);
@@ -240,7 +238,10 @@ public class Auth0AuthenticationServiceTest {
 
         // Execute the code under test
         authenticationService.addAuthorization(providerId, AuthorizationType.SCHOOL, resourceId);
-        // nothing to validate because addAuthorzation method is of type void
+
+        // Verify: auth0api call was invoked
+        verify(auth0api.users().get(anyString(), any())).execute();
+
     }
 
     @Test
@@ -279,8 +280,9 @@ public class Auth0AuthenticationServiceTest {
 
         // Execute the code under test
         authenticationService.removeAuthorization(providerId, AuthorizationType.SCHOOL, resourceId);
-        // nothing to validate because addAuthorzation method is of type void
-    }
+
+        // Verify: auth0api call was invoked
+        verify(auth0api.users().get(anyString(), any())).execute();}
 
     @Test
     void whenAuth0Exception_thenRemoveAuthorization_returnAuth0AuthorizationException() throws Auth0Exception {
@@ -355,4 +357,36 @@ public class Auth0AuthenticationServiceTest {
                 () -> authenticationService.getAllUsers());
         assertEquals("Could not get list of authUsers" , exception.getMessage());
     }
+
+    @Test
+    void changeEmailAddressTest() throws Auth0Exception {
+
+        // Set up the mock behavior
+        UsersEntity usersEntity = mock(UsersEntity.class);
+        Request<User> updateRequest = mock(Request.class);
+
+        when(auth0api.users()).thenReturn(usersEntity);
+        when(usersEntity.update(any(), any())).thenReturn(updateRequest);
+        when(updateRequest.execute()).thenReturn(null);
+
+        // Execute the code under test
+        authenticationService.changeEmailAddress("providerId", "email@littil.org");
+
+        verify(usersEntity, times(1)).update(any(), any());
+        verify(updateRequest, times(1)).execute();
+    }
+
+    @Test
+    void whenExistingEmail_thenChangeEmailAddress_returnAuth0userException() throws Auth0Exception {
+
+        // Set up the mock behavior
+        when(auth0api.users().update(any(),any()).execute())
+                .thenThrow(new Auth0Exception("simulated exception"));
+
+        // Execute the code under test
+        Auth0UserException exception = assertThrows(Auth0UserException.class,
+                () -> authenticationService.changeEmailAddress("providerId", "email@littil.org"));
+        assertEquals("Could not change email for user with providerId providerId" , exception.getMessage());
+    }
+
 }

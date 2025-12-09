@@ -9,6 +9,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.littil.api.user.service.User;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import org.littil.api.user.service.VerificationCode;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -27,6 +28,7 @@ public class MailService {
         public static native MailTemplate.MailTemplateInstance contactRecipient(String contactMessage, String contactMedium);
         public static native MailTemplate.MailTemplateInstance contactInitiatingUser(String contactMessage, String contactMedium);
         public static native MailTemplate.MailTemplateInstance feedback(String feedbackType, String message);
+        public static native MailTemplate.MailTemplateInstance verificationCode(String token, int expiresInMinutes);
     }
 
     public void sendWelcomeMail(User user, String password) {
@@ -65,6 +67,16 @@ public class MailService {
                 .subject("Feedback ontvangen");
         send(template);
     }
+
+	public void sendVerificationCode(VerificationCode verificationCode) {
+        String emailAddress = verificationCode.getEmailAddress();
+        String token = verificationCode.getToken();
+        int expiresInMinutes = verificationCode.getExpiresIn() / 60;
+    	var template = Templates.verificationCode(token, expiresInMinutes)
+    			.to(emailAddress)
+				.subject("LiTTiL email verificatie code");
+        send(template);
+	}
 
     private void send(MailTemplate.MailTemplateInstance template) {
         log.info("sending {}",template);

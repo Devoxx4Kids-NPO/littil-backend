@@ -16,7 +16,6 @@ import org.littil.api.auth.provider.auth0.exception.Auth0UserException;
 import org.littil.api.auth.service.AuthUser;
 import org.littil.api.auth.service.AuthenticationService;
 import org.littil.api.auth.service.AuthorizationType;
-import org.littil.api.user.service.UserService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -115,6 +114,20 @@ public class Auth0AuthenticationService implements AuthenticationService {
         } catch(Auth0Exception exception) {
             throw new Auth0UserException("Could not get list of authUsers", exception);
         }
+    }
+
+    @Override
+    public void changeEmailAddress(String providerId, String newEmailAddress) {
+        // validate email doesn't exist
+    	try {
+    		User user  = new User();
+    	    user.setEmail(newEmailAddress);
+    	    user.setName(newEmailAddress);
+    	    user.setEmailVerified(true);
+    		auth0api.users().update(providerId, user).execute();
+    	} catch (Auth0Exception e) {
+            throw new Auth0UserException("Could not change email for user with providerId " + providerId, e);
+       	}
     }
 
     private static Map<String, List<Role>> mapToUsersWithRoleList(Map<Role, List<User>> roleWithUserListMap) {
