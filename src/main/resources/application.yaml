@@ -23,7 +23,8 @@ quarkus:
   live-reload:
     instrumentation: true
   http:
-    cors: true
+    cors:
+      enabled: true
   datasource:
     db-kind: mariadb
   hibernate-orm:
