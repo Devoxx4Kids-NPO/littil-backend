@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import {Stack, StackProps} from 'aws-cdk-lib';
 import {
     AmazonLinuxCpuType,
     AmazonLinuxGeneration,
@@ -17,10 +17,10 @@ import {
     UserData,
     Vpc
 } from 'aws-cdk-lib/aws-ec2';
-import { Effect, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Construct } from 'constructs';
-import { LittilEnvironmentSettings } from './littil-environment-settings';
-import { LoggingStack } from './logging-stack';
+import {Effect, Policy, PolicyStatement} from 'aws-cdk-lib/aws-iam';
+import {Construct} from 'constructs';
+import {LittilEnvironmentSettings} from './littil-environment-settings';
+import {LoggingStack} from './logging-stack';
 
 const fs = require('fs');
 
@@ -62,7 +62,6 @@ export class ApiEc2Stack extends Stack {
         ec2SecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(22), 'SSH access');
         ec2SecurityGroup.addIngressRule(Peer.anyIpv6(), Port.tcp(22), 'SSH access');
 
-
         const keypair = new KeyPair(this, 'ApiEc2Keypair', {
             keyPairName: 'EC2 Keypair' + namePostfix,
             publicKeyMaterial: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN5OhXLM34h3omM+5AoaYgUktcBMUBrC5awrPoItmf3S prod@littil.org',
@@ -78,7 +77,7 @@ export class ApiEc2Stack extends Stack {
         const logGroupName = 'BackendApiEc2Logs' + namePostfix;
         const apiEc2LoggingStack = new LoggingStack(this, 'ApiEc2LoggingStack', {
             littil: props.littil,
-            logGroupName: logGroupName + namePostfix,
+            logGroupName,
         });
 
         const dockerImage = props.ecrRepository.awsAccount + '.dkr.ecr.eu-west-1.amazonaws.com/' + props.ecrRepository.name + ':' + dockerTag;
@@ -192,12 +191,6 @@ export class ApiEc2Stack extends Stack {
         });
 
         littilApiPolicy.attachToRole(ec2Instance.role);
-
-        new CfnEIPAssociation(this, 'Ec2EipAssociation', {
-            eip: props.elasticIp.ref,
-            instanceId: ec2Instance.instanceId,
-        });
-        /**/
 
         /* Database access. */
         const databaseSecurityGroup = SecurityGroup.fromSecurityGroupId(this, 'DatabaseSecurityGroup', props.database.securityGroup.id);

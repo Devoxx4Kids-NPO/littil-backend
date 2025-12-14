@@ -78,8 +78,8 @@ if (!littilEnvironment) {
     const littilDomain = littilEnvironment !== LittilEnvironment.production
         ? littilEnvironment + '.littil.org'
         : 'littil.org';
-    const dockerTag = '1.5.2';
-    const namePostfix = '152';
+    const dockerTag = '1.6.0';
+    const namePostfix = '160';
 
     const littilEnvironmentSettings: LittilEnvironmentSettings = {
         environment: littilEnvironment,
@@ -135,7 +135,7 @@ if (!littilEnvironment) {
             },
         },
     };
-    new ApiEc2Stack(app, 'ApiEc2Stack152', apiEc2StackProps, namePostfix, dockerTag);
+    new ApiEc2Stack(app, 'ApiEc2Stack160', apiEc2StackProps, namePostfix, dockerTag);
 
     const apiStackProps: ApiStackProps = {
         littil: littilEnvironmentSettings,
