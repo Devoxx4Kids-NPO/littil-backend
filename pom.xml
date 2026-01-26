@@ -23,7 +23,7 @@
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <lombok.version>1.18.42</lombok.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <assertj.version>3.27.6</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <archunit.version>1.4.1</archunit.version>
         <jacoco.version>0.8.14</jacoco.version>
         <auth0.version>2.26.0</auth0.version>
